@@ -1,0 +1,188 @@
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          Int       @id @default(autoincrement())
+  pseudo      String    @unique @db.VarChar(255)
+  email       String    @unique @db.VarChar(255)
+  passwordHash String   @db.VarChar(255)
+  bio         String?
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  
+  posts       Post[]
+  comments    Comment[]
+  likes       Like[]
+  workouts    Workout[]
+  progress    UserProgress[]
+  programs    Program[]
+  followers   Follow[] @relation("followersRelation")
+  following   Follow[] @relation("followingRelation")
+
+  @@map("users")
+}
+
+model Exercice {
+  id          Int       @id @default(autoincrement())
+  name        String    @db.VarChar(255)
+  sets        Int
+  reps        Int
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  
+  results     ExerciceResult[]
+  workoutExercices WorkoutExercice[]
+  targets     Target[]
+  
+  @@map("exercices")
+}
+
+model UserProgress {
+  id           Int       @id @default(autoincrement())
+  progressDate DateTime  @map("progress_date")
+  type         String    @db.VarChar(255)
+  progressValue Int      @map("progress_value")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+  
+  userId       Int
+  user         User      @relation(fields: [userId], references: [id])
+  
+  @@map("user_progress")
+}
+
+model Program {
+  id          Int       @id @default(autoincrement())
+  name        String    @db.VarChar(255)
+  description String?
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  
+  userId      Int
+  user        User      @relation(fields: [userId], references: [id])
+  
+  @@map("programs")
+}
+
+model ExerciceResult {
+  id          Int       @id @default(autoincrement())
+  setNumber   Int       @map("set_number")
+  reps        Int
+  weight      Decimal   @db.Decimal(15, 2)
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @map("updated_at")
+  
+  exerciceId  Int
+  exercice    Exercice  @relation(fields: [exerciceId], references: [id])
+  
+  @@map("exercice_results")
+}
+
+model Workout {
+  id          Int       @id @default(autoincrement())
+  name        String    @db.VarChar(255)
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @map("updated_at")
+  
+  userId      Int
+  user        User      @relation(fields: [userId], references: [id])
+  
+  exercices   WorkoutExercice[]
+  
+  @@map("workouts")
+}
+
+model MuscleGroup {
+  id          Int       @id @default(autoincrement())
+  name        String    @db.VarChar(255)
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @map("updated_at")
+  
+  targets     Target[]
+  
+  @@map("muscle_groups")
+}
+
+model Post {
+  id          Int       @id @default(autoincrement())
+  photo       String?   @db.VarChar(255)
+  title       String    @db.VarChar(255)
+  content     String?
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @map("updated_at")
+  
+  userId      Int
+  user        User      @relation(fields: [userId], references: [id])
+  
+  comments    Comment[]
+  likes       Like[]
+  
+  @@map("posts")
+}
+
+model Like {
+  userId      Int
+  postId      Int
+  likedAt     DateTime  @default(now()) @map("liked_at")
+  
+  user        User      @relation(fields: [userId], references: [id])
+  post        Post      @relation(fields: [postId], references: [id])
+  
+  @@id([userId, postId])
+  @@map("likes")
+}
+
+model Comment {
+  userId      Int
+  postId      Int
+  content     String
+  commentedAt DateTime  @default(now()) @map("commented_at")
+  updatedAt   DateTime  @map("updated_at")
+  
+  user        User      @relation(fields: [userId], references: [id])
+  post        Post      @relation(fields: [postId], references: [id])
+  
+  @@id([userId, postId])
+  @@map("comments")
+}
+
+model Follow {
+  followerId  Int
+  followingId Int
+  selectedAt  DateTime  @default(now()) @map("selected_at")
+  
+  follower    User      @relation("followersRelation", fields: [followerId], references: [id])
+  following   User      @relation("followingRelation", fields: [followingId], references: [id])
+  
+  @@id([followerId, followingId])
+  @@map("follow")
+}
+
+model WorkoutExercice {
+  workoutId   Int
+  exerciceId  Int
+  
+  workout     Workout   @relation(fields: [workoutId], references: [id])
+  exercice    Exercice  @relation(fields: [exerciceId], references: [id])
+  
+  @@id([workoutId, exerciceId])
+  @@map("workout_exercices")
+}
+
+model Target {
+  exerciceId  Int
+  muscleGroupId Int
+  
+  exercice    Exercice  @relation(fields: [exerciceId], references: [id])
+  muscleGroup MuscleGroup @relation(fields: [muscleGroupId], references: [id])
+  
+  @@id([exerciceId, muscleGroupId])
+  @@map("targets")
+}
