@@ -9,180 +9,113 @@ datasource db {
 }
 
 model User {
-  id          Int       @id @default(autoincrement())
-  pseudo      String    @unique @db.VarChar(255)
-  email       String    @unique @db.VarChar(255)
-  passwordHash String   @db.VarChar(255)
-  bio         String?
-  createdAt   DateTime  @default(now()) @map("created_at")
-  updatedAt   DateTime  @updatedAt @map("updated_at")
-  
-  posts       Post[]
-  comments    Comment[]
-  likes       Like[]
-  workouts    Workout[]
-  progress    UserProgress[]
-  programs    Program[]
-  followers   Follow[] @relation("followersRelation")
-  following   Follow[] @relation("followingRelation")
-
-  @@map("users")
+  id             String   @id @default(cuid())
+  pseudo         String   @unique
+  email          String   @unique
+  passwordHash   String
+  bio            String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  profilePhoto   String?
 }
 
-model Exercice {
-  id          Int       @id @default(autoincrement())
-  name        String    @db.VarChar(255)
-  sets        Int
-  reps        Int
-  createdAt   DateTime  @default(now()) @map("created_at")
-  updatedAt   DateTime  @updatedAt @map("updated_at")
-  
-  results     ExerciceResult[]
-  workoutExercices WorkoutExercice[]
-  targets     Target[]
-  
-  @@map("exercices")
-}
-
-model UserProgress {
-  id           Int       @id @default(autoincrement())
-  progressDate DateTime  @map("progress_date")
-  type         String    @db.VarChar(255)
-  progressValue Int      @map("progress_value")
-  createdAt    DateTime  @default(now()) @map("created_at")
-  updatedAt    DateTime  @updatedAt @map("updated_at")
-  
-  userId       Int
-  user         User      @relation(fields: [userId], references: [id])
-  
-  @@map("user_progress")
-}
-
-model Program {
-  id          Int       @id @default(autoincrement())
-  name        String    @db.VarChar(255)
-  description String?
-  createdAt   DateTime  @default(now()) @map("created_at")
-  updatedAt   DateTime  @updatedAt @map("updated_at")
-  
-  userId      Int
-  user        User      @relation(fields: [userId], references: [id])
-  
-  @@map("programs")
-}
-
-model ExerciceResult {
-  id          Int       @id @default(autoincrement())
-  setNumber   Int       @map("set_number")
-  reps        Int
-  weight      Decimal   @db.Decimal(15, 2)
-  createdAt   DateTime  @default(now()) @map("created_at")
-  updatedAt   DateTime  @map("updated_at")
-  
-  exerciceId  Int
-  exercice    Exercice  @relation(fields: [exerciceId], references: [id])
-  
-  @@map("exercice_results")
-}
-
-model Workout {
-  id          Int       @id @default(autoincrement())
-  name        String    @db.VarChar(255)
-  createdAt   DateTime  @default(now()) @map("created_at")
-  updatedAt   DateTime  @map("updated_at")
-  
-  userId      Int
-  user        User      @relation(fields: [userId], references: [id])
-  
-  exercices   WorkoutExercice[]
-  
-  @@map("workouts")
-}
-
-model MuscleGroup {
-  id          Int       @id @default(autoincrement())
-  name        String    @db.VarChar(255)
-  createdAt   DateTime  @default(now()) @map("created_at")
-  updatedAt   DateTime  @map("updated_at")
-  
-  targets     Target[]
-  
-  @@map("muscle_groups")
-}
-
-model Post {
-  id          Int       @id @default(autoincrement())
-  photo       String?   @db.VarChar(255)
-  title       String    @db.VarChar(255)
-  content     String?
-  createdAt   DateTime  @default(now()) @map("created_at")
-  updatedAt   DateTime  @map("updated_at")
-  
-  userId      Int
-  user        User      @relation(fields: [userId], references: [id])
-  
-  comments    Comment[]
-  likes       Like[]
-  
-  @@map("posts")
-}
-
-model Like {
-  userId      Int
-  postId      Int
-  likedAt     DateTime  @default(now()) @map("liked_at")
-  
-  user        User      @relation(fields: [userId], references: [id])
-  post        Post      @relation(fields: [postId], references: [id])
-  
-  @@id([userId, postId])
-  @@map("likes")
-}
-
-model Comment {
-  userId      Int
-  postId      Int
+model Posts {
+  id          String   @id @default(cuid())
+  photo       String
+  title       String
   content     String
-  commentedAt DateTime  @default(now()) @map("commented_at")
-  updatedAt   DateTime  @map("updated_at")
-  
-  user        User      @relation(fields: [userId], references: [id])
-  post        Post      @relation(fields: [postId], references: [id])
-  
-  @@id([userId, postId])
-  @@map("comments")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
-model Follow {
-  followerId  Int
-  followingId Int
-  selectedAt  DateTime  @default(now()) @map("selected_at")
-  
-  follower    User      @relation("followersRelation", fields: [followerId], references: [id])
-  following   User      @relation("followingRelation", fields: [followingId], references: [id])
-  
-  @@id([followerId, followingId])
-  @@map("follow")
+model City {
+  id          String   @id @default(cuid())
+  name        String
+  country     String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
-model WorkoutExercice {
-  workoutId   Int
-  exerciceId  Int
-  
-  workout     Workout   @relation(fields: [workoutId], references: [id])
-  exercice    Exercice  @relation(fields: [exerciceId], references: [id])
-  
-  @@id([workoutId, exerciceId])
-  @@map("workout_exercices")
+model Programs {
+  id           String   @id @default(cuid())
+  name         String
+  description  String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }
 
-model Target {
-  exerciceId  Int
-  muscleGroupId Int
-  
-  exercice    Exercice  @relation(fields: [exerciceId], references: [id])
-  muscleGroup MuscleGroup @relation(fields: [muscleGroupId], references: [id])
-  
-  @@id([exerciceId, muscleGroupId])
-  @@map("targets")
+model Workouts {
+  id           String   @id @default(cuid())
+  name         String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }
+
+model Exercises {
+  id           String   @id @default(cuid())
+  name         String
+  sets         Int
+  reps         Int
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model ExerciceResults {
+  id           String   @id @default(cuid())
+  setNumber    Int
+  reps         Int
+  weight       Int
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model MuscleGroups {
+  id           String   @id @default(cuid())
+  name         String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model UsersFollowers {
+  id           String   @id @default(cuid())
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model UsersLikes {
+  id           String   @id @default(cuid())
+  createdAt    DateTime @default(now())
+}
+
+model UsersShares {
+  id           String   @id @default(cuid())
+  createdAt    DateTime @default(now())
+}
+
+model UsersComments {
+  id           String   @id @default(cuid())
+  content      String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model ExerciceMuscleGroups {
+  id           String   @id @default(cuid())
+  name         String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model WorkoutsExercises {
+  id           String   @id @default(cuid())
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model UsersPrograms {
+  id           String   @id @default(cuid())
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+//ajouter role dans looping

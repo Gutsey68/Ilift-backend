@@ -14,7 +14,6 @@ app.listen(port, () => {
 });
 
 async function main() {
-    // Créer un exercice
     const exercice = await prisma.exercice.create({
         data: {
             name: 'Squats',
@@ -23,7 +22,6 @@ async function main() {
         }
     });
 
-    // Créer un utilisateur avec des données associées
     const user = await prisma.user.create({
         data: {
             pseudo: 'Alice',
@@ -57,7 +55,6 @@ async function main() {
         }
     });
 
-    // Créer des résultats pour l'exercice
     await prisma.exerciceResult.createMany({
         data: [
             {
@@ -77,7 +74,6 @@ async function main() {
         ]
     });
 
-    // Récupérer tous les utilisateurs avec leurs posts et leurs workouts
     const allUsers = await prisma.user.findMany({
         include: {
             posts: true,
@@ -108,3 +104,4 @@ main()
     .finally(async () => {
         await prisma.$disconnect();
     });
+
