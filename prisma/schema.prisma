@@ -9,23 +9,45 @@ datasource db {
 }
 
 model User {
-  id             String   @id @default(cuid())
-  pseudo         String   @unique
-  email          String   @unique
-  passwordHash   String
-  bio            String?
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-  profilePhoto   String?
+  id                    String   @id @default(cuid())
+  pseudo                String   @unique
+  email                 String   @unique
+  passwordHash          String
+  bio                   String?
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+  profilePhoto          String?
+  roleId                String
+  cityId                String
+  followerId            String? @unique
+  followedBy            User? @relation("UserFollowers")
+
+  follower              User? @relation("UserFollowers", fields: [followerId], references: [id])
+  comments              UsersComments[]
+  likes                 UsersLikes[]
+  shares                UsersShares[]
+  posts                 Posts[]
+  programs              Programs[]
+  workouts              Workouts[]
+  role                  Role @relation(fields: [roleId], references: [id])
+  city                  City @relation(fields: [cityId], references: [id])
+  programsFollowed      UsersProgramsFollows[]
 }
 
 model Posts {
-  id          String   @id @default(cuid())
-  photo       String
-  title       String
-  content     String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id                    String   @id @default(cuid())
+  photo                 String
+  title                 String
+  content               String
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  comments              UsersComments[]
+  shares                UsersShares[]
+  likes                 UsersLikes[]
+  author                User @relation(fields: [authorId], references: [id])
+  authorId              String
+  exercicesResultsPosts ExercicesResultsPosts[]
 }
 
 model City {
@@ -34,14 +56,21 @@ model City {
   country     String
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  users        User[]
 }
 
 model Programs {
-  id           String   @id @default(cuid())
-  name         String
-  description  String
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id            String   @id @default(cuid())
+  name          String
+  description   String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  authorId      String
+
+  author        User @relation(fields: [authorId], references: [id])
+  workouts      Workouts[]
+  usersFollows  UsersProgramsFollows[]
 }
 
 model Workouts {
@@ -49,31 +78,46 @@ model Workouts {
   name         String
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+  programId    String
+  userId       String
+
+  user         User @relation(fields: [userId], references: [id])
+  program      Programs @relation(fields: [programId], references: [id])
+  exercices    WorkoutsExercises[]
 }
 
-model Exercises {
-  id           String   @id @default(cuid())
-  name         String
-  sets         Int
-  reps         Int
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+model Exercices {
+  id                String   @id @default(cuid())
+  name              String
+  sets              Int
+  reps              Int
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  workouts          WorkoutsExercises[]
+  results           ExerciceResults[]
+  musclesGroups     ExerciceMuscleGroups[]
 }
 
 model ExerciceResults {
-  id           String   @id @default(cuid())
-  setNumber    Int
-  reps         Int
-  weight       Int
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id                    String   @id @default(cuid())
+  setNumber             Int
+  reps                  Int
+  weight                Int
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+  exerciceId            String
+  exercicesResultsPosts ExercicesResultsPosts[]
+
+  exercice              Exercices @relation(fields: [exerciceId], references: [id])
 }
 
 model MuscleGroups {
-  id           String   @id @default(cuid())
-  name         String
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id                String   @id @default(cuid())
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  exercices         ExerciceMuscleGroups[]
 }
 
 model UsersFollowers {
@@ -83,39 +127,87 @@ model UsersFollowers {
 }
 
 model UsersLikes {
-  id           String   @id @default(cuid())
+  posts        Posts    @relation(fields: [postsId], references: [id])
+  postsId      String
+  users        User     @relation(fields: [usersId], references: [id])
+  usersId      String
   createdAt    DateTime @default(now())
+
+  @@id([postsId, usersId])
 }
 
 model UsersShares {
-  id           String   @id @default(cuid())
+  posts        Posts    @relation(fields: [postsId], references: [id])
+  postsId      String
+  users        User     @relation(fields: [usersId], references: [id])
+  usersId      String
   createdAt    DateTime @default(now())
+
+  @@id([postsId, usersId])
 }
 
 model UsersComments {
-  id           String   @id @default(cuid())
+  posts        Posts    @relation(fields: [postsId], references: [id])
+  postsId      String
+  users        User     @relation(fields: [usersId], references: [id])
+  usersId      String
   content      String
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+
+  @@id([postsId, usersId])
 }
 
 model ExerciceMuscleGroups {
+  exercices         Exercices            @relation(fields: [exercicesId], references: [id])
+  exercicesId       String
+  muscleGroups      MuscleGroups         @relation(fields: [musculeGroupsId], references: [id])
+  musculeGroupsId   String
+  name              String
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt
+
+  @@id([musculeGroupsId, exercicesId])
+}
+
+model WorkoutsExercises {
+  workoutId    String
+  workout      Workouts @relation(fields: [workoutId], references: [id])
+  exerciceId   String
+  exercice     Exercices @relation(fields: [exerciceId], references: [id])
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@id([exerciceId, workoutId])
+}
+
+model UsersProgramsFollows {
+  programId    String
+  program      Programs     @relation(fields: [programId], references: [id])
+  userId       String
+  user         User         @relation(fields: [userId], references: [id])
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  @@id([programId, userId])
+}
+
+model Role {
   id           String   @id @default(cuid())
   name         String
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+
+  users        User[]
 }
 
-model WorkoutsExercises {
-  id           String   @id @default(cuid())
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-}
+model ExercicesResultsPosts {
+  posts                 Posts    @relation(fields: [postsId], references: [id])
+  postsId               String
+  exercicesResults      ExerciceResults @relation(fields: [exercicesResultsId], references: [id])
+  exercicesResultsId    String
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
 
-model UsersPrograms {
-  id           String   @id @default(cuid())
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  @@id([exercicesResultsId, postsId])
 }
-
-//ajouter role dans looping
