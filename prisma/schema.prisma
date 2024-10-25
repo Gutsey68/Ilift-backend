@@ -19,10 +19,9 @@ model User {
   profilePhoto          String?
   roleId                String
   cityId                String
-  followerId            String? @unique
-  followedBy            User? @relation("UserFollowers")
 
-  follower              User? @relation("UserFollowers", fields: [followerId], references: [id])
+  followedBy            Follows[] @relation("followedBy")
+  following             Follows[] @relation("following")
   comments              UsersComments[]
   likes                 UsersLikes[]
   shares                UsersShares[]
@@ -120,11 +119,6 @@ model MuscleGroups {
   exercices         ExerciceMuscleGroups[]
 }
 
-model UsersFollowers {
-  id           String   @id @default(cuid())
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-}
 
 model UsersLikes {
   posts        Posts    @relation(fields: [postsId], references: [id])
@@ -210,4 +204,13 @@ model ExercicesResultsPosts {
   updatedAt             DateTime @updatedAt
 
   @@id([exercicesResultsId, postsId])
+}
+
+model Follows {
+  followedBy   User @relation("followedBy", fields: [followedById], references: [id])
+  followedById String
+  following    User @relation("following", fields: [followingId], references: [id])
+  followingId  String
+
+  @@id([followingId, followedById])
 }
