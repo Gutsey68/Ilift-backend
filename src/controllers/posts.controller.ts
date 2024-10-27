@@ -30,3 +30,6 @@ export const getAllPostsByUser = async (req, res) => {
   res.status(200).json({ data: posts });
 };
 export const getPostsByFollowedUsers = async (req, res) => {};
+export const createPost = async (req, res) => {};
+export const updatePost = async (req, res) => {};
+export const deletePost = async (req, res) => {};
