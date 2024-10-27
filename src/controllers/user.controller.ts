@@ -16,3 +16,11 @@ export const getUserById = async (req, res) => {
 
   res.status(200).json({ data: user });
 };
+
+export const createUser = async (req, res) => {};
+export const updateUser = async (req, res) => {};
+export const deleteUser = async (req, res) => {};
+export const getFollowersByUserId = async (req, res) => {};
+export const getFollowingByUserId = async (req, res) => {};
+export const getSuggestions = async (req, res) => {};
+export const followUser = async (req, res) => {};

@@ -226,3 +226,5 @@ model Notifications {
 
   user           User     @relation(fields: [userId], references: [id])
 }
+
+// ajouter des messages ?
