@@ -1,9 +1,12 @@
-import prisma from '../database/db';
+import { getPrograms } from '../services/programs.service';
 
-export const getPrograms = async (req, res) => {
-  const programs = await prisma.programs.findMany();
-
-  res.status(200).json({ data: programs });
+export const getProgramsHandler = async (req, res) => {
+  try {
+    const programs = await getPrograms();
+    res.status(200).json({ data: programs });
+  } catch (error) {
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
 };
 
 export const getProgramById = async (req, res) => {};

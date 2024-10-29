@@ -1,8 +1,8 @@
 import { Router } from 'express';
-import { getPrograms } from '../controllers/programs.controller';
+import { getProgramsHandler } from '../controllers/programs.controller';
 
 const programsRoute = Router();
 
-programsRoute.get('/programs', getPrograms);
+programsRoute.get('/', getProgramsHandler);
 
 export default programsRoute;

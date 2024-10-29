@@ -1,9 +1,9 @@
 import { Router } from 'express';
-import { getUserById, getUsers } from '../controllers/user.controller';
+import { getUserByIdHandler, getUsersHandler } from '../controllers/user.controller';
 
 const userRoutes = Router();
 
-userRoutes.get('/', getUsers);
-userRoutes.get('/:id', getUserById);
+userRoutes.get('/', getUsersHandler);
+userRoutes.get('/:id', getUserByIdHandler);
 
 export default userRoutes;

@@ -1,11 +1,10 @@
 import { Router } from 'express';
-import { getAllPostsByUser, getPostById, getPosts, getPostsByFollowedUsers } from '../controllers/posts.controller';
+import { getAllPostsByUserHandler, getPostByIdHandler, getPostsHandler } from '../controllers/posts.controller';
 
 const postsRoutes = Router();
 
-postsRoutes.get('/', getPosts);
-postsRoutes.get('/:id', getPostById);
-postsRoutes.get('/user/:userId', getAllPostsByUser);
-postsRoutes.get('/followed/:userId', getPostsByFollowedUsers);
+postsRoutes.get('/', getPostsHandler);
+postsRoutes.get('/:id', getPostByIdHandler);
+postsRoutes.get('/user/:userId', getAllPostsByUserHandler);
 
 export default postsRoutes;
