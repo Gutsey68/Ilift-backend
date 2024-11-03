@@ -1,5 +1,5 @@
 import prisma from '../database/db';
-import { comparePasswords, createJWT, hashPassword } from '../services/auth.service';
+import { comparePasswords, createJWT, hashPassword, logout } from '../services/auth.service';
 
 export const createNewUser = async (req, res) => {
   try {
@@ -34,18 +34,41 @@ export const createNewUser = async (req, res) => {
 };
 
 export const signin = async (req, res) => {
-  const user = await prisma.user.findUnique({
-    where: { pseudo: req.body.pseudo }
-  });
+  try {
+    const user = await prisma.user.findUnique({
+      where: { pseudo: req.body.pseudo }
+    });
 
-  const isValid = await comparePasswords(req.body.password, user.passwordHash);
+    if (!user) {
+      return res.status(401).json({ error: 'Pseudo ou mot de passe incorrect' });
+    }
 
-  if (!isValid) {
-    res.status(401);
-    res.send('Pseudo ou mot de passe invalide');
-    return;
+    const isValid = await comparePasswords(req.body.password, user.passwordHash);
+    if (!isValid) {
+      return res.status(401).json({ error: 'Pseudo ou mot de passe incorrect' });
+    }
+
+    const token = createJWT(user);
+
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'none'
+    });
+
+    res.status(200).json({ message: 'Connexion réussie' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Erreur lors de la connexion.' });
   }
+};
 
-  const token = createJWT(user);
-  res.json({ token });
+export const logoutUser = (req, res) => {
+  try {
+    logout(res);
+    res.status(200).json({ message: 'Déconnexion réussie' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Erreur lors de la déconnexion.' });
+  }
 };

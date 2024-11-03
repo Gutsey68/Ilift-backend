@@ -16,32 +16,27 @@ export const createJWT = user => {
 };
 
 export const protect = (req, res, next) => {
-  const bearer = req.headers.authorization;
+  const token = req.cookies?.token;
 
-  if (!bearer) {
-    res.status(401);
-    res.send('Non autorisé');
-    return;
-  }
-
-  const [, token] = bearer.split(' ');
   if (!token) {
-    console.log('here');
-    res.status(401);
-    res.send('Non autorisé');
-    return;
+    return res.status(401).json({ message: 'Non autorisé. Veuillez vous connecter.' });
   }
 
   try {
-    const payload = jwt.verify(token, process.env.JWT_SECRET);
+    const payload = jwt.verify(token, process.env.JWT_SECRET as string);
     req.user = payload;
-    console.log(payload);
     next();
-    return;
-  } catch (e) {
-    console.error(e);
-    res.status(401);
-    res.send('Non autorisé');
-    return;
+  } catch (error) {
+    console.error('Token invalide ou expiré:', error);
+    return res.status(401).json({ message: 'Token invalide ou expiré. Veuillez vous reconnecter.' });
   }
+};
+
+export const logout = res => {
+  res.cookie('token', '', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'none',
+    expires: new Date(0)
+  });
 };
