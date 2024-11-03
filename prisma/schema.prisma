@@ -17,8 +17,8 @@ model User {
   createdAt             DateTime @default(now())
   updatedAt             DateTime @updatedAt
   profilePhoto          String?
-  roleId                String
-  cityId                String
+  roleId                String?
+  cityId                String?
 
   followedBy            Follows[] @relation("followedBy")
   following             Follows[] @relation("following")
@@ -28,8 +28,8 @@ model User {
   posts                 Posts[]
   programs              Programs[]
   workouts              Workouts[]
-  role                  Role @relation(fields: [roleId], references: [id])
-  city                  City @relation(fields: [cityId], references: [id])
+  role                  Role? @relation(fields: [roleId], references: [id])
+  city                  City? @relation(fields: [cityId], references: [id])
   programsFollowed      UsersProgramsFollows[]
   notifications  Notifications[]
 }
