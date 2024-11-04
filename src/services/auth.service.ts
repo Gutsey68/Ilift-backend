@@ -36,7 +36,7 @@ export const logout = res => {
   res.cookie('token', '', {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
-    sameSite: 'none',
+    sameSite: 'lax',
     expires: new Date(0)
   });
 };
