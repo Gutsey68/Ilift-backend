@@ -1,5 +1,5 @@
 import prisma from '../database/db';
-import { comparePasswords, createJWT } from '../services/auth.service';
+import { comparePasswords, createJWT, hashPassword } from '../services/auth.service';
 
 export const createNewUser = async (req, res) => {
   try {

@@ -7,7 +7,7 @@
     "seed": "ts-node prisma/seed.ts"
   },
   "scripts": {
-    "dev": "nodemon src/index.ts"
+    "dev": "nodemon src/index.ts",
     "build": "tsc",
     "serve": "node dist/index.js",
     "seed": "ts-node prisma/seed.ts"
