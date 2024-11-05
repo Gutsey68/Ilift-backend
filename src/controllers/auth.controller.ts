@@ -18,7 +18,7 @@ export const createNewUser = async (req, res) => {
     }
 
     const hash = await hashPassword(req.body.password);
-    const user = await prisma.user.create({
+    await prisma.user.create({
       data: {
         pseudo: req.body.pseudo,
         passwordHash: hash,
@@ -26,7 +26,7 @@ export const createNewUser = async (req, res) => {
       }
     });
 
-    res.status(201).json(user);
+    res.status(201).json({ message: 'Utilisateur créé avec succès.' });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Erreur lors de la création de l’utilisateur.' });
