@@ -1,5 +1,5 @@
 import prisma from '../database/db';
-import { comparePasswords, createJWT, hashPassword, logout } from '../services/auth.service';
+import { comparePasswords, createJWT } from '../services/auth.service';
 
 export const createNewUser = async (req, res) => {
   try {
@@ -50,13 +50,7 @@ export const signin = async (req, res) => {
 
     const token = createJWT(user);
 
-    res.cookie('token', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax'
-    });
-
-    res.status(200).json({ message: 'Connexion réussie' });
+    res.status(200).json({ message: 'Connexion réussie', token });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Erreur lors de la connexion.' });
@@ -65,7 +59,6 @@ export const signin = async (req, res) => {
 
 export const logoutUser = (req, res) => {
   try {
-    logout(res);
     res.status(200).json({ message: 'Déconnexion réussie' });
   } catch (error) {
     console.error(error);
