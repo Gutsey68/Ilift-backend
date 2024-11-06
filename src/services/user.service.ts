@@ -21,7 +21,11 @@ export const getUserProfile = async userId => {
       createdAt: true,
       profilePhoto: true,
       roleId: true,
-      cityId: true
+      city: {
+        select: {
+          name: true
+        }
+      }
     }
   });
 };
