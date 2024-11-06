@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { getAllPostsByUserHandler, getPostByIdHandler, getPostsHandler } from '../controllers/posts.controller';
-import { protect } from '../services/auth.service';
+import { protect } from '../middlewares/protect';
 
 const postsRoutes = Router();
 
