@@ -24,7 +24,7 @@ export const getUserByIdHandler = async (req, res) => {
 
 export const getUserProfileHandler = async (req, res) => {
   try {
-    const userId = req.user.id;
+    const userId = req.params.id;
 
     const user = await getUserProfile(userId);
 
