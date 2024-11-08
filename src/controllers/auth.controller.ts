@@ -50,9 +50,17 @@ export const signin = async (req, res) => {
 
     const token = createJWT(user);
 
-    res.status(200).json({ message: 'Connexion réussie', token, user });
+    res.status(200).json({
+      message: 'Connexion réussie',
+      user: { id: user.id, pseudo: user.pseudo, email: user.email },
+      token
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Erreur lors de la connexion.' });
   }
+};
+
+export const logout = (req, res) => {
+  res.status(200).json({ message: 'Déconnexion réussie.' });
 };
