@@ -4,8 +4,8 @@ import { protect } from '../middlewares/protect';
 
 const userRoutes = Router();
 
-userRoutes.get('/', protect, getUsersHandler);
 userRoutes.get('/me', protect, getCurrentUser);
 userRoutes.get('/:id', protect, getUserProfileHandler);
+userRoutes.get('/', protect, getUsersHandler);
 
 export default userRoutes;
