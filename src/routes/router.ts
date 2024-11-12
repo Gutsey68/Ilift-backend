@@ -6,7 +6,7 @@ import userRoutes from './user.route';
 const router = Router();
 
 router.use('/posts', postsRoutes);
-router.use('/user', userRoutes);
+router.use('/users', userRoutes);
 router.use('/programs', programsRoute);
 
 export default router;

@@ -22,7 +22,6 @@ export const getUserProfileHandler = async (req, res) => {
     }
     res.status(200).json({ message: 'Utilisateur récupéré avec succès', data: user });
   } catch (error) {
-    console.error('Erreur lors de la récupération des informations de l’utilisateur:', error);
     res.status(500).json({ error: 'Erreur Interne du Serveur' });
   }
 };
@@ -38,7 +37,6 @@ export const getCurrentUser = async (req, res) => {
     }
     res.status(200).json({ message: 'Utilisateur récupéré avec succès', data: user });
   } catch (error) {
-    console.error('Erreur lors de la récupération des informations de l’utilisateur:', error);
     res.status(500).json({ error: 'Erreur Interne du Serveur' });
   }
 };
@@ -58,7 +56,6 @@ export const createNewUserHandler = async (req, res) => {
     const newUser = await createUser(req.body.pseudo, req.body.password, req.body.email);
     res.status(201).json({ message: 'Utilisateur créé avec succès.', data: { user: newUser } });
   } catch (error) {
-    console.error(error);
     res.status(500).json({ error: 'Erreur Interne du Serveur' });
   }
 };
@@ -84,7 +81,6 @@ export const signinHandler = async (req, res) => {
       token
     });
   } catch (error) {
-    console.error(error);
     res.status(500).json({ error: 'Erreur Interne du Serveur' });
   }
 };

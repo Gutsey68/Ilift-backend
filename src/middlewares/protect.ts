@@ -13,7 +13,6 @@ export const protect = (req, res, next) => {
     req.user = payload;
     next();
   } catch (error) {
-    console.error('Token invalide ou expiré:', error);
     return res.status(401).json({ message: 'Token invalide ou expiré. Veuillez vous reconnecter.' });
   }
 };
