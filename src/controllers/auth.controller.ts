@@ -1,5 +1,6 @@
 import prisma from '../database/db';
-import { comparePasswords, createJWT, hashPassword } from '../services/auth.service';
+import { comparePasswords, hashPassword } from '../utils/hash';
+import { createJWT } from '../utils/jwt';
 
 export const createNewUser = async (req, res) => {
   try {
@@ -59,8 +60,4 @@ export const signin = async (req, res) => {
     console.error(error);
     res.status(500).json({ error: 'Erreur lors de la connexion.' });
   }
-};
-
-export const logout = (req, res) => {
-  res.status(200).json({ message: 'Déconnexion réussie.' });
 };
