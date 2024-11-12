@@ -5,9 +5,9 @@ import { createJWT } from '../utils/jwt';
 export const getUsersHandler = async (req, res) => {
   try {
     const users = await getUsers();
-    res.status(200).json({ data: users });
+    res.status(200).json({ message: 'Utilisateurs récupérés avec succès', data: users });
   } catch (error) {
-    res.status(500).json({ error: 'Internal Server Error' });
+    res.status(500).json({ error: 'Erreur Interne du Serveur' });
   }
 };
 
@@ -20,11 +20,10 @@ export const getUserProfileHandler = async (req, res) => {
     if (!user) {
       return res.status(404).json({ error: 'Utilisateur non trouvé' });
     }
-
-    res.status(200).json(user);
+    res.status(200).json({ message: 'Utilisateur récupéré avec succès', data: user });
   } catch (error) {
     console.error('Erreur lors de la récupération des informations de l’utilisateur:', error);
-    res.status(500).json({ error: 'Erreur serveur lors de la récupération des informations de l’utilisateur' });
+    res.status(500).json({ error: 'Erreur Interne du Serveur' });
   }
 };
 
@@ -37,11 +36,10 @@ export const getCurrentUser = async (req, res) => {
     if (!user) {
       return res.status(404).json({ error: 'Utilisateur non trouvé' });
     }
-
-    res.status(200).json(user);
+    res.status(200).json({ message: 'Utilisateur récupéré avec succès', data: user });
   } catch (error) {
     console.error('Erreur lors de la récupération des informations de l’utilisateur:', error);
-    res.status(500).json({ error: 'Erreur serveur lors de la récupération des informations de l’utilisateur' });
+    res.status(500).json({ error: 'Erreur Interne du Serveur' });
   }
 };
 
@@ -58,10 +56,10 @@ export const createNewUserHandler = async (req, res) => {
     }
 
     const newUser = await createUser(req.body.pseudo, req.body.password, req.body.email);
-    res.status(201).json({ message: 'Utilisateur créé avec succès.', user: newUser });
+    res.status(201).json({ message: 'Utilisateur créé avec succès.', data: { user: newUser } });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Erreur lors de la création de l’utilisateur.' });
+    res.status(500).json({ error: 'Erreur Interne du Serveur' });
   }
 };
 
@@ -80,11 +78,13 @@ export const signinHandler = async (req, res) => {
     const token = createJWT(user);
     res.status(200).json({
       message: 'Connexion réussie',
-      user: { id: user.id, pseudo: user.pseudo, email: user.email },
+      data: {
+        user: { id: user.id, pseudo: user.pseudo, email: user.email }
+      },
       token
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Erreur lors de la connexion.' });
+    res.status(500).json({ error: 'Erreur Interne du Serveur' });
   }
 };
