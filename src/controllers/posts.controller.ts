@@ -1,4 +1,4 @@
-import { getAllPostsByUser, getPostById, getPosts, getPostsOfUserAndHisFollowings } from '../services/post.service';
+import { getAllPostsByUser, getPostById, getPosts, getPostsOfUserAndHisFollowings } from '../services/posts.service';
 
 export const getPostsHandler = async (req, res) => {
   try {

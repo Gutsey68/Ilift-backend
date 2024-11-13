@@ -39,7 +39,12 @@ export const getPostsOfUserAndHisFollowings = async (userId: string) => {
       }
     },
     include: {
-      author: true
+      author: true,
+      _count: {
+        select: {
+          likes: true
+        }
+      }
     },
     orderBy: {
       createdAt: 'desc'
