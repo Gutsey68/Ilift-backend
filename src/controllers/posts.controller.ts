@@ -1,4 +1,4 @@
-import { getAllPostsByUser, getPostById, getPosts } from '../services/post.service';
+import { getAllPostsByUser, getPostById, getPosts, getPostsOfUserAndHisFollowings } from '../services/post.service';
 
 export const getPostsHandler = async (req, res) => {
   try {
@@ -26,6 +26,16 @@ export const getAllPostsByUserHandler = async (req, res) => {
   try {
     const userId = req.params.userId;
     const posts = await getAllPostsByUser(userId);
+    res.status(200).json({ message: 'Publications récupérées avec succès', data: posts });
+  } catch (error) {
+    res.status(500).json({ error: 'Erreur Interne du Serveur' });
+  }
+};
+
+export const getPostsOfUserAndHisFollowingsHandler = async (req, res) => {
+  try {
+    const userId = req.params.userId;
+    const posts = await getPostsOfUserAndHisFollowings(userId);
     res.status(200).json({ message: 'Publications récupérées avec succès', data: posts });
   } catch (error) {
     res.status(500).json({ error: 'Erreur Interne du Serveur' });

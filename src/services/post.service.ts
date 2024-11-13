@@ -19,3 +19,32 @@ export const getAllPostsByUser = async (userId: string) => {
     }
   });
 };
+
+export const getPostsOfUserAndHisFollowings = async (userId: string) => {
+  const followedUsers = await prisma.follows.findMany({
+    where: {
+      followedById: userId
+    },
+    select: {
+      followingId: true
+    }
+  });
+
+  const userIds = [userId, ...followedUsers.map(follow => follow.followingId)];
+
+  const posts = await prisma.posts.findMany({
+    where: {
+      authorId: {
+        in: userIds
+      }
+    },
+    include: {
+      author: true
+    },
+    orderBy: {
+      createdAt: 'desc'
+    }
+  });
+
+  return posts;
+};
