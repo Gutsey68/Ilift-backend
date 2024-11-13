@@ -16,6 +16,14 @@ export const getUserProfile = async (userId: string) => {
       createdAt: true,
       profilePhoto: true,
       roleId: true,
+      _count: {
+        select: {
+          posts: true,
+          followedBy: true,
+          following: true,
+          workouts: true
+        }
+      },
       city: {
         select: {
           name: true
