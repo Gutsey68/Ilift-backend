@@ -7,6 +7,6 @@ const postsRoutes = Router();
 postsRoutes.get('/', protect, getPostsHandler);
 postsRoutes.get('/:id', getPostByIdHandler);
 postsRoutes.get('/users/:userId', getAllPostsByUserHandler);
-postsRoutes.get('/users/:userId/tableau-de-bord', protect, getPostsOfUserAndHisFollowingsHandler);
+postsRoutes.get('/users/:userId/accueil', protect, getPostsOfUserAndHisFollowingsHandler);
 
 export default postsRoutes;
