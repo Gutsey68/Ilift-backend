@@ -1,5 +1,4 @@
 import prisma from '../database/db';
-import { hashPassword } from '../utils/hash';
 
 export const getUsers = async () => {
   return await prisma.user.findMany();
@@ -42,16 +41,5 @@ export const findUserByPseudo = async (pseudo: string) => {
 export const findUserByEmail = async (email: string) => {
   return await prisma.user.findUnique({
     where: { email }
-  });
-};
-
-export const createUser = async (pseudo: string, password: string, email: string) => {
-  const passwordHash = await hashPassword(password);
-  return await prisma.user.create({
-    data: {
-      pseudo,
-      passwordHash,
-      email
-    }
   });
 };
