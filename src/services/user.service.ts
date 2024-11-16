@@ -33,14 +33,32 @@ export const getUserProfile = async (userId: string) => {
 };
 
 export const getSuggestedUsers = async (userId: string) => {
-  return await prisma.user.findMany({
+  const usersIfollow = await prisma.user.findMany({
     where: {
       NOT: {
         id: userId
       },
-      followedBy: {
+      following: {
         some: {
-          followingId: userId
+          followedById: userId
+        }
+      }
+    },
+    select: {
+      id: true
+    }
+  });
+
+  const usersIfollowIds = usersIfollow.map(user => user.id);
+
+  const usersfollowedByusersIfollow = await prisma.user.findMany({
+    where: {
+      NOT: {
+        id: userId
+      },
+      following: {
+        some: {
+          followedById: { in: usersIfollowIds }
         }
       }
     },
@@ -48,36 +66,37 @@ export const getSuggestedUsers = async (userId: string) => {
       id: true,
       pseudo: true,
       profilePhoto: true,
-      followedBy: {
-        where: {
-          followingId: userId
-        },
+      following: {
         select: {
-          following: {
+          followedBy: {
             select: {
+              id: true,
               pseudo: true
-            }
-          }
-        },
-        take: 1
-      },
-      _count: {
-        select: {
-          following: {
-            where: {
-              followingId: userId
             }
           }
         }
       }
-    },
-    orderBy: {
-      followedBy: {
-        _count: 'desc'
-      }
-    },
-    take: 5
+    }
   });
+
+  const result = usersfollowedByusersIfollow.map(user => {
+    const commonFollowers = user.following
+      .filter(follow => usersIfollowIds.includes(follow.followedBy.id))
+      .map(follow => ({
+        id: follow.followedBy.id,
+        pseudo: follow.followedBy.pseudo
+      }));
+
+    return {
+      id: user.id,
+      pseudo: user.pseudo,
+      profilePhoto: user.profilePhoto,
+      commonFollowers,
+      commonFollowersCount: commonFollowers.length
+    };
+  });
+
+  return result;
 };
 
 export const findUserByPseudo = async (pseudo: string) => {
