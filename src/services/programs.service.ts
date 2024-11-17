@@ -4,10 +4,10 @@ export const getPrograms = async () => {
   return await prisma.programs.findMany();
 };
 
-export const getProgramsOfUser = async (userId: string) => {
+export const getProgramsOfUser = async (authorId: string) => {
   return await prisma.programs.findMany({
     where: {
-      authorId: userId
+      authorId
     },
     orderBy: {
       createdAt: 'desc'
@@ -29,6 +29,33 @@ export const getWorkoutsOfProgram = async (programId: string) => {
     },
     orderBy: {
       id: 'asc'
+    }
+  });
+};
+
+export const getExercicesOfWorkout = async (workoutId: string) => {
+  return await prisma.exercices.findMany({
+    where: {
+      workouts: {
+        some: {
+          workoutId
+        }
+      }
+    },
+    include: {
+      workouts: {
+        select: {
+          workout: {
+            select: {
+              name: true,
+              id: true
+            }
+          }
+        }
+      }
+    },
+    orderBy: {
+      createdAt: 'asc'
     }
   });
 };
