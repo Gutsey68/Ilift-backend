@@ -15,12 +15,22 @@ export const getUserProfile = async (userId: string) => {
       createdAt: true,
       profilePhoto: true,
       roleId: true,
+      workouts: {
+        select: {
+          id: true,
+          name: true,
+          createdAt: true
+        },
+        orderBy: {
+          createdAt: 'desc'
+        },
+        take: 1
+      },
       _count: {
         select: {
           posts: true,
           followedBy: true,
-          following: true,
-          workouts: true
+          following: true
         }
       },
       city: {
