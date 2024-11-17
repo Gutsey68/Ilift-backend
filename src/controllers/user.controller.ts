@@ -41,7 +41,7 @@ export const getCurrentUserHandler = async (req, res) => {
 
 export const getSuggestedUsersHandler = async (req, res) => {
   try {
-    const userId = req.user.id;
+    const userId = req.params.id;
 
     const users = await getSuggestedUsers(userId);
 
