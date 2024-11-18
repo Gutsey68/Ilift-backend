@@ -19,6 +19,7 @@ model User {
   profilePhoto          String?
   roleId                String?
   cityId                String?
+  exercicesResults      ExerciceResults[]
 
   followedBy            Follows[] @relation("followedBy")
   following             Follows[] @relation("following")
@@ -99,14 +100,14 @@ model Exercices {
 
 model ExerciceResults {
   id                    String   @id @default(cuid())
-  setNumber             Int
-  reps                  Int
-  weight                Int
   createdAt             DateTime @default(now())
   updatedAt             DateTime @updatedAt
   exerciceId            String
   exercicesResultsPosts ExercicesResultsPosts[]
+  userId                String
+  sets                  Sets[]
 
+  user                  User @relation(fields: [userId], references: [id])
   exercice              Exercices @relation(fields: [exerciceId], references: [id])
 }
 
@@ -223,6 +224,17 @@ model Notifications {
   createdAt      DateTime @default(now())
 
   user           User     @relation(fields: [userId], references: [id])
+}
+
+model Sets {
+  id               String   @id @default(cuid())
+  reps             Int
+  weight           Int
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  exerciceResultId String
+
+  exerciceResult   ExerciceResults @relation(fields: [exerciceResultId], references: [id])
 }
 
 // ajouter des messages ?
