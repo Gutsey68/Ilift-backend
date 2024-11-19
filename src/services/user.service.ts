@@ -86,7 +86,8 @@ export const getSuggestedUsers = async (userId: string) => {
           }
         }
       }
-    }
+    },
+    take: 5
   });
 
   const result = usersfollowedByusersIfollow.map(user => {
@@ -105,6 +106,32 @@ export const getSuggestedUsers = async (userId: string) => {
       commonFollowersCount: commonFollowers.length
     };
   });
+
+  if (result.length < 5) {
+    const additionalUsers = await prisma.user.findMany({
+      where: {
+        NOT: {
+          id: { in: [userId, ...result.map(user => user.id)] }
+        }
+      },
+      select: {
+        id: true,
+        pseudo: true,
+        profilePhoto: true
+      },
+      take: 5 - result.length
+    });
+
+    result.push(
+      ...additionalUsers.map(user => ({
+        id: user.id,
+        pseudo: user.pseudo,
+        profilePhoto: user.profilePhoto,
+        commonFollowers: [],
+        commonFollowersCount: 0
+      }))
+    );
+  }
 
   return result;
 };
