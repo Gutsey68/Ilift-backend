@@ -46,9 +46,10 @@ model Posts {
   comments              UsersComments[]
   shares                UsersShares[]
   likes                 UsersLikes[]
-  author                User @relation(fields: [authorId], references: [id])
+  author                User @relation(fields: [authorId], references: [id], onDelete: Cascade)
   authorId              String
   exercicesResultsPosts ExercicesResultsPosts[]
+  tags                  TagsPosts[]
 }
 
 model City {
@@ -235,6 +236,26 @@ model Sets {
   exerciceResultId String
 
   exerciceResult   ExerciceResults @relation(fields: [exerciceResultId], references: [id])
+}
+
+model Tags {
+  id        String      @id @default(cuid())
+  name      String
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  posts     TagsPosts[]
+}
+
+model TagsPosts {
+  postId    String
+  post      Posts @relation(fields: [postId], references: [id], onDelete: Cascade)
+  tagId     String
+  tag       Tags @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@id([postId, tagId]) 
 }
 
 // ajouter des messages ?
