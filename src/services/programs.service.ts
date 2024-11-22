@@ -15,17 +15,40 @@ export const getProgramsOfUser = async (authorId: string) => {
   });
 };
 
+export const getProgramById = async (id: string) => {
+  return await prisma.programs.findUnique({
+    where: {
+      id
+    },
+    select: {
+      name: true,
+      id: true
+    }
+  });
+};
+
+export const getWorkoutById = async (id: string) => {
+  return await prisma.workouts.findUnique({
+    where: {
+      id
+    },
+    select: {
+      name: true,
+      id: true,
+      program: {
+        select: {
+          name: true,
+          id: true
+        }
+      }
+    }
+  });
+};
+
 export const getWorkoutsOfProgram = async (programId: string) => {
   return await prisma.workouts.findMany({
     where: {
       programId
-    },
-    include: {
-      program: {
-        select: {
-          name: true
-        }
-      }
     },
     orderBy: {
       id: 'asc'
@@ -39,18 +62,6 @@ export const getExercicesOfWorkout = async (workoutId: string) => {
       workouts: {
         some: {
           workoutId
-        }
-      }
-    },
-    include: {
-      workouts: {
-        select: {
-          workout: {
-            select: {
-              name: true,
-              id: true
-            }
-          }
         }
       }
     },
