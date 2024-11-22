@@ -39,6 +39,11 @@ export const getPostsOfUserAndHisFollowings = async (userId: string) => {
       }
     },
     include: {
+      tags: {
+        include: {
+          tag: true
+        }
+      },
       author: true,
       _count: {
         select: {
