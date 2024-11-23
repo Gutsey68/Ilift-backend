@@ -30,7 +30,8 @@ export const getUserProfile = async (userId: string) => {
         select: {
           posts: true,
           followedBy: true,
-          following: true
+          following: true,
+          workouts: true
         }
       },
       city: {
