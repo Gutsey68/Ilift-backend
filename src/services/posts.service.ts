@@ -16,7 +16,20 @@ export const getAllPostsByUser = async (userId: string) => {
       author: {
         id: userId
       }
-    }
+    },
+    include: {
+      tags: {
+        include: {
+          tag: true
+        }
+      },
+      author: true,
+      _count: {
+        select: {
+          likes: true
+        }
+      }
+    },
   });
 };
 
