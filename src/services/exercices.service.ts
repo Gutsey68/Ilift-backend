@@ -7,8 +7,15 @@ export const getExerciceAndResults = async (id: string) => {
     },
     include: {
       results: {
+        orderBy: {
+          createdAt: 'desc'
+        },
         include: {
-          sets: true,
+          sets: {
+            orderBy: {
+              createdAt: 'asc'
+            }
+          },
           user: true
         }
       }
