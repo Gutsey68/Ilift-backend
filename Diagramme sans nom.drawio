@@ -208,7 +208,7 @@
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="ma2GObzfx0fH_Ag3KKbZ-37" value="notifications" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
-          <mxGeometry x="-190" y="265" width="140" height="150" as="geometry" />
+          <mxGeometry x="-200" y="238" width="140" height="180" as="geometry" />
         </mxCell>
         <mxCell id="ma2GObzfx0fH_Ag3KKbZ-38" value="&lt;u&gt;id&lt;/u&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" vertex="1" parent="ma2GObzfx0fH_Ag3KKbZ-37">
           <mxGeometry y="30" width="140" height="30" as="geometry" />
@@ -221,6 +221,9 @@
         </mxCell>
         <mxCell id="ma2GObzfx0fH_Ag3KKbZ-164" value="isRead" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" vertex="1" parent="ma2GObzfx0fH_Ag3KKbZ-37">
           <mxGeometry y="120" width="140" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="ma2GObzfx0fH_Ag3KKbZ-196" value="createdAt&lt;div&gt;&lt;br&gt;&lt;/div&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" vertex="1" parent="ma2GObzfx0fH_Ag3KKbZ-37">
+          <mxGeometry y="150" width="140" height="30" as="geometry" />
         </mxCell>
         <mxCell id="ma2GObzfx0fH_Ag3KKbZ-86" style="edgeStyle=none;shape=connector;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=default;align=center;verticalAlign=middle;fontFamily=Helvetica;fontSize=11;fontColor=default;labelBackgroundColor=default;endArrow=none;endFill=0;" edge="1" parent="1" source="ma2GObzfx0fH_Ag3KKbZ-129" target="ma2GObzfx0fH_Ag3KKbZ-85">
           <mxGeometry relative="1" as="geometry" />
