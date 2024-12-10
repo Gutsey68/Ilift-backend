@@ -19,6 +19,7 @@ model User {
   profilePhoto          String?
   roleId                String?
   cityId                String?
+  isBan                 Boolean @default(false)
   exercicesResults      ExerciceResults[]
 
   followedBy            Follows[] @relation("followedBy")

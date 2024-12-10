@@ -1,0 +1,15 @@
+meta {
+  name: Get all tags
+  type: http
+  seq: 10
+}
+
+get {
+  url: http://localhost:3000/api/tags
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImNtMzRzOW5lbTAwMDExcmF5emNxcWY3YXUiLCJwc2V1ZG8iOiJ0ZXN0IiwiaWF0IjoxNzMyMzkxODI1LCJleHAiOjE3MzIzOTU0MjV9.zA61lX1Nuu3XbqVOHmocDDoKfmh3l65FhsPfntPCg-A
+}

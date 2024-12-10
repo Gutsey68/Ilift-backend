@@ -1,0 +1,19 @@
+meta {
+  name: Get an exercice and the results
+  type: http
+  seq: 9
+}
+
+get {
+  url: http://localhost:3000/api/exercices/:id
+  body: none
+  auth: bearer
+}
+
+params:path {
+  id: exercise1-id
+}
+
+auth:bearer {
+  token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImNtMzRzOW5lbTAwMDExcmF5emNxcWY3YXUiLCJwc2V1ZG8iOiJ0ZXN0IiwiaWF0IjoxNzMyMjg4MDA5LCJleHAiOjE3MzIyOTE2MDl9.xs27PPQkQG-N5PAidhJNpFQIoWb7HoUp9TxpKW19q1o
+}
