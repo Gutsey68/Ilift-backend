@@ -21,6 +21,7 @@ export const createNewUserHandler = async (req, res) => {
     }
 
     const newUser = await createUser(req.body.pseudo, req.body.password, req.body.email);
+
     res.status(201).json({ message: 'Utilisateur créé avec succès.', data: { user: newUser } });
   } catch (error) {
     if (error instanceof z.ZodError) {

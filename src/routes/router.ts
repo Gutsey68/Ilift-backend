@@ -4,7 +4,7 @@ import exercicesRoute from './exercices.route';
 import postsRoutes from './posts.route';
 import programsRoute from './programs.route';
 import tagsRoutes from './tags.route';
-import userRoutes from './user.route';
+import userRoutes from './users.route';
 
 const router = Router();
 
