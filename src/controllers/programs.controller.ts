@@ -61,3 +61,9 @@ export const getExercicesOfWorkoutHandler = async (req, res) => {
     res.status(500).json({ error: 'Erreur Interne du Serveur' });
   }
 };
+
+export const createProgramHandler = async (req, res) => {};
+
+export const updateProgramHandler = async (req, res) => {};
+
+export const deleteProgramHandler = async (req, res) => {};

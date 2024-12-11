@@ -9,3 +9,9 @@ export const getTagsHandler = async (req, res) => {
     res.status(500).json({ error: 'Erreur Interne du Serveur' });
   }
 };
+
+export const createTagHandler = async (req, res) => {};
+
+export const updateTagHandler = async (req, res) => {};
+
+export const deleteTagHandler = async (req, res) => {};

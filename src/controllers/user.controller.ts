@@ -53,3 +53,9 @@ export const getSuggestedUsersHandler = async (req, res) => {
     res.status(500).json({ error: 'Erreur Interne du Serveur' });
   }
 };
+
+export const followHandler = async (req, res) => {};
+
+export const unfollowHandler = async (req, res) => {};
+
+export const updateUserHandler = async (req, res) => {};

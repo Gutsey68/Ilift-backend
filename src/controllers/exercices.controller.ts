@@ -27,3 +27,18 @@ export const getExercicesHandler = async (req, res) => {
     res.status(500).json({ error: 'Erreur Interne du Serveur' });
   }
 };
+
+export const postExerciceHandler = async (req, res) => {
+  try {
+  } catch (error) {}
+};
+
+export const updateExerciceHandler = async (req, res) => {
+  try {
+  } catch (error) {}
+};
+
+export const deleteExerciceHandler = async (req, res) => {
+  try {
+  } catch (error) {}
+};

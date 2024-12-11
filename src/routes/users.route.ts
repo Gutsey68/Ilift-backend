@@ -1,5 +1,13 @@
 import { Router } from 'express';
-import { getCurrentUserHandler, getSuggestedUsersHandler, getUserProfileHandler, getUsersHandler } from '../controllers/user.controller';
+import {
+  followHandler,
+  getCurrentUserHandler,
+  getSuggestedUsersHandler,
+  getUserProfileHandler,
+  getUsersHandler,
+  unfollowHandler,
+  updateUserHandler
+} from '../controllers/user.controller';
 import { protect } from '../middlewares/protect';
 
 const userRoutes = Router();
@@ -9,8 +17,8 @@ userRoutes.get('/suggested', protect, getSuggestedUsersHandler);
 userRoutes.get('/:id', protect, getUserProfileHandler);
 userRoutes.get('/', protect, getUsersHandler);
 
-userRoutes.post('/follow', protect);
-userRoutes.delete('/unfollow', protect);
-userRoutes.put('/:id', protect);
+userRoutes.post('/follow', protect, followHandler);
+userRoutes.delete('/unfollow', protect, unfollowHandler);
+userRoutes.put('/:id', protect, updateUserHandler);
 
 export default userRoutes;

@@ -1,5 +1,20 @@
 import { Router } from 'express';
-import { getAllPostsByUserHandler, getPostByIdHandler, getPostsHandler, getPostsOfUserAndHisFollowingsHandler } from '../controllers/posts.controller';
+import {
+  createCommentHandler,
+  createPostHandler,
+  deleteCommentHandler,
+  deletePostHandler,
+  getAllPostsByUserHandler,
+  getCommentsHandler,
+  getLikesHandler,
+  getPostByIdHandler,
+  getPostsHandler,
+  getPostsOfUserAndHisFollowingsHandler,
+  likePostHandler,
+  unlikePostHandler,
+  updateCommentHandler,
+  updatePostHandler
+} from '../controllers/posts.controller';
 import { protect } from '../middlewares/protect';
 
 const postsRoutes = Router();
@@ -9,15 +24,15 @@ postsRoutes.get('/:id', getPostByIdHandler);
 postsRoutes.get('/users/:userId', getAllPostsByUserHandler);
 postsRoutes.get('/users/:userId/accueil', protect, getPostsOfUserAndHisFollowingsHandler);
 
-postsRoutes.post('/', protect);
-postsRoutes.put('/:id', protect);
-postsRoutes.delete('/:id', protect);
-postsRoutes.post('/:id/likes', protect);
-postsRoutes.delete('/:id/likes', protect);
-postsRoutes.get('/:id/likes', protect);
-postsRoutes.post('/:id/comments', protect);
-postsRoutes.get('/:id/comments', protect);
-postsRoutes.delete('/:id/comments/:commentId', protect);
-postsRoutes.put('/:id/comments/:commentId', protect);
+postsRoutes.post('/', protect, createPostHandler);
+postsRoutes.put('/:id', protect, updatePostHandler);
+postsRoutes.delete('/:id', protect, deletePostHandler);
+postsRoutes.post('/:id/likes', protect, likePostHandler);
+postsRoutes.delete('/:id/likes', protect, unlikePostHandler);
+postsRoutes.get('/:id/likes', protect, getLikesHandler);
+postsRoutes.post('/:id/comments', protect, createCommentHandler);
+postsRoutes.get('/:id/comments', protect, getCommentsHandler);
+postsRoutes.delete('/:id/comments/:commentId', protect, deleteCommentHandler);
+postsRoutes.put('/:id/comments/:commentId', protect, updateCommentHandler);
 
 export default postsRoutes;

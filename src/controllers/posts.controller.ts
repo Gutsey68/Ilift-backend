@@ -49,3 +49,23 @@ export const getPostsOfUserAndHisFollowingsHandler = async (req, res) => {
     res.status(500).json({ error: 'Erreur Interne du Serveur' });
   }
 };
+
+export const createPostHandler = async (req, res) => {};
+
+export const updatePostHandler = async (req, res) => {};
+
+export const deletePostHandler = async (req, res) => {};
+
+export const likePostHandler = async (req, res) => {};
+
+export const unlikePostHandler = async (req, res) => {};
+
+export const getLikesHandler = async (req, res) => {};
+
+export const createCommentHandler = async (req, res) => {};
+
+export const getCommentsHandler = async (req, res) => {};
+
+export const deleteCommentHandler = async (req, res) => {};
+
+export const updateCommentHandler = async (req, res) => {};

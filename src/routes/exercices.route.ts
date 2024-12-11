@@ -1,5 +1,11 @@
 import { Router } from 'express';
-import { getExerciceAndResultsHandler, getExercicesHandler } from '../controllers/exercices.controller';
+import {
+  deleteExerciceHandler,
+  getExerciceAndResultsHandler,
+  getExercicesHandler,
+  postExerciceHandler,
+  updateExerciceHandler
+} from '../controllers/exercices.controller';
 import { protect } from '../middlewares/protect';
 
 const exercicesRoute = Router();
@@ -7,8 +13,8 @@ const exercicesRoute = Router();
 exercicesRoute.get('/:id/', protect, getExerciceAndResultsHandler);
 exercicesRoute.get('/', protect, getExercicesHandler);
 
-exercicesRoute.post('/', protect);
-exercicesRoute.put('/:id', protect);
-exercicesRoute.delete('/:id', protect);
+exercicesRoute.post('/', protect, postExerciceHandler);
+exercicesRoute.put('/:id', protect, updateExerciceHandler);
+exercicesRoute.delete('/:id', protect, deleteExerciceHandler);
 
 export default exercicesRoute;
