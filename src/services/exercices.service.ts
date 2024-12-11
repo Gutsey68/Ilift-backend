@@ -50,3 +50,7 @@ export const getWorkoutById = async (id: string) => {
     }
   });
 };
+
+export const getExercices = async () => {
+  return await prisma.exercices.findMany();
+};

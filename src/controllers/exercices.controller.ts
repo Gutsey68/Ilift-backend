@@ -1,4 +1,4 @@
-import { getExerciceAndResults, getWorkoutById } from '../services/exercices.service';
+import { getExerciceAndResults, getExercices, getWorkoutById } from '../services/exercices.service';
 
 export const getExerciceAndResultsHandler = async (req, res) => {
   try {
@@ -13,6 +13,16 @@ export const getExerciceAndResultsHandler = async (req, res) => {
     }
 
     res.status(200).json({ message: 'Exercices récupérés avec succès', data: { exercices, workout } });
+  } catch (error) {
+    res.status(500).json({ error: 'Erreur Interne du Serveur' });
+  }
+};
+
+export const getExercicesHandler = async (req, res) => {
+  try {
+    const exercices = await getExercices();
+
+    res.status(200).json({ message: 'Exercices récupérés avec succès', data: exercices });
   } catch (error) {
     res.status(500).json({ error: 'Erreur Interne du Serveur' });
   }
