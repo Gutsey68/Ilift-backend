@@ -1,13 +1,17 @@
 meta {
-  name: Get all tags
+  name: Delete a tag
   type: http
-  seq: 10
+  seq: 16
 }
 
-get {
-  url: http://localhost:3000/api/tags
+delete {
+  url: http://localhost:3000/api/tags/:id
   body: none
   auth: bearer
+}
+
+params:path {
+  id: cm4jt39100000c8lefnullq65
 }
 
 auth:bearer {

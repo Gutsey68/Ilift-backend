@@ -1,15 +1,25 @@
 meta {
-  name: Get all tags
+  name: Update a tag
   type: http
-  seq: 10
+  seq: 15
 }
 
-get {
-  url: http://localhost:3000/api/tags
-  body: none
+put {
+  url: http://localhost:3000/api/tags/:id
+  body: json
   auth: bearer
+}
+
+params:path {
+  id: cm4jta5n40000ij2sgi8trs8e
 }
 
 auth:bearer {
   token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImNtNGpubGhrZjAwMDBrbnhibWUxcGowZzIiLCJwc2V1ZG8iOiJ0ZXN0IiwiaWF0IjoxNzMzOTE2MjgxLCJleHAiOjE3MzM5MTk4ODF9.I9VuJgPZOS3ckRU8QbuCpX2BlJRvafJ0zfRHbODYgCY
+}
+
+body:json {
+  {
+    "name": "Squat"
+  }
 }
