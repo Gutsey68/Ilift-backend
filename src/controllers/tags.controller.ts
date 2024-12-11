@@ -59,7 +59,6 @@ export const updateTagHandler = async (req, res) => {
     }
 
     const { id } = req.params;
-
     const { name } = req.body;
     await updateTag(id, name);
 

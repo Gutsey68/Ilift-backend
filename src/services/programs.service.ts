@@ -27,24 +27,6 @@ export const getProgramById = async (id: string) => {
   });
 };
 
-export const getWorkoutById = async (id: string) => {
-  return await prisma.workouts.findUnique({
-    where: {
-      id
-    },
-    select: {
-      name: true,
-      id: true,
-      program: {
-        select: {
-          name: true,
-          id: true
-        }
-      }
-    }
-  });
-};
-
 export const getWorkoutsOfProgram = async (programId: string) => {
   return await prisma.workouts.findMany({
     where: {
@@ -52,21 +34,6 @@ export const getWorkoutsOfProgram = async (programId: string) => {
     },
     orderBy: {
       id: 'asc'
-    }
-  });
-};
-
-export const getExercicesOfWorkout = async (workoutId: string) => {
-  return await prisma.exercices.findMany({
-    where: {
-      workouts: {
-        some: {
-          workoutId
-        }
-      }
-    },
-    orderBy: {
-      createdAt: 'asc'
     }
   });
 };

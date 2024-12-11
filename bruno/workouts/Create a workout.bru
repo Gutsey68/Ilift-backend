@@ -1,0 +1,15 @@
+meta {
+  name: Create a workout
+  type: http
+  seq: 2
+}
+
+post {
+  url: http://localhost:3000/api/workouts
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImNtNGpubGhrZjAwMDBrbnhibWUxcGowZzIiLCJwc2V1ZG8iOiJ0ZXN0IiwiaWF0IjoxNzMzOTE5ODIyLCJleHAiOjE3MzM5MjM0MjJ9.J7XDSWfg9NvFsc7J2cl0MUCWYZLfG8iSFTecyhq06gA
+}

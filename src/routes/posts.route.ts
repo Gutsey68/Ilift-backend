@@ -32,7 +32,7 @@ postsRoutes.delete('/:id/likes', protect, unlikePostHandler);
 postsRoutes.get('/:id/likes', protect, getLikesHandler);
 postsRoutes.post('/:id/comments', protect, createCommentHandler);
 postsRoutes.get('/:id/comments', protect, getCommentsHandler);
-postsRoutes.delete('/:id/comments/:commentId', protect, deleteCommentHandler);
-postsRoutes.put('/:id/comments/:commentId', protect, updateCommentHandler);
+postsRoutes.delete('/comments/:id', protect, deleteCommentHandler);
+postsRoutes.put('/comments/:id', protect, updateCommentHandler);
 
 export default postsRoutes;

@@ -1,0 +1,15 @@
+meta {
+  name: Delete a post
+  type: http
+  seq: 7
+}
+
+delete {
+  url: http://localhost:3000/api/posts/:id
+  body: none
+  auth: none
+}
+
+params:path {
+  id: 
+}

@@ -1,0 +1,19 @@
+meta {
+  name: Delete a workout
+  type: http
+  seq: 4
+}
+
+delete {
+  url: http://localhost:3000/api/workouts/:id
+  body: none
+  auth: bearer
+}
+
+params:path {
+  id: 
+}
+
+auth:bearer {
+  token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImNtNGpubGhrZjAwMDBrbnhibWUxcGowZzIiLCJwc2V1ZG8iOiJ0ZXN0IiwiaWF0IjoxNzMzOTE5ODIyLCJleHAiOjE3MzM5MjM0MjJ9.J7XDSWfg9NvFsc7J2cl0MUCWYZLfG8iSFTecyhq06gA
+}

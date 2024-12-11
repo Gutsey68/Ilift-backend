@@ -1,13 +1,17 @@
 meta {
-  name: Create a tag
+  name: Update a tag
   type: http
-  seq: 14
+  seq: 3
 }
 
-post {
-  url: http://localhost:3000/api/tags
+put {
+  url: http://localhost:3000/api/tags/:id
   body: json
   auth: bearer
+}
+
+params:path {
+  id: cm4jta5n40000ij2sgi8trs8e
 }
 
 auth:bearer {
@@ -16,6 +20,6 @@ auth:bearer {
 
 body:json {
   {
-    "name": "deter"
+    "name": "Squat"
   }
 }

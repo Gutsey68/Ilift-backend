@@ -1,14 +1,14 @@
 import { Router } from 'express';
-import { getExercicesOfWorkoutHandler } from '../controllers/programs.controller';
-import { createWorkoutHandler, deleteWorkoutHandler, updateWorkoutHandler } from '../controllers/workouts.controller';
+import { createWorkoutHandler, deleteWorkoutHandler, getExercicesOfWorkoutHandler, updateWorkoutHandler } from '../controllers/workouts.controller';
 import { protect } from '../middlewares/protect';
+import { validate } from '../middlewares/validate';
+import { createWorkoutSchema, deleteWorkoutSchema, getExercicesOfWorkoutSchema, updateWorkoutSchema } from '../validators/workouts.validation';
 
 const workoutsRoute = Router();
 
-workoutsRoute.get('/workouts/:id/exercices', protect, getExercicesOfWorkoutHandler);
-
-workoutsRoute.post('/', protect, createWorkoutHandler);
-workoutsRoute.put('/:id', protect, updateWorkoutHandler);
-workoutsRoute.delete('/:id', protect, deleteWorkoutHandler);
+workoutsRoute.get('/:id/exercices', protect, validate(getExercicesOfWorkoutSchema), getExercicesOfWorkoutHandler);
+workoutsRoute.post('/', protect, validate(createWorkoutSchema), createWorkoutHandler);
+workoutsRoute.put('/:id', protect, validate(updateWorkoutSchema), updateWorkoutHandler);
+workoutsRoute.delete('/:id', protect, validate(deleteWorkoutSchema), deleteWorkoutHandler);
 
 export default workoutsRoute;
