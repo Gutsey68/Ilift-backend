@@ -1,16 +1,21 @@
+import { z } from 'zod';
 import { createUser } from '../services/auth.service';
 import { findUserByEmail, findUserByPseudo } from '../services/user.service';
 import { comparePasswords } from '../utils/hash';
 import { createJWT } from '../utils/jwt';
+import { loginSchema, registerSchema } from '../validators/schemas';
 
 export const createNewUserHandler = async (req, res) => {
   try {
+    registerSchema.parse(req.body);
     const existingPseudo = await findUserByPseudo(req.body.pseudo);
+
     if (existingPseudo) {
       return res.status(400).json({ error: 'Ce pseudo est déjà utilisé.' });
     }
 
     const existingEmail = await findUserByEmail(req.body.email);
+
     if (existingEmail) {
       return res.status(400).json({ error: 'Cet email est déjà utilisé.' });
     }
@@ -18,23 +23,31 @@ export const createNewUserHandler = async (req, res) => {
     const newUser = await createUser(req.body.pseudo, req.body.password, req.body.email);
     res.status(201).json({ message: 'Utilisateur créé avec succès.', data: { user: newUser } });
   } catch (error) {
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({ error: error.errors });
+    }
     res.status(500).json({ error: 'Erreur Interne du Serveur' });
   }
 };
 
 export const signinHandler = async (req, res) => {
   try {
+    loginSchema.parse(req.body);
+
     const user = await findUserByPseudo(req.body.pseudo);
+
     if (!user) {
       return res.status(401).json({ error: 'Pseudo ou mot de passe incorrect' });
     }
 
     const isValid = await comparePasswords(req.body.password, user.passwordHash);
+
     if (!isValid) {
       return res.status(401).json({ error: 'Pseudo ou mot de passe incorrect' });
     }
 
     const token = createJWT(user);
+
     res.status(200).json({
       message: 'Connexion réussie',
       data: {
@@ -43,6 +56,9 @@ export const signinHandler = async (req, res) => {
       token
     });
   } catch (error) {
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({ error: error.errors });
+    }
     res.status(500).json({ error: 'Erreur Interne du Serveur' });
   }
 };

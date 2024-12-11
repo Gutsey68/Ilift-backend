@@ -1,0 +1,20 @@
+meta {
+  name: Create a account
+  type: http
+  seq: 13
+}
+
+post {
+  url: http://localhost:3000/api/auth/register
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "pseudo": "test2",
+  "password" : "test",
+  "email" : "test@test.test",
+  "confirmPassword" : "test"
+  }
+}
