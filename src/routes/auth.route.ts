@@ -1,9 +1,11 @@
 import { Router } from 'express';
-import { createNewUserHandler, signinHandler } from '../controllers/auth.controller';
+import { loginHandler, registerHandler } from '../controllers/auth.controller';
+import { validate } from '../middlewares/validate';
+import { loginSchema, registerSchema } from '../validators/auth.validation';
 
-const authRoutes = Router();
+const authRoute = Router();
 
-authRoutes.post('/register', createNewUserHandler);
-authRoutes.post('/login', signinHandler);
+authRoute.post('/login', validate(loginSchema), loginHandler);
+authRoute.post('/register', validate(registerSchema), registerHandler);
 
-export default authRoutes;
+export default authRoute;

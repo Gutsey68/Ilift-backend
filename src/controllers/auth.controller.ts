@@ -3,11 +3,9 @@ import { createUser } from '../services/auth.service';
 import { findUserByEmail, findUserByPseudo } from '../services/user.service';
 import { comparePasswords } from '../utils/hash';
 import { createJWT } from '../utils/jwt';
-import { loginSchema, registerSchema } from '../validators/schemas';
 
-export const createNewUserHandler = async (req, res) => {
+export const registerHandler = async (req, res) => {
   try {
-    registerSchema.parse(req.body);
     const existingPseudo = await findUserByPseudo(req.body.pseudo);
 
     if (existingPseudo) {
@@ -31,10 +29,8 @@ export const createNewUserHandler = async (req, res) => {
   }
 };
 
-export const signinHandler = async (req, res) => {
+export const loginHandler = async (req, res) => {
   try {
-    loginSchema.parse(req.body);
-
     const user = await findUserByPseudo(req.body.pseudo);
 
     if (!user) {
