@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import authRoutes from './auth.route';
 import exercicesRoute from './exercices.route';
+import notificationsRoutes from './notifications.route';
 import postsRoutes from './posts.route';
 import programsRoute from './programs.route';
 import tagsRoutes from './tags.route';
@@ -14,5 +15,6 @@ router.use('/programs', programsRoute);
 router.use('/auth', authRoutes);
 router.use('/exercices', exercicesRoute);
 router.use('/tags', tagsRoutes);
+router.use('/notifications', notificationsRoutes);
 
 export default router;

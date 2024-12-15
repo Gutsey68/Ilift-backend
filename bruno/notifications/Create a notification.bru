@@ -1,11 +1,23 @@
 meta {
   name: Create a notification
   type: http
-  seq: 2
+  seq: 3
 }
 
 post {
   url: http://localhost:3000/api/notifications
-  body: none
-  auth: none
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImdhdXRoaWVyIiwicHNldWRvIjoiSm9obiIsImlhdCI6MTczNDI4MzE2MywiZXhwIjoxNzM0Mjg2NzYzfQ.kgV27xb7fMl14aecZubQoB5fiN10D7hoZ1e0N-l6qkA
+}
+
+body:json {
+  {
+    "userId": "123",
+    "type": "info",
+    "content": "Votre commande a été expédiée."
+  }
 }

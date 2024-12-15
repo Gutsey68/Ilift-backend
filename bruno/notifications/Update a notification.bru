@@ -1,15 +1,25 @@
 meta {
   name: Update a notification
   type: http
-  seq: 3
+  seq: 4
 }
 
 put {
   url: http://localhost:3000/api/notifications/:id
-  body: none
-  auth: none
+  body: json
+  auth: bearer
 }
 
 params:path {
-  id: 
+  id: cm4pw7v2g0005zt3fofks4b5l
+}
+
+auth:bearer {
+  token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImdhdXRoaWVyIiwicHNldWRvIjoiSm9obiIsImlhdCI6MTczNDI4MzE2MywiZXhwIjoxNzM0Mjg2NzYzfQ.kgV27xb7fMl14aecZubQoB5fiN10D7hoZ1e0N-l6qkA
+}
+
+body:json {
+  {
+    "content": "Votre commande a été livrée."
+  }
 }

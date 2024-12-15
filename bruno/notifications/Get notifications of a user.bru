@@ -1,17 +1,17 @@
 meta {
-  name: Delete a notification
+  name: Get notifications of a user
   type: http
-  seq: 5
+  seq: 2
 }
 
-delete {
-  url: http://localhost:3000/api/notifications/:id
+get {
+  url: http://localhost:3000/api/notifications/users/:id
   body: none
   auth: bearer
 }
 
 params:path {
-  id: notif3
+  id: gauthier
 }
 
 auth:bearer {
