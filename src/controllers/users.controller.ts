@@ -1,4 +1,4 @@
-import { getSuggestedUsers, getUserProfile, getUsers } from '../services/user.service';
+import { followUser, getSuggestedUsers, getUserById, getUserProfile, getUsers, updateUser } from '../services/user.service';
 
 export const getUsersHandler = async (req, res) => {
   try {
@@ -54,8 +54,46 @@ export const getSuggestedUsersHandler = async (req, res) => {
   }
 };
 
-export const followHandler = async (req, res) => {};
+export const followHandler = async (req, res) => {
+  try {
+    const existingUser = getUserById(req.params.id);
 
-export const unfollowHandler = async (req, res) => {};
+    if (!existingUser) {
+      return res.status(404).json({ error: 'Utilisateur non trouvé' });
+    }
 
-export const updateUserHandler = async (req, res) => {};
+    const follows = followUser(req.user.id, req.params.id);
+
+    res.status(200).json({ message: 'Utilisateur suivi avec succès', data: follows });
+  } catch (error) {
+    res.status(500).json({ error: 'Erreur Interne du Serveur' });
+  }
+};
+
+export const unfollowHandler = async (req, res) => {
+  try {
+    const existingUser = getUserById(req.params.id);
+
+    if (!existingUser) {
+      return res.status(404).json({ error: 'Utilisateur non trouvé' });
+    }
+
+    const unfollows = followUser(req.user.id, req.params.id);
+
+    res.status(200).json({ message: 'Utilisateur unsuivi avec succès', data: unfollows }); // refactor
+  } catch (error) {
+    res.status(500).json({ error: 'Erreur Interne du Serveur' });
+  }
+};
+
+export const updateUserHandler = async (req, res) => {
+  try {
+    const data = req.params.body; // refactor
+
+    const updatedUser = updateUser(req.params.id, data);
+
+    res.status(200).json({ message: 'Utilisateur modiifié avec succès', data: updatedUser });
+  } catch (error) {
+    res.status(500).json({ error: 'Erreur Interne du Serveur' });
+  }
+};

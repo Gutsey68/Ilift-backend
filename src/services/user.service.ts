@@ -148,3 +148,39 @@ export const findUserByEmail = async (email: string) => {
     where: { email }
   });
 };
+
+export const followUser = async (followingId: string, followedById: string) => {
+  return await prisma.follows.create({
+    data: {
+      followingId,
+      followedById
+    }
+  });
+};
+
+export const unfollowUser = async (followingId: string, followedById: string) => {
+  return await prisma.follows.deleteMany({
+    where: {
+      followingId,
+      followedById
+    }
+  });
+};
+
+export const updateUser = async (
+  userId: string,
+  data: { pseudo?: string; email?: string; bio?: string; isBan?: boolean; passwordHash?: string; profilePhoto?: string }
+) => {
+  return await prisma.user.update({
+    where: { id: userId },
+    data
+  });
+};
+
+export const getUserById = async (id: string) => {
+  return await prisma.user.findUnique({
+    where: {
+      id
+    }
+  });
+};

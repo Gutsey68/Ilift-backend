@@ -7,7 +7,7 @@ import {
   getUsersHandler,
   unfollowHandler,
   updateUserHandler
-} from '../controllers/user.controller';
+} from '../controllers/users.controller';
 import { protect } from '../middlewares/protect';
 
 const userRoutes = Router();
