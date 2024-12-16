@@ -1,11 +1,11 @@
 import { Router } from 'express';
-import authRoutes from './auth.route';
-import exercicesRoute from './exercices.route';
-import notificationsRoutes from './notifications.route';
-import postsRoutes from './posts.route';
-import programsRoute from './programs.route';
-import tagsRoutes from './tags.route';
-import userRoutes from './users.route';
+import authRoutes from './auth.routes';
+import exercicesRoute from './exercices.routes';
+import notificationsRoutes from './notifications.routes';
+import postsRoutes from './posts.routes';
+import programsRoute from './programs.routes';
+import tagsRoutes from './tags.routes';
+import userRoutes from './users.routes';
 
 const router = Router();
 

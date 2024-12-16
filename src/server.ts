@@ -1,6 +1,7 @@
 import cors from 'cors';
 import express from 'express';
 import morgan from 'morgan';
+import path from 'path';
 import router from './routes/router';
 
 const app = express();
@@ -23,5 +24,7 @@ app.get('/', (req, res) => {
 });
 
 app.use('/api', router);
+
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 export default app;

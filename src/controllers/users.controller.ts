@@ -179,8 +179,10 @@ export const updateUserHandler = async (req, res) => {
       }
     }
 
+    console.log(req.file.path);
+
     if (req.file) {
-      req.body.profilePhoto = req.file.path;
+      req.body.profilePhoto = req.file.path.replace(/\\/g, '/');
     }
 
     const updatedUser = await updateUser(req.params.id, req.body);

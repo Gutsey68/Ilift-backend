@@ -3,7 +3,7 @@ import multer from 'multer';
 import path from 'path';
 
 const storage = multer.diskStorage({
-  destination: './uploads/',
+  destination: './uploads',
   filename: (req, file, cb) => {
     crypto.pseudoRandomBytes(16, (err, raw) => {
       if (err) return cb(err);
