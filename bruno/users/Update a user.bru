@@ -6,7 +6,7 @@ meta {
 
 put {
   url: http://localhost:3000/api/users/:id
-  body: json
+  body: multipartForm
   auth: bearer
 }
 
@@ -15,11 +15,15 @@ params:path {
 }
 
 auth:bearer {
-  token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImdhdXRoaWVyIiwicHNldWRvIjoiSm9obiIsImlhdCI6MTczNDM0MTM2NiwiZXhwIjoxNzM0MzQ0OTY2fQ.MQhIIUN6c5az-zEUEEud4Z6hy6ID-z3KeL0YP1jU6Qk
+  token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImdhdXRoaWVyIiwicHNldWRvIjoiSm9obiIsImlhdCI6MTczNDM0NDc1NCwiZXhwIjoxNzM0MzQ4MzU0fQ.0cvWYUmfFjPrVs8YgIfjcGotMdGda9agKc_jKt7856s
 }
 
 body:json {
   {
     "pseudo": ""
   }
+}
+
+body:multipart-form {
+  profilePhoto: @file(C:\Users\gseyz\Downloads\arthur-edelmans-qfjuh4OLdxw-unsplash.jpg)
 }
