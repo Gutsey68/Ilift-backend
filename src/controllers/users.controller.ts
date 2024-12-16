@@ -115,6 +115,12 @@ export const followHandler = async (req, res) => {
       return res.status(404).json({ error: 'Utilisateur non trouvé' });
     }
 
+    const existingFollow = await getFollowById(req.user.id, req.params.id);
+
+    if (existingFollow) {
+      return res.status(400).json({ error: "Vous suivez déjà l'utilisateur" });
+    }
+
     const follows = await followUser(req.user.id, req.params.id);
 
     res.status(200).json({ message: 'Utilisateur suivi avec succès', data: follows });
@@ -143,7 +149,7 @@ export const unfollowHandler = async (req, res) => {
 
     await unfollowUser(req.user.id, req.params.id);
 
-    res.status(200).json({ message: 'Utilisateur plus suivi avec succès' });
+    res.status(200).json({ message: 'Utilisateur non suivi avec succès' });
   } catch (error) {
     res.status(500).json({ error: 'Erreur Interne du Serveur' });
   }
