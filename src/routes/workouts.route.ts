@@ -6,9 +6,11 @@ import { createWorkoutSchema, deleteWorkoutSchema, getExercicesOfWorkoutSchema, 
 
 const workoutsRoute = Router();
 
-workoutsRoute.get('/:id/exercices', protect, validate(getExercicesOfWorkoutSchema), getExercicesOfWorkoutHandler);
-workoutsRoute.post('/', protect, validate(createWorkoutSchema), createWorkoutHandler);
-workoutsRoute.put('/:id', protect, validate(updateWorkoutSchema), updateWorkoutHandler);
-workoutsRoute.delete('/:id', protect, validate(deleteWorkoutSchema), deleteWorkoutHandler);
+workoutsRoute.use(protect);
+
+workoutsRoute.get('/:id/exercices', validate(getExercicesOfWorkoutSchema), getExercicesOfWorkoutHandler);
+workoutsRoute.post('/', validate(createWorkoutSchema), createWorkoutHandler);
+workoutsRoute.put('/:id', validate(updateWorkoutSchema), updateWorkoutHandler);
+workoutsRoute.delete('/:id', validate(deleteWorkoutSchema), deleteWorkoutHandler);
 
 export default workoutsRoute;

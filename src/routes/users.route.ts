@@ -8,17 +8,20 @@ import {
   unfollowHandler,
   updateUserHandler
 } from '../controllers/users.controller';
+import upload from '../middlewares/multer.config';
 import { protect } from '../middlewares/protect';
 
 const userRoutes = Router();
 
-userRoutes.get('/me', protect, getCurrentUserHandler);
-userRoutes.get('/suggested', protect, getSuggestedUsersHandler);
-userRoutes.get('/:id', protect, getUserProfileHandler);
-userRoutes.get('/', protect, getUsersHandler);
+userRoutes.use(protect);
 
-userRoutes.post('/follow', protect, followHandler);
-userRoutes.delete('/unfollow', protect, unfollowHandler);
-userRoutes.put('/:id', protect, updateUserHandler);
+userRoutes.get('/me', getCurrentUserHandler);
+userRoutes.get('/suggested', getSuggestedUsersHandler);
+userRoutes.get('/:id', getUserProfileHandler);
+userRoutes.get('/', getUsersHandler);
+
+userRoutes.post('/follow', followHandler);
+userRoutes.delete('/unfollow', unfollowHandler);
+userRoutes.put('/:id', upload.single('profilePhoto'), updateUserHandler);
 
 export default userRoutes;

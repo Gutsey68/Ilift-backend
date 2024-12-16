@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { createUser } from '../services/auth.service';
-import { findUserByEmail, findUserByPseudo } from '../services/user.service';
+import { findUserByEmail, findUserByPseudo } from '../services/users.service';
 import { comparePasswords } from '../utils/hash';
 import { createJWT } from '../utils/jwt';
 

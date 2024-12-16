@@ -11,12 +11,14 @@ import { protect } from '../middlewares/protect';
 
 const programsRoute = Router();
 
-programsRoute.get('/', protect, getProgramsHandler);
-programsRoute.get('/users/:id', protect, getProgramsOfUserHandler);
-programsRoute.get('/:id/workouts', protect, getWorkoutsOfProgramHandler);
+programsRoute.use(protect);
 
-programsRoute.post('/', protect, createProgramHandler);
-programsRoute.put('/:id', protect, updateProgramHandler);
-programsRoute.delete('/:id', protect, deleteProgramHandler);
+programsRoute.get('/', getProgramsHandler);
+programsRoute.get('/users/:id', getProgramsOfUserHandler);
+programsRoute.get('/:id/workouts', getWorkoutsOfProgramHandler);
+
+programsRoute.post('/', createProgramHandler);
+programsRoute.put('/:id', updateProgramHandler);
+programsRoute.delete('/:id', deleteProgramHandler);
 
 export default programsRoute;

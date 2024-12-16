@@ -12,10 +12,12 @@ import { createNotificationSchema, deleteNotificationSchema, updateNotificationS
 
 const notificationsRoutes = Router();
 
-notificationsRoutes.get('/', protect, getNotificationsHandler);
-notificationsRoutes.get('/users/:id', protect, getNotificationsOfUserHandler);
-notificationsRoutes.post('/', protect, validate(createNotificationSchema), createNotificationHandler);
-notificationsRoutes.delete('/:id', protect, validate(deleteNotificationSchema), deleteNotificationHandler);
-notificationsRoutes.put('/:id', protect, validate(updateNotificationSchema), updateNotificationHandler);
+notificationsRoutes.use(protect);
+
+notificationsRoutes.get('/', getNotificationsHandler);
+notificationsRoutes.get('/users/:id', getNotificationsOfUserHandler);
+notificationsRoutes.post('/', validate(createNotificationSchema), createNotificationHandler);
+notificationsRoutes.delete('/:id', validate(deleteNotificationSchema), deleteNotificationHandler);
+notificationsRoutes.put('/:id', validate(updateNotificationSchema), updateNotificationHandler);
 
 export default notificationsRoutes;

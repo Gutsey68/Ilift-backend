@@ -19,20 +19,22 @@ import { protect } from '../middlewares/protect';
 
 const postsRoutes = Router();
 
-postsRoutes.get('/', protect, getPostsHandler);
+postsRoutes.use(protect);
+
+postsRoutes.get('/', getPostsHandler);
 postsRoutes.get('/:id', getPostByIdHandler);
 postsRoutes.get('/users/:userId', getAllPostsByUserHandler);
-postsRoutes.get('/users/:userId/accueil', protect, getPostsOfUserAndHisFollowingsHandler);
+postsRoutes.get('/users/:userId/accueil', getPostsOfUserAndHisFollowingsHandler);
 
-postsRoutes.post('/', protect, createPostHandler);
-postsRoutes.put('/:id', protect, updatePostHandler);
-postsRoutes.delete('/:id', protect, deletePostHandler);
-postsRoutes.post('/:id/likes', protect, likePostHandler);
-postsRoutes.delete('/:id/likes', protect, unlikePostHandler);
-postsRoutes.get('/:id/likes', protect, getLikesHandler);
-postsRoutes.post('/:id/comments', protect, createCommentHandler);
-postsRoutes.get('/:id/comments', protect, getCommentsHandler);
-postsRoutes.delete('/comments/:id', protect, deleteCommentHandler);
-postsRoutes.put('/comments/:id', protect, updateCommentHandler);
+postsRoutes.post('/', createPostHandler);
+postsRoutes.put('/:id', updatePostHandler);
+postsRoutes.delete('/:id', deletePostHandler);
+postsRoutes.post('/:id/likes', likePostHandler);
+postsRoutes.delete('/:id/likes', unlikePostHandler);
+postsRoutes.get('/:id/likes', getLikesHandler);
+postsRoutes.post('/:id/comments', createCommentHandler);
+postsRoutes.get('/:id/comments', getCommentsHandler);
+postsRoutes.delete('/comments/:id', deleteCommentHandler);
+postsRoutes.put('/comments/:id', updateCommentHandler);
 
 export default postsRoutes;

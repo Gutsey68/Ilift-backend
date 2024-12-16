@@ -10,11 +10,13 @@ import { protect } from '../middlewares/protect';
 
 const exercicesRoute = Router();
 
-exercicesRoute.get('/:id/', protect, getExerciceAndResultsHandler);
-exercicesRoute.get('/', protect, getExercicesHandler);
+exercicesRoute.use(protect);
 
-exercicesRoute.post('/', protect, postExerciceHandler);
-exercicesRoute.put('/:id', protect, updateExerciceHandler);
-exercicesRoute.delete('/:id', protect, deleteExerciceHandler);
+exercicesRoute.get('/:id/', getExerciceAndResultsHandler);
+exercicesRoute.get('/', getExercicesHandler);
+
+exercicesRoute.post('/', postExerciceHandler);
+exercicesRoute.put('/:id', updateExerciceHandler);
+exercicesRoute.delete('/:id', deleteExerciceHandler);
 
 export default exercicesRoute;
