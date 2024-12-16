@@ -1,5 +1,7 @@
 # Ilift Backend
 
+<embed src="./seyzeriat_gauthier_mcd_mld_api.pdf" type="application/pdf" width="100%" height="100%" />
+
 ## Prérequis
 
 - Node.js
@@ -9,7 +11,7 @@
 
 1. Clonez le dépôt :
 
-  Dans le même répertoir que le frontend
+Dans le même répertoir que le frontend
 
 ```bash
 git clone https://github.com/Gutsey68/CDA-Ilift-backend.git
@@ -29,7 +31,7 @@ pnpm install
 
 4. Créez la base de données :
 
-  Créer la base de donnée postgresql
+Créer la base de donnée postgresql
 
 5. Créez un fichier `.env` à la racine du projet et remplissez-le avec les variables d'environnement nécessaires.
 
@@ -46,10 +48,10 @@ pnpm run prisma migrate dev
 
 7. Remplissez la base de données avec le fichier data.sql présent dans le repo
 
-  Vous pouvez vous connecter avec l'utilisateur test:
+Vous pouvez vous connecter avec l'utilisateur test:
 
-  -Pseudo: John
-  -Mot de passe: test
+-Pseudo: John
+-Mot de passe: test
 
 ## Lancer le projet
 
