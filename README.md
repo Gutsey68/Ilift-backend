@@ -1,6 +1,6 @@
 # Ilift Backend
 
-<embed src="./seyzeriat_gauthier_mcd_mld_api.pdf" type="application/pdf" width="100%" height="100%" />
+<embed src="./seyzeriat_gauthier_mcd_mld_api.pdf" type="application/pdf" width="100%" height="1000px" />
 
 ## Prérequis
 
