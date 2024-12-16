@@ -1,4 +1,6 @@
 import {
+  findUserByEmail,
+  findUserByPseudo,
   followUser,
   getAdditionalUsers,
   getUserById,
@@ -101,13 +103,13 @@ export const getSuggestedUsersHandler = async (req, res) => {
 
 export const followHandler = async (req, res) => {
   try {
-    const existingUser = getUserById(req.params.id);
+    const existingUser = await getUserById(req.params.id);
 
     if (!existingUser) {
       return res.status(404).json({ error: 'Utilisateur non trouvé' });
     }
 
-    const follows = followUser(req.user.id, req.params.id);
+    const follows = await followUser(req.user.id, req.params.id);
 
     res.status(200).json({ message: 'Utilisateur suivi avec succès', data: follows });
   } catch (error) {
@@ -117,15 +119,15 @@ export const followHandler = async (req, res) => {
 
 export const unfollowHandler = async (req, res) => {
   try {
-    const existingUser = getUserById(req.params.id);
+    const existingUser = await getUserById(req.params.id);
 
     if (!existingUser) {
       return res.status(404).json({ error: 'Utilisateur non trouvé' });
     }
 
-    const unfollows = followUser(req.user.id, req.params.id);
+    const unfollows = await followUser(req.user.id, req.params.id);
 
-    res.status(200).json({ message: 'Utilisateur unsuivi avec succès', data: unfollows }); // refactor
+    res.status(200).json({ message: 'Utilisateur unsuivi avec succès', data: unfollows });
   } catch (error) {
     res.status(500).json({ error: 'Erreur Interne du Serveur' });
   }
@@ -133,16 +135,36 @@ export const unfollowHandler = async (req, res) => {
 
 export const updateUserHandler = async (req, res) => {
   try {
-    const data = req.body;
+    const existingUser = await getUserById(req.params.id);
 
-    if (req.file) {
-      data.profilePhoto = req.file.path;
+    if (!existingUser) {
+      return res.status(404).json({ error: 'Utilisateur non trouvé' });
     }
 
-    const updatedUser = await updateUser(req.params.id, data);
+    if (req.body.pseudo) {
+      const existingPseudo = await findUserByPseudo(req.body.pseudo);
+
+      if (existingPseudo) {
+        return res.status(400).json({ error: 'Ce pseudo est déjà utilisé.' });
+      }
+    }
+
+    if (req.body.email) {
+      const existingEmail = await findUserByEmail(req.body.email);
+
+      if (existingEmail) {
+        return res.status(400).json({ error: 'Cet email est déjà utilisé.' });
+      }
+    }
+
+    if (req.file) {
+      req.body.profilePhoto = req.file.path;
+    }
+
+    const updatedUser = await updateUser(req.params.id, req.body);
 
     res.status(200).json({ message: 'Utilisateur modifié avec succès', data: updatedUser });
   } catch (error) {
-    res.status(500).json({ error: 'Erreur Interne du Serveur' });
+    res.status(500).json({ error: 'Erreur Interne du Serveur', details: error.message });
   }
 };

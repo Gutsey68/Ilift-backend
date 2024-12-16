@@ -10,6 +10,8 @@ import {
 } from '../controllers/users.controller';
 import upload from '../middlewares/multer.config';
 import { protect } from '../middlewares/protect';
+import { validate } from '../middlewares/validate';
+import { updateUserSchema } from '../validators/users.validation';
 
 const userRoutes = Router();
 
@@ -22,6 +24,6 @@ userRoutes.get('/', getUsersHandler);
 
 userRoutes.post('/follow', followHandler);
 userRoutes.delete('/unfollow', unfollowHandler);
-userRoutes.put('/:id', upload.single('profilePhoto'), updateUserHandler);
+userRoutes.put('/:id', upload.single('profilePhoto'), validate(updateUserSchema), updateUserHandler);
 
 export default userRoutes;

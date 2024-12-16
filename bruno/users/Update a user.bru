@@ -6,10 +6,20 @@ meta {
 
 put {
   url: http://localhost:3000/api/users/:id
-  body: none
-  auth: none
+  body: json
+  auth: bearer
 }
 
 params:path {
-  id: 
+  id: gauthier
+}
+
+auth:bearer {
+  token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImdhdXRoaWVyIiwicHNldWRvIjoiSm9obiIsImlhdCI6MTczNDM0MTM2NiwiZXhwIjoxNzM0MzQ0OTY2fQ.MQhIIUN6c5az-zEUEEud4Z6hy6ID-z3KeL0YP1jU6Qk
+}
+
+body:json {
+  {
+    "pseudo": ""
+  }
 }
