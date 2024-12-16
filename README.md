@@ -1,6 +1,6 @@
 # Ilift Backend
 
-<embed src="./seyzeriat_gauthier_mcd_mld_api.pdf" type="application/pdf" width="100%" height="1000px" />
+[Affichez le MCD, MLD, routes API](./seyzeriat_gauthier_mcd_mld_api.pdf)
 
 ## Prérequis
 
