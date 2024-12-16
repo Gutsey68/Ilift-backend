@@ -155,3 +155,12 @@ export const getAdditionalUsers = async (userId: string, existingUserIds: string
     take: 5 - existingUserIds.length
   });
 };
+
+export const getFollowById = async (followingId: string, followedById: string) => {
+  return prisma.follows.findFirst({
+    where: {
+      followingId,
+      followedById
+    }
+  });
+};

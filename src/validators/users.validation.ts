@@ -12,5 +12,8 @@ export const updateUserSchema = z.object({
       .string()
       .optional()
       .refine(val => val === undefined || val.trim() !== '', 'La photo de profil ne doit pas être vide')
+  }),
+  params: z.object({
+    id: z.string().uuid('ID invalide')
   })
 });

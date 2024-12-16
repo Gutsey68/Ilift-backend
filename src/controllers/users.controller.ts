@@ -3,11 +3,13 @@ import {
   findUserByPseudo,
   followUser,
   getAdditionalUsers,
+  getFollowById,
   getUserById,
   getUserProfile,
   getUsers,
   getUsersFollowedByUsersIfollow,
   getUsersIfollow,
+  unfollowUser,
   updateUser
 } from '../services/users.service';
 
@@ -103,6 +105,10 @@ export const getSuggestedUsersHandler = async (req, res) => {
 
 export const followHandler = async (req, res) => {
   try {
+    if (req.params.id == req.user.id) {
+      return res.status(400).json({ error: 'Vous ne pouvez pas vous suivre vous-même.' });
+    }
+
     const existingUser = await getUserById(req.params.id);
 
     if (!existingUser) {
@@ -119,15 +125,25 @@ export const followHandler = async (req, res) => {
 
 export const unfollowHandler = async (req, res) => {
   try {
+    if (req.params.id == req.user.id) {
+      return res.status(400).json({ error: 'Vous ne pouvez pas vous suivre vous-même.' });
+    }
+
     const existingUser = await getUserById(req.params.id);
 
     if (!existingUser) {
       return res.status(404).json({ error: 'Utilisateur non trouvé' });
     }
 
-    const unfollows = await followUser(req.user.id, req.params.id);
+    const existingFollow = await getFollowById(req.user.id, req.params.id);
 
-    res.status(200).json({ message: 'Utilisateur unsuivi avec succès', data: unfollows });
+    if (!existingFollow) {
+      return res.status(404).json({ error: "Vous ne suivez pas l'utilisateur" });
+    }
+
+    await unfollowUser(req.user.id, req.params.id);
+
+    res.status(200).json({ message: 'Utilisateur plus suivi avec succès' });
   } catch (error) {
     res.status(500).json({ error: 'Erreur Interne du Serveur' });
   }

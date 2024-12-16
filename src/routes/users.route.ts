@@ -21,9 +21,8 @@ userRoutes.get('/me', getCurrentUserHandler);
 userRoutes.get('/suggested', getSuggestedUsersHandler);
 userRoutes.get('/:id', getUserProfileHandler);
 userRoutes.get('/', getUsersHandler);
-
-userRoutes.post('/follow', followHandler);
-userRoutes.delete('/unfollow', unfollowHandler);
+userRoutes.post('/follow/:id', followHandler);
+userRoutes.delete('/unfollow/:id', unfollowHandler);
 userRoutes.put('/:id', upload.single('profilePhoto'), validate(updateUserSchema), updateUserHandler);
 
 export default userRoutes;

@@ -5,7 +5,15 @@ meta {
 }
 
 post {
-  url: http://localhost:3000/api/users/follow
-  body: none
-  auth: none
+  url: http://localhost:3000/api/users/follow/:id
+  body: json
+  auth: bearer
+}
+
+params:path {
+  id: cm4jxk0840000zxuubi2uwkbq
+}
+
+auth:bearer {
+  token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImdhdXRoaWVyIiwicHNldWRvIjoiSm9obiIsImlhdCI6MTczNDM0NDc1NCwiZXhwIjoxNzM0MzQ4MzU0fQ.0cvWYUmfFjPrVs8YgIfjcGotMdGda9agKc_jKt7856s
 }
