@@ -1,5 +1,5 @@
 import jwt from 'jsonwebtoken';
-import { findRefreshTokenByUserId } from '../services/auth.service';
+import { FindRefreshToken } from '../services/auth.service';
 
 export const refresh = async (req, res, next) => {
   try {
@@ -7,9 +7,9 @@ export const refresh = async (req, res, next) => {
 
     const payload = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
 
-    const refreshStored = await findRefreshTokenByUserId(payload.id);
+    const refreshStored = await FindRefreshToken(refreshToken);
 
-    if (refreshToken !== refreshStored.token) {
+    if (!refreshStored || !refreshStored.isValid) {
       return res.status(401).json({ message: 'Token invalide ou expiré. Veuillez vous reconnecter.' });
     }
 

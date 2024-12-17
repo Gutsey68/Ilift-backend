@@ -13,10 +13,16 @@ export const createUser = async (pseudo: string, password: string, email: string
 };
 
 export const saveRefreshToken = async (token: string, userId: string) => {
+  await prisma.refreshToken.updateMany({
+    where: { userId, isValid: true },
+    data: { isValid: false }
+  });
+
   return await prisma.refreshToken.create({
     data: {
       token,
-      userId
+      userId,
+      isValid: true
     }
   });
 };

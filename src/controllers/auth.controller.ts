@@ -70,7 +70,6 @@ export const getRefreshTokenHandler = async (req, res) => {
     const user = req.refreshPayload;
 
     const token = createJWT(user);
-
     const refreshToken = createRefreshToken(user);
 
     await saveRefreshToken(refreshToken, user.id);
@@ -83,7 +82,7 @@ export const getRefreshTokenHandler = async (req, res) => {
       }
     });
   } catch (error) {
-    res.status(401).json({ error });
+    res.status(401).json({ error: 'Échec du rafraîchissement du token.' });
   }
 };
 
