@@ -11,3 +11,20 @@ export const createUser = async (pseudo: string, password: string, email: string
     }
   });
 };
+
+export const saveRefreshToken = async (token: string, userId: string) => {
+  return await prisma.refreshToken.create({
+    data: {
+      token,
+      userId
+    }
+  });
+};
+
+export const findRefreshTokenByUserId = async (userId: string) => {
+  return await prisma.refreshToken.findFirst({
+    where: {
+      userId
+    }
+  });
+};

@@ -1,8 +1,8 @@
 import { z } from 'zod';
-import { createUser } from '../services/auth.service';
+import { createUser, saveRefreshToken } from '../services/auth.service';
 import { findUserByEmail, findUserByPseudo } from '../services/users.service';
 import { comparePasswords } from '../utils/hash';
-import { createJWT } from '../utils/jwt';
+import { createJWT, createRefreshToken } from '../utils/jwt';
 
 export const registerHandler = async (req, res) => {
   try {
@@ -45,17 +45,44 @@ export const loginHandler = async (req, res) => {
 
     const token = createJWT(user);
 
+    const refreshToken = createRefreshToken(user);
+
+    await saveRefreshToken(refreshToken, user.id);
+
     res.status(200).json({
       message: 'Connexion réussie',
       data: {
         user: { id: user.id, pseudo: user.pseudo, email: user.email }
       },
-      token
+      token,
+      refreshToken
     });
   } catch (error) {
     if (error instanceof z.ZodError) {
       return res.status(400).json({ error: error.errors });
     }
     res.status(500).json({ error: 'Erreur Interne du Serveur' });
+  }
+};
+
+export const getRefreshTokenHandler = async (req, res) => {
+  try {
+    const user = req.refreshPayload;
+
+    const token = createJWT(user);
+
+    const refreshToken = createRefreshToken(user);
+
+    await saveRefreshToken(refreshToken, user.id);
+
+    res.status(200).json({
+      message: 'Token renouvelé avec succès.',
+      data: {
+        token,
+        refreshToken
+      }
+    });
+  } catch {
+    res.status(401).json({ error: 'Impossible de renouveler le token' });
   }
 };

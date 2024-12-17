@@ -38,6 +38,7 @@ Créer la base de donnée postgresql
 ```env
 DATABASE_URL="postgresql://[user]:[password]@localhost:5432/[database]?schema=public"
 JWT_SECRET=yourjwtsecret
+REFRESH_TOKEN_SECRET=yourrefreshtokensecret
 ```
 
 6. Exécutez les migrations Prisma :
