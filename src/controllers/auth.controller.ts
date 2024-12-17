@@ -82,7 +82,7 @@ export const getRefreshTokenHandler = async (req, res) => {
         refreshToken
       }
     });
-  } catch {
-    res.status(401).json({ error: 'Impossible de renouveler le token' });
+  } catch (error) {
+    res.status(401).json({ error });
   }
 };

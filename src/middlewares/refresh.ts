@@ -3,20 +3,21 @@ import { findRefreshTokenByUserId } from '../services/auth.service';
 
 export const refresh = async (req, res, next) => {
   try {
-    const token = req.headers.authorization.split(' ')[1];
+    const refreshToken = req.headers.authorization.split(' ')[1];
 
-    const decodedToken = jwt.verify(token, 'refreshSecret');
+    const payload = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
 
-    const refreshStored = await findRefreshTokenByUserId(decodedToken.user.id);
+    const refreshStored = await findRefreshTokenByUserId(payload.id);
+    console.log('refreshToken: ', refreshToken);
+    console.log('refreshStored: ', refreshStored.token);
 
-    if (token != refreshStored) {
+    if (refreshToken !== refreshStored.token) {
       return res.status(401).json({ message: 'Token invalide ou expiré. Veuillez vous reconnecter.' });
     }
 
-    req.refreshPayload = { id: decodedToken.user.id, pseudo: decodedToken.user.pseudo };
-
+    req.refreshPayload = payload;
     next();
-  } catch {
+  } catch (error) {
     return res.status(401).json({ message: 'Token invalide ou expiré. Veuillez vous reconnecter.' });
   }
 };

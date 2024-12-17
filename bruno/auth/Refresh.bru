@@ -1,0 +1,15 @@
+meta {
+  name: Refresh
+  type: http
+  seq: 3
+}
+
+post {
+  url: http://localhost:3000/api/auth/refresh
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImdhdXRoaWVyIiwicHNldWRvIjoiSm9obiIsImlhdCI6MTczNDQzNDE3MCwiZXhwIjoxNzM1MDM4OTcwfQ.wiwiudQUrfSEeqrBw7YpL4S8VfSdmVi-ldTcKDSjU5I
+}
