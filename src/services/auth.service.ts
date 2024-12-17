@@ -41,7 +41,7 @@ export const unvalidateRefreshToken = async (token: string) => {
   });
 };
 
-export const FindRefreshTokenById = async (token: string) => {
+export const FindRefreshToken = async (token: string) => {
   return await prisma.refreshToken.findFirst({
     where: {
       token

@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { createUser, FindRefreshTokenById, saveRefreshToken, unvalidateRefreshToken } from '../services/auth.service';
+import { createUser, FindRefreshToken, saveRefreshToken, unvalidateRefreshToken } from '../services/auth.service';
 import { findUserByEmail, findUserByPseudo } from '../services/users.service';
 import { comparePasswords } from '../utils/hash';
 import { createJWT, createRefreshToken } from '../utils/jwt';
@@ -89,7 +89,7 @@ export const getRefreshTokenHandler = async (req, res) => {
 
 export const unvalidateRefreshTokenHandler = async (req, res) => {
   try {
-    const token = await FindRefreshTokenById(req.params.id);
+    const token = await FindRefreshToken(req.params.id);
 
     if (!token) {
       return res.status(404).json({ error: 'Token introuvable' });
