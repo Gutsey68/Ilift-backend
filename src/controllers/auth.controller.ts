@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { createUser, saveRefreshToken } from '../services/auth.service';
+import { createUser, FindRefreshTokenById, saveRefreshToken, unvalidateRefreshToken } from '../services/auth.service';
 import { findUserByEmail, findUserByPseudo } from '../services/users.service';
 import { comparePasswords } from '../utils/hash';
 import { createJWT, createRefreshToken } from '../utils/jwt';
@@ -84,5 +84,21 @@ export const getRefreshTokenHandler = async (req, res) => {
     });
   } catch (error) {
     res.status(401).json({ error });
+  }
+};
+
+export const unvalidateRefreshTokenHandler = async (req, res) => {
+  try {
+    const token = await FindRefreshTokenById(req.params.id);
+
+    if (!token) {
+      return res.status(404).json({ error: 'Token introuvable' });
+    }
+
+    await unvalidateRefreshToken(req.params.id);
+
+    res.status(200).json({ message: 'Token invalidé avec succès' });
+  } catch (error) {
+    res.status(500).json({ error: 'Erreur Interne du Serveur' });
   }
 };

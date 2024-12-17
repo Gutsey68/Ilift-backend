@@ -1,0 +1,15 @@
+meta {
+  name: Unvalidate a refresh token
+  type: http
+  seq: 4
+}
+
+put {
+  url: http://localhost:3000/api/auth/unvalidate/:id
+  body: json
+  auth: none
+}
+
+params:path {
+  id: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImdhdXRoaWVyIiwicHNldWRvIjoiSm9obiIsImlhdCI6MTczNDQ0MDQyNiwiZXhwIjoxNzM1MDQ1MjI2fQ.HY_mFW0oHKXJGObABk_bnWDHpzZCVnMfd6fheHaV8qQ
+}

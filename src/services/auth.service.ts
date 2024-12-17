@@ -24,7 +24,27 @@ export const saveRefreshToken = async (token: string, userId: string) => {
 export const findRefreshTokenByUserId = async (userId: string) => {
   return await prisma.refreshToken.findFirst({
     where: {
-      userId
+      userId,
+      isValid: true
+    }
+  });
+};
+
+export const unvalidateRefreshToken = async (token: string) => {
+  return await prisma.refreshToken.updateMany({
+    data: {
+      isValid: false
+    },
+    where: {
+      token
+    }
+  });
+};
+
+export const FindRefreshTokenById = async (token: string) => {
+  return await prisma.refreshToken.findFirst({
+    where: {
+      token
     }
   });
 };

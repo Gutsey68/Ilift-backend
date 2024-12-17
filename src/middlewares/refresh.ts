@@ -8,8 +8,6 @@ export const refresh = async (req, res, next) => {
     const payload = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
 
     const refreshStored = await findRefreshTokenByUserId(payload.id);
-    console.log('refreshToken: ', refreshToken);
-    console.log('refreshStored: ', refreshStored.token);
 
     if (refreshToken !== refreshStored.token) {
       return res.status(401).json({ message: 'Token invalide ou expiré. Veuillez vous reconnecter.' });
