@@ -56,26 +56,45 @@ sudo apt upgrade -y
 ### Installation de Node.js
 
 ```bash
-curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
-sudo apt install -y nodejs
+# installs fnm (Fast Node Manager)
+curl -fsSL https://fnm.vercel.app/install | bash
+
+# activate fnm
+source ~/.bashrc
+
+# download and install Node.js
+fnm use --install-if-missing 22
+
+# verifies the right Node.js version is in the environment
+node -v # should print `v22.12.0`
+
+# verifies the right npm version is in the environment
+npm -v # should print `10.9.0
 ```
 
 ### Installation de PNPM
 
 ```bash
-wget -qO- https://get.pnpm.io/install.sh | sh -
+curl -fsSL https://get.pnpm.io/install.sh | sh -
 ```
 
 ### Installation de PostgreSQL
 
 ```bash
-sudo apt install postgresql postgresql-contrib
+sudo apt install -y postgresql-common
+sudo /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh
 ```
 
 ### Installation de Nginx
 
 ```bash
 sudo apt install nginx
+```
+
+### Installation de Git
+
+```bash
+apt-get install git
 ```
 
 ### Configuration du pare-feu
@@ -86,6 +105,38 @@ sudo ufw allow 'Nginx Full'
 sudo ufw enable
 ```
 
+### Configuration des ports
+
+```bash
+# Vérifier les ports utilisés
+sudo ss -tulpn
+
+# Ouvrir les ports nécessaires dans le pare-feu
+sudo ufw allow 80/tcp
+sudo ufw allow 443/tcp
+sudo ufw allow 3000/tcp  # Pour l'API
+sudo ufw allow 5432/tcp  # Pour PostgreSQL (uniquement si accès externe nécessaire)
+```
+
+### Clonage des dépôts
+
+```bash
+# Créer le répertoire de l'application
+sudo mkdir -p /var/www/ilift
+sudo chown -R $USER:$USER /var/www/ilift
+cd /var/www/ilift
+
+# Cloner les dépôts
+git clone https://github.com/votre-org/ilift-frontend.git frontend
+git clone https://github.com/votre-org/ilift-backend.git backend
+
+# Configuration des branches
+cd frontend
+git checkout main  # ou votre branche de production
+cd ../backend
+git checkout main  # ou votre branche de production
+```
+
 ## Configuration de PostgreSQL
 
 ### Création de l'utilisateur et de la base
@@ -93,8 +144,8 @@ sudo ufw enable
 ```bash
 sudo -u postgres psql
 
-CREATE USER gymapp WITH PASSWORD 'votre_mot_de_passe';
-CREATE DATABASE gymapp_db OWNER gymapp;
+CREATE USER ilift WITH PASSWORD 'yourpwd';
+CREATE DATABASE ilift OWNER ilift;
 \q
 ```
 
@@ -110,6 +161,20 @@ Modifications recommandées:
 max_connections = 100
 shared_buffers = 512MB
 work_mem = 6MB
+```
+
+### Configuration du port PostgreSQL
+
+```bash
+sudo nano /etc/postgresql/14/main/postgresql.conf
+```
+
+Modifications recommandées:
+
+```conf
+# Ajouter ou modifier ces lignes
+listen_addresses = 'localhost'  # par défaut pour la sécurité
+port = 5432                    # port par défaut
 ```
 
 ## Déploiement Frontend
@@ -166,11 +231,19 @@ JWT_SECRET = 'votre_secret_jwt';
 REFRESH_TOKEN_SECRET = 'votre_secret_refresh_jwt';
 ```
 
+### Configuration du port de l'API
+
+Dans le fichier `.env` du backend, ajoutez:
+
+```javascript
+PORT=3000  # Port pour l'API
+```
+
 ### Installation et démarrage
 
 ```bash
 pnpm install
-pnpx prisma migrate deploy
+pnpm prisma migrate deploy
 pnpm build
 ```
 
