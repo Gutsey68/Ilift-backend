@@ -164,3 +164,43 @@ export const getFollowById = async (followingId: string, followedById: string) =
     }
   });
 };
+
+export const getFollowers = async (userId: string) => {
+  return await prisma.user.findMany({
+    where: {
+      NOT: {
+        id: userId
+      },
+      followedBy: {
+        some: {
+          followingId: userId
+        }
+      }
+    },
+    select: {
+      id: true,
+      pseudo: true,
+      profilePhoto: true
+    }
+  });
+};
+
+export const getFollowings = async (userId: string) => {
+  return await prisma.user.findMany({
+    where: {
+      NOT: {
+        id: userId
+      },
+      following: {
+        some: {
+          followedById: userId
+        }
+      }
+    },
+    select: {
+      id: true,
+      pseudo: true,
+      profilePhoto: true
+    }
+  });
+};

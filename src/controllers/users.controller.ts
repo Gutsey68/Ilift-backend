@@ -4,6 +4,8 @@ import {
   followUser,
   getAdditionalUsers,
   getFollowById,
+  getFollowers,
+  getFollowings,
   getUserById,
   getUserProfile,
   getUsers,
@@ -188,5 +190,49 @@ export const updateUserHandler = async (req, res) => {
     res.status(200).json({ message: 'Utilisateur modifié avec succès', data: updatedUser });
   } catch (error) {
     res.status(500).json({ error: 'Erreur Interne du Serveur', details: error.message });
+  }
+};
+
+export const getFollowersHandler = async (req, res) => {
+  try {
+    const userId = req.params.id;
+
+    const user = await getUserById(userId);
+
+    if (!user) {
+      return res.status(404).json({ error: 'Utilisateur non trouvé' });
+    }
+
+    const followers = await getFollowers(userId);
+
+    if (!followers) {
+      return res.status(404).json({ error: 'Aucun abonné trouvé' });
+    }
+
+    res.status(200).json({ message: 'Abonnés récupérés avec succès', data: followers });
+  } catch (error) {
+    res.status(500).json({ error: 'Erreur Interne du Serveur' });
+  }
+};
+
+export const getFollowingsHandler = async (req, res) => {
+  try {
+    const userId = req.params.id;
+
+    const user = await getUserById(userId);
+
+    if (!user) {
+      return res.status(404).json({ error: 'Utilisateur non trouvé' });
+    }
+
+    const followings = await getFollowings(userId);
+
+    if (!followings) {
+      return res.status(404).json({ error: 'Aucun abonnement trouvé' });
+    }
+
+    res.status(200).json({ message: 'Abonnements récupérés avec succès', data: followings });
+  } catch (error) {
+    res.status(500).json({ error: 'Erreur Interne du Serveur' });
   }
 };

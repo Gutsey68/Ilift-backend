@@ -1,0 +1,19 @@
+meta {
+  name: Get followers of a user
+  type: http
+  seq: 8
+}
+
+get {
+  url: http://localhost:3000/api/users/:id/followers
+  body: none
+  auth: bearer
+}
+
+params:path {
+  id: gauthier
+}
+
+auth:bearer {
+  token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImdhdXRoaWVyIiwicHNldWRvIjoiSm9obiIsImlhdCI6MTczNDUxNjcwNSwiZXhwIjoxNzM0NTIwMzA1fQ.aKoGWSt8ayw8aKSUe5fzeOIWtaVuClwWEs6AiBVbejQ
+}
