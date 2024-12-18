@@ -27,4 +27,11 @@ app.use('/api', router);
 
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
+app.use((err, req, res, next) => {
+  res.status(500).json({
+    message: 'Erreur Interne du Serveur',
+    error: err.message
+  });
+});
+
 export default app;
