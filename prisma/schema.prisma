@@ -40,7 +40,6 @@ model User {
 model Posts {
   id                    String   @id @default(cuid())
   photo                 String?
-  title                 String?
   content               String
   createdAt             DateTime @default(now())
   updatedAt             DateTime @updatedAt
