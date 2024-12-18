@@ -1,5 +1,3 @@
-# Guide de Déploiement - ILift App
-
 ## Table des matières
 
 - [Introduction](#introduction)
@@ -65,7 +63,7 @@ sudo apt install -y nodejs
 ### Installation de PNPM
 
 ```bash
-curl -fsSL https://get.pnpm.io/install.sh | sh -
+wget -qO- https://get.pnpm.io/install.sh | sh -
 ```
 
 ### Installation de PostgreSQL
@@ -174,15 +172,6 @@ REFRESH_TOKEN_SECRET = 'votre_secret_refresh_jwt';
 pnpm install
 pnpx prisma migrate deploy
 pnpm build
-```
-
-### Configuration PM2
-
-```bash
-sudo npm install -g pm2
-pm2 start dist/index.js --name "gymapp-api"
-pm2 startup
-pm2 save
 ```
 
 ## Mise en production
