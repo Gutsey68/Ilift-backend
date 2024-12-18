@@ -29,11 +29,11 @@ export const getAllPostsByUser = async (userId: string) => {
           likes: true
         }
       }
-    },
+    }
   });
 };
 
-export const getPostsOfUserAndHisFollowings = async (userId: string) => {
+export const getPostsOfUserAndHisFollowings = async (userId: string, page: number) => {
   const followedUsers = await prisma.follows.findMany({
     where: {
       followedById: userId
@@ -66,7 +66,9 @@ export const getPostsOfUserAndHisFollowings = async (userId: string) => {
     },
     orderBy: {
       createdAt: 'desc'
-    }
+    },
+    skip: (page - 1) * 10,
+    take: 10
   });
 
   return posts;

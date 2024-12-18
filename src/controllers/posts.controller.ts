@@ -4,6 +4,10 @@ export const getPostsHandler = async (req, res) => {
   try {
     const posts = await getPosts();
 
+    if (!posts) {
+      return res.status(404).json({ error: 'Aucune publication trouvée' });
+    }
+
     res.status(200).json({ message: 'Publications récupérées avec succès', data: posts });
   } catch (error) {
     res.status(500).json({ error: 'Erreur Interne du Serveur' });
@@ -30,7 +34,15 @@ export const getAllPostsByUserHandler = async (req, res) => {
   try {
     const userId = req.params.userId;
 
+    if (!userId) {
+      return res.status(400).json({ error: "Id de l'utilisateur manquant" });
+    }
+
     const posts = await getAllPostsByUser(userId);
+
+    if (!posts) {
+      return res.status(404).json({ error: 'Aucune publication trouvée' });
+    }
 
     res.status(200).json({ message: 'Publications récupérées avec succès', data: posts });
   } catch (error) {
@@ -42,7 +54,17 @@ export const getPostsOfUserAndHisFollowingsHandler = async (req, res) => {
   try {
     const userId = req.params.userId;
 
-    const posts = await getPostsOfUserAndHisFollowings(userId);
+    if (!userId) {
+      return res.status(400).json({ error: "Id de l'utilisateur manquant" });
+    }
+
+    const page = parseInt(req.query.page) || 1;
+
+    const posts = await getPostsOfUserAndHisFollowings(userId, page);
+
+    if (!posts) {
+      return res.status(404).json({ error: 'Aucune publication trouvée' });
+    }
 
     res.status(200).json({ message: 'Publications récupérées avec succès', data: posts });
   } catch (error) {
