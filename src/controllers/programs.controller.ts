@@ -75,6 +75,10 @@ export const createProgramHandler = async (req, res) => {
 
     const program = await createProgram(name, description, authorId);
 
+    if (!program) {
+      return res.status(404).json({ error: "Le programme n'a pas pu être créé" });
+    }
+
     res.status(201).json({ message: 'Programme créé avec succès', data: program });
   } catch (error) {
     res.status(500).json({ error: 'Erreur Interne du Serveur' });
@@ -93,6 +97,10 @@ export const updateProgramHandler = async (req, res) => {
 
     const program = await updateProgram(req.params.id, name, description);
 
+    if (!program) {
+      return res.status(404).json({ error: 'Programme non trouvé' });
+    }
+
     res.status(200).json({ message: 'Programme mis à jour avec succès', data: program });
   } catch (error) {
     res.status(500).json({ error: 'Erreur Interne du Serveur' });
@@ -107,7 +115,11 @@ export const deleteProgramHandler = async (req, res) => {
       return res.status(404).json({ error: 'Programme non trouvé' });
     }
 
-    await deleteProgram(req.params.id);
+    const deletedProgram = await deleteProgram(req.params.id);
+
+    if (!deletedProgram) {
+      return res.status(404).json({ error: 'Programme non trouvé' });
+    }
 
     res.status(200).json({ message: 'Programme supprimé avec succès' });
   } catch (error) {

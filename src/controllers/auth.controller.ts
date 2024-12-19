@@ -20,6 +20,10 @@ export const registerHandler = async (req, res) => {
 
     const newUser = await createUser(req.body.pseudo, req.body.password, req.body.email);
 
+    if (!newUser) {
+      return res.status(400).json({ error: "Erreur lors de la création de l'utilisateur" });
+    }
+
     res.status(201).json({ message: 'Utilisateur créé avec succès.', data: { user: newUser } });
   } catch (error) {
     if (error instanceof z.ZodError) {
@@ -45,9 +49,21 @@ export const loginHandler = async (req, res) => {
 
     const token = createJWT(user);
 
+    if (!token) {
+      return res.status(400).json({ error: 'Erreur lors de la génération du token' });
+    }
+
     const refreshToken = createRefreshToken(user);
 
-    await saveRefreshToken(refreshToken, user.id);
+    if (!refreshToken) {
+      return res.status(400).json({ error: 'Erreur lors de la génération du token' });
+    }
+
+    const savedRefreshToken = await saveRefreshToken(refreshToken, user.id);
+
+    if (!savedRefreshToken) {
+      return res.status(400).json({ error: 'Erreur lors de la sauvegarde du token' });
+    }
 
     res.status(200).json({
       message: 'Connexion réussie',
@@ -72,7 +88,19 @@ export const getRefreshTokenHandler = async (req, res) => {
     const token = createJWT(user);
     const refreshToken = createRefreshToken(user);
 
-    await saveRefreshToken(refreshToken, user.id);
+    if (!token) {
+      return res.status(400).json({ error: 'Erreur lors de la génération du token' });
+    }
+
+    if (!refreshToken) {
+      return res.status(400).json({ error: 'Erreur lors de la génération du token' });
+    }
+
+    const savedRefreshToken = await saveRefreshToken(refreshToken, user.id);
+
+    if (!savedRefreshToken) {
+      return res.status(400).json({ error: 'Erreur lors de la sauvegarde du token' });
+    }
 
     res.status(200).json({
       message: 'Token renouvelé avec succès.',
@@ -94,7 +122,11 @@ export const unvalidateRefreshTokenHandler = async (req, res) => {
       return res.status(404).json({ error: 'Token introuvable' });
     }
 
-    await unvalidateRefreshToken(req.params.id);
+    const unvalidToken = await unvalidateRefreshToken(req.params.id);
+
+    if (!unvalidToken) {
+      return res.status(400).json({ error: "Erreur lors de l'invalidation du token" });
+    }
 
     res.status(200).json({ message: 'Token invalidé avec succès' });
   } catch (error) {

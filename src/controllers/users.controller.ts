@@ -19,6 +19,10 @@ export const getUsersHandler = async (req, res) => {
   try {
     const users = await getUsers();
 
+    if (!users) {
+      return res.status(404).json({ error: 'Aucun utilisateur trouvé' });
+    }
+
     res.status(200).json({ message: 'Utilisateurs récupérés avec succès', data: users });
   } catch (error) {
     res.status(500).json({ error: 'Erreur Interne du Serveur' });
@@ -62,9 +66,18 @@ export const getSuggestedUsersHandler = async (req, res) => {
     const userId = req.user.id;
 
     const usersIfollow = await getUsersIfollow(userId);
+
+    if (!usersIfollow) {
+      return res.status(404).json({ error: 'Aucun utilisateur suivi trouvé' });
+    }
+
     const usersIfollowIds = usersIfollow.map(user => user.id);
 
     const usersfollowedByusersIfollow = await getUsersFollowedByUsersIfollow(userId, usersIfollowIds);
+
+    if (!usersfollowedByusersIfollow) {
+      return res.status(404).json({ error: 'Aucun utilisateur suivi par les utilisateurs que vous suivez trouvé' });
+    }
 
     const result = usersfollowedByusersIfollow.map(user => {
       const commonFollowers = user.following
@@ -82,6 +95,10 @@ export const getSuggestedUsersHandler = async (req, res) => {
         commonFollowersCount: commonFollowers.length
       };
     });
+
+    if (!result) {
+      return res.status(404).json({ error: 'Aucun utilisateur recommandé trouvé' });
+    }
 
     if (result.length < 5) {
       const additionalUsers = await getAdditionalUsers(
@@ -125,6 +142,10 @@ export const followHandler = async (req, res) => {
 
     const follows = await followUser(req.user.id, req.params.id);
 
+    if (!follows) {
+      return res.status(400).json({ error: "Erreur lors du suivi de l'utilisateur" });
+    }
+
     res.status(200).json({ message: 'Utilisateur suivi avec succès', data: follows });
   } catch (error) {
     res.status(500).json({ error: 'Erreur Interne du Serveur' });
@@ -149,9 +170,13 @@ export const unfollowHandler = async (req, res) => {
       return res.status(404).json({ error: "Vous ne suivez pas l'utilisateur" });
     }
 
-    await unfollowUser(req.user.id, req.params.id);
+    const follows = await unfollowUser(req.user.id, req.params.id);
 
-    res.status(200).json({ message: 'Utilisateur non suivi avec succès' });
+    if (!follows) {
+      return res.status(400).json({ error: "Erreur lors de l'arrêt du suivi de l'utilisateur" });
+    }
+
+    res.status(200).json({ message: "Arret de suivi de l'utilisateur avec succès" });
   } catch (error) {
     res.status(500).json({ error: 'Erreur Interne du Serveur' });
   }
@@ -186,6 +211,10 @@ export const updateUserHandler = async (req, res) => {
     }
 
     const updatedUser = await updateUser(req.params.id, req.body);
+
+    if (!updatedUser) {
+      return res.status(400).json({ error: "Erreur lors de la mise à jour de l'utilisateur" });
+    }
 
     res.status(200).json({ message: 'Utilisateur modifié avec succès', data: updatedUser });
   } catch (error) {

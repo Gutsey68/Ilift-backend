@@ -1,10 +1,14 @@
-import { createWorkout, deleteWorkout, getExercicesOfWorkout, getWorkoutById, updateWorkout } from '../services/workouts.service';
+import { createWorkout, deleteWorkout, getExercicesOfWorkout, getWorkoutById, getWorkoutByIdWithoutSelect, updateWorkout } from '../services/workouts.service';
 
 export const getExercicesOfWorkoutHandler = async (req, res) => {
   try {
     const workoutId = req.params.id;
 
     const workout = await getWorkoutById(workoutId);
+
+    if (!workout) {
+      return res.status(404).json({ error: 'Séance non trouvée' });
+    }
 
     const exercices = await getExercicesOfWorkout(workoutId);
 
@@ -21,9 +25,14 @@ export const getExercicesOfWorkoutHandler = async (req, res) => {
 export const createWorkoutHandler = async (req, res) => {
   try {
     const { name, programId } = req.body;
+
     const userId = req.user.id;
 
     const workout = await createWorkout(name, programId, userId);
+
+    if (!workout) {
+      return res.status(404).json({ error: "Le programme n'a pas pu être créé" });
+    }
 
     res.status(201).json({ message: 'Séance créée avec succès', data: workout });
   } catch (error) {
@@ -36,7 +45,17 @@ export const updateWorkoutHandler = async (req, res) => {
     const { name } = req.body;
     const workoutId = req.params.id;
 
+    const existingWorkout = await getWorkoutByIdWithoutSelect(workoutId);
+
+    if (!existingWorkout) {
+      return res.status(404).json({ error: 'Séance non trouvée' });
+    }
+
     const workout = await updateWorkout(workoutId, name);
+
+    if (!workout) {
+      return res.status(404).json({ error: "La séance n'a pas pu être modifiée" });
+    }
 
     res.status(200).json({ message: 'Séance modifiée avec succès', data: workout });
   } catch (error) {
@@ -48,7 +67,17 @@ export const deleteWorkoutHandler = async (req, res) => {
   try {
     const workoutId = req.params.id;
 
-    await deleteWorkout(workoutId);
+    const existingWorkout = await getWorkoutByIdWithoutSelect(workoutId);
+
+    if (!existingWorkout) {
+      return res.status(404).json({ error: 'Séance non trouvée' });
+    }
+
+    const deletedWorkout = await deleteWorkout(workoutId);
+
+    if (!deletedWorkout) {
+      return res.status(404).json({ error: "La séance n'a pas pu être supprimée" });
+    }
 
     res.status(200).json({ message: 'Séance supprimée avec succès' });
   } catch (error) {

@@ -18,6 +18,17 @@ export const getWorkoutById = async (id: string) => {
   });
 };
 
+export const getWorkoutByIdWithoutSelect = async (id: string) => {
+  return await prisma.workouts.findUnique({
+    where: {
+      id
+    },
+    select: {
+      id: true
+    }
+  });
+};
+
 export const getExercicesOfWorkout = async (workoutId: string) => {
   return await prisma.exercices.findMany({
     where: {
