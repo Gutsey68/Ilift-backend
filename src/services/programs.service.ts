@@ -37,3 +37,33 @@ export const getWorkoutsOfProgram = async (programId: string) => {
     }
   });
 };
+
+export const createProgram = async (name: string, description: string, authorId: string) => {
+  return await prisma.programs.create({
+    data: {
+      name,
+      description,
+      authorId
+    }
+  });
+};
+
+export const updateProgram = async (id: string, name: string, description: string) => {
+  return await prisma.programs.update({
+    where: {
+      id
+    },
+    data: {
+      name,
+      description
+    }
+  });
+};
+
+export const deleteProgram = async (id: string) => {
+  return await prisma.programs.delete({
+    where: {
+      id
+    }
+  });
+};

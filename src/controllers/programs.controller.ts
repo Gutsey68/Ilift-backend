@@ -1,8 +1,21 @@
-import { getProgramById, getPrograms, getProgramsOfUser, getWorkoutsOfProgram } from '../services/programs.service';
+import {
+  createProgram,
+  deleteProgram,
+  getProgramById,
+  getPrograms,
+  getProgramsOfUser,
+  getWorkoutsOfProgram,
+  updateProgram
+} from '../services/programs.service';
+import { getUserById } from '../services/users.service';
 
 export const getProgramsHandler = async (req, res) => {
   try {
     const programs = await getPrograms();
+
+    if (!programs) {
+      return res.status(404).json({ error: 'Programmes non trouvés' });
+    }
 
     res.status(200).json({ message: 'Programmes récupérés avec succès', data: programs });
   } catch (error) {
@@ -13,6 +26,12 @@ export const getProgramsHandler = async (req, res) => {
 export const getProgramsOfUserHandler = async (req, res) => {
   try {
     const userId = req.params.id;
+
+    const existingUser = await getUserById(req.params.id);
+
+    if (!existingUser) {
+      return res.status(404).json({ error: 'Utilisateur non trouvé' });
+    }
 
     const programs = await getProgramsOfUser(userId);
 
@@ -32,6 +51,10 @@ export const getWorkoutsOfProgramHandler = async (req, res) => {
 
     const program = await getProgramById(programId);
 
+    if (!program) {
+      return res.status(404).json({ error: 'Programme non trouvé' });
+    }
+
     const workouts = await getWorkoutsOfProgram(programId);
 
     if (!workouts) {
@@ -44,8 +67,50 @@ export const getWorkoutsOfProgramHandler = async (req, res) => {
   }
 };
 
-export const createProgramHandler = async (req, res) => {};
+export const createProgramHandler = async (req, res) => {
+  try {
+    const { name, description } = req.body;
 
-export const updateProgramHandler = async (req, res) => {};
+    const authorId = req.user.id;
 
-export const deleteProgramHandler = async (req, res) => {};
+    const program = await createProgram(name, description, authorId);
+
+    res.status(201).json({ message: 'Programme créé avec succès', data: program });
+  } catch (error) {
+    res.status(500).json({ error: 'Erreur Interne du Serveur' });
+  }
+};
+
+export const updateProgramHandler = async (req, res) => {
+  try {
+    const programId = await getProgramById(req.params.id);
+
+    if (!programId) {
+      return res.status(404).json({ error: 'Programme non trouvé' });
+    }
+
+    const { name, description } = req.body;
+
+    const program = await updateProgram(req.params.id, name, description);
+
+    res.status(200).json({ message: 'Programme mis à jour avec succès', data: program });
+  } catch (error) {
+    res.status(500).json({ error: 'Erreur Interne du Serveur' });
+  }
+};
+
+export const deleteProgramHandler = async (req, res) => {
+  try {
+    const programId = await getProgramById(req.params.id);
+
+    if (!programId) {
+      return res.status(404).json({ error: 'Programme non trouvé' });
+    }
+
+    await deleteProgram(req.params.id);
+
+    res.status(200).json({ message: 'Programme supprimé avec succès' });
+  } catch (error) {
+    res.status(500).json({ error: 'Erreur Interne du Serveur' });
+  }
+};
