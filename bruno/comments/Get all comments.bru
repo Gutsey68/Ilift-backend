@@ -1,0 +1,15 @@
+meta {
+  name: Get all comments
+  type: http
+  seq: 1
+}
+
+get {
+  url: http://localhost:3000/api/comments
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImdhdXRoaWVyIiwicHNldWRvIjoiSm9obiIsImlhdCI6MTczNDYyMzQ2OCwiZXhwIjoxNzM0NjI3MDY4fQ.4N1CYeKoYMF8DJXpJibe87htyizLb7y3wd-K2wiZXOE
+}
