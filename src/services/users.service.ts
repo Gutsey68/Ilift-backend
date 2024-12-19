@@ -180,7 +180,15 @@ export const getFollowers = async (userId: string) => {
     select: {
       id: true,
       pseudo: true,
-      profilePhoto: true
+      profilePhoto: true,
+      following: {
+        where: {
+          followedById: userId
+        },
+        select: {
+          followedById: true
+        }
+      }
     }
   });
 };

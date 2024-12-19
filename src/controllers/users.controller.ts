@@ -209,7 +209,14 @@ export const getFollowersHandler = async (req, res) => {
       return res.status(404).json({ error: 'Aucun abonné trouvé' });
     }
 
-    res.status(200).json({ message: 'Abonnés récupérés avec succès', data: followers });
+    const formattedFollowers = followers.map(follower => ({
+      id: follower.id,
+      pseudo: follower.pseudo,
+      profilePhoto: follower.profilePhoto,
+      isFollowing: follower.following.length > 0
+    }));
+
+    res.status(200).json({ message: 'Abonnés récupérés avec succès', data: formattedFollowers });
   } catch (error) {
     res.status(500).json({ error: 'Erreur Interne du Serveur' });
   }
