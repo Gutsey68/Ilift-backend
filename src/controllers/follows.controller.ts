@@ -63,21 +63,19 @@ export const unfollowHandler = async (req, res) => {
 
 export const deleteFollowerHandler = async (req, res) => {
   try {
-    const follower = req.params.id;
+    const existingUser = await getUserById(req.params.id);
 
-    const user = await getUserById(follower);
-
-    if (!user) {
+    if (!existingUser) {
       return res.status(404).json({ error: 'Utilisateur non trouvé' });
     }
 
-    const existingFollow = await getFollowById(follower, req.user.id);
+    const existingFollow = await getFollowById(req.params.id, req.user.id);
 
     if (!existingFollow) {
       return res.status(404).json({ error: 'Cet utilisateur ne vous suit pas' });
     }
 
-    const follows = await unfollowUser(follower, req.user.id);
+    const follows = await unfollowUser(req.params.id, req.user.id);
 
     if (!follows) {
       return res.status(400).json({ error: 'Erreur lors de la suppression de suivi' });

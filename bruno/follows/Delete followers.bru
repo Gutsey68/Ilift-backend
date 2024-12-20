@@ -7,9 +7,17 @@ meta {
 delete {
   url: http://localhost:3000/api/follows/users/:id
   body: none
-  auth: none
+  auth: bearer
 }
 
 params:path {
-  id: 
+  id: cuid18
+}
+
+headers {
+  : 
+}
+
+auth:bearer {
+  token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImdhdXRoaWVyIiwicHNldWRvIjoiSm9obiIsImlhdCI6MTczNDcwMTM0MSwiZXhwIjoxNzM0NzA0OTQxfQ.mTSYDddKcFimNvDlNry4-t2-EwbTxeKbZ-IcKJIA5nI
 }
