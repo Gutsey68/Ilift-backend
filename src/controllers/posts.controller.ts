@@ -76,6 +76,10 @@ export const createPostHandler = async (req, res) => {
   try {
     const { photo, content } = req.body;
 
+    if (req.file) {
+      req.body.photo = req.file.path.replace(/\\/g, '/');
+    }
+
     const post = await createPost(photo, content, req.user.id);
 
     if (!post) {
@@ -98,9 +102,13 @@ export const updatePostHandler = async (req, res) => {
       return res.status(404).json({ error: 'Publication non trouvée' });
     }
 
+    if (req.file) {
+      req.body.photo = req.file.path.replace(/\\/g, '/');
+    }
+
     const { content } = req.body;
 
-    const post = await updatePost({ content }, id);
+    const post = await updatePost({ content, photo: req.body.photo }, id);
 
     if (!post) {
       return res.status(400).json({ error: "La publication n'a pas pu être mise à jour" });
