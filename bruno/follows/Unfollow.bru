@@ -1,0 +1,15 @@
+meta {
+  name: Unfollow
+  type: http
+  seq: 2
+}
+
+delete {
+  url: http://localhost:3000/api/follows/:id
+  body: none
+  auth: none
+}
+
+params:path {
+  id: 
+}

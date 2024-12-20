@@ -55,24 +55,6 @@ export const findUserByEmail = async (email: string) => {
   });
 };
 
-export const followUser = async (followingId: string, followedById: string) => {
-  return await prisma.follows.create({
-    data: {
-      followingId,
-      followedById
-    }
-  });
-};
-
-export const unfollowUser = async (followingId: string, followedById: string) => {
-  return await prisma.follows.deleteMany({
-    where: {
-      followingId,
-      followedById
-    }
-  });
-};
-
 export const updateUser = async (
   userId: string,
   data: { pseudo?: string; email?: string; bio?: string; isBan?: boolean; passwordHash?: string; profilePhoto?: string }
@@ -153,15 +135,6 @@ export const getAdditionalUsers = async (userId: string, existingUserIds: string
       profilePhoto: true
     },
     take: 5 - existingUserIds.length
-  });
-};
-
-export const getFollowById = async (followingId: string, followedById: string) => {
-  return prisma.follows.findFirst({
-    where: {
-      followingId,
-      followedById
-    }
   });
 };
 
