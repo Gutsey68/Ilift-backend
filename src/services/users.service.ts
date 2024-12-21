@@ -95,7 +95,9 @@ export const getUsersFollowedByUsersIfollow = async (userId: string, usersIfollo
   return await prisma.user.findMany({
     where: {
       NOT: {
-        id: userId
+        id: {
+          in: [userId, ...usersIfollowIds]
+        }
       },
       following: {
         some: {
