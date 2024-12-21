@@ -92,7 +92,7 @@ export const getUsersIfollow = async (userId: string) => {
 };
 
 export const getUsersFollowedByUsersIfollow = async (userId: string, usersIfollowIds: string[]) => {
-  return await prisma.user.findMany({
+  const users = await prisma.user.findMany({
     where: {
       NOT: {
         id: {
@@ -110,6 +110,9 @@ export const getUsersFollowedByUsersIfollow = async (userId: string, usersIfollo
       pseudo: true,
       profilePhoto: true,
       following: {
+        where: {
+          followedById: { in: usersIfollowIds }
+        },
         select: {
           followedBy: {
             select: {
@@ -118,10 +121,20 @@ export const getUsersFollowedByUsersIfollow = async (userId: string, usersIfollo
             }
           }
         }
+      },
+      _count: {
+        select: {
+          following: {
+            where: {
+              followedById: { in: usersIfollowIds }
+            }
+          }
+        }
       }
-    },
-    take: 5
+    }
   });
+
+  return users.sort((a, b) => b._count.following - a._count.following).slice(0, 5);
 };
 
 export const getAdditionalUsers = async (userId: string, existingUserIds: string[]) => {
