@@ -25,7 +25,7 @@ app.get('/', (req, res) => {
 
 app.use('/api', router);
 
-app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
 
 app.use((err, req, res, next) => {
   res.status(500).json({

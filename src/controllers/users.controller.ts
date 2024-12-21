@@ -144,7 +144,7 @@ export const updateUserHandler = async (req, res) => {
     }
 
     if (req.file) {
-      req.body.profilePhoto = req.file.path.replace(/\\/g, '/');
+      req.body.profilePhoto = '/' + req.file.path.replace(/\\/g, '/');
     }
 
     const updatedUser = await updateUser(req.params.id, req.body);
