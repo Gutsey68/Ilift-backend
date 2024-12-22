@@ -105,6 +105,12 @@ export const createPostWithTags = async ({ photo, content, userId, tags }: Creat
         include: {
           tag: true
         }
+      },
+      author: true,
+      _count: {
+        select: {
+          likes: true
+        }
       }
     }
   });
