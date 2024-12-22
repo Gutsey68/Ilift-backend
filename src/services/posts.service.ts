@@ -74,12 +74,38 @@ export const getPostsOfUserAndHisFollowings = async (userId: string, page: numbe
   return posts;
 };
 
-export const createPost = async (photo: string, content: string, authorId: string) => {
+type CreatePostParams = {
+  photo: string | null;
+  content: string;
+  userId: string;
+  tags?: string[];
+};
+
+export const createPostWithTags = async ({ photo, content, userId, tags }: CreatePostParams) => {
   return await prisma.posts.create({
     data: {
       photo,
       content,
-      authorId
+      authorId: userId,
+      tags: {
+        create: tags
+          ? tags.map(tagName => ({
+              tag: {
+                connectOrCreate: {
+                  where: { name: tagName },
+                  create: { name: tagName }
+                }
+              }
+            }))
+          : []
+      }
+    },
+    include: {
+      tags: {
+        include: {
+          tag: true
+        }
+      }
     }
   });
 };
