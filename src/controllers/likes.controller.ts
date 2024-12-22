@@ -27,7 +27,7 @@ export const unlikePostHandler = async (req, res) => {
   try {
     const postId = req.params.id;
 
-    const existingLike = await getLikeById(req.user.id, postId);
+    const existingLike = await getLikeById(postId, req.user.id);
 
     if (!existingLike) {
       return res.status(400).json({ error: "Vous n'avez pas aimé la publication" });
