@@ -1,3 +1,4 @@
+import { getFollowById } from '../services/follows.service';
 import {
   findUserByEmail,
   findUserByPseudo,
@@ -36,7 +37,11 @@ export const getUserProfileHandler = async (req, res) => {
       return res.status(404).json({ error: 'Utilisateur non trouvé' });
     }
 
-    res.status(200).json({ message: 'Utilisateur récupéré avec succès', data: user });
+    const amIFollowing = await getFollowById(req.user.id, userId);
+
+    const dataUser = { ...user, amIFollowing: !!amIFollowing };
+
+    res.status(200).json({ message: 'Utilisateur récupéré avec succès', data: dataUser });
   } catch (error) {
     res.status(500).json({ error: 'Erreur Interne du Serveur' });
   }

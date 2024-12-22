@@ -2,7 +2,9 @@ import { z } from 'zod';
 
 export const createPostSchema = z.object({
   body: z.object({
-    content: z.string().nonempty('Le contenu de la publication est requis')
+    content: z.string().nonempty('Le contenu de la publication est requis'),
+    photo: z.string().optional(),
+    tags: z.string().optional()
   })
 });
 

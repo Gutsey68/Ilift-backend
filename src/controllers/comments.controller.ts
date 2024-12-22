@@ -41,7 +41,12 @@ export const getCommentsOfAPostHandler = async (req, res) => {
       return res.status(404).json({ error: 'Aucun commentaire trouvé' });
     }
 
-    res.status(200).json({ message: 'Commentaires récupérés avec succès', data: comments });
+    const commentsWithPermission = comments.map(comment => ({
+      ...comment,
+      isMyComment: comment.usersId === req.user.id
+    }));
+
+    res.status(200).json({ message: 'Commentaires récupérés avec succès', data: commentsWithPermission });
   } catch (error) {
     res.status(500).json({ error: 'Erreur Interne du Serveur' });
   }
