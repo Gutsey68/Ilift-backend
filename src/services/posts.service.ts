@@ -26,7 +26,8 @@ export const getAllPostsByUser = async (userId: string) => {
       author: true,
       _count: {
         select: {
-          likes: true
+          likes: true,
+          comments: true
         }
       }
     }
@@ -60,7 +61,8 @@ export const getPostsOfUserAndHisFollowings = async (userId: string, page: numbe
       author: true,
       _count: {
         select: {
-          likes: true
+          likes: true,
+          comments: true
         }
       }
     },

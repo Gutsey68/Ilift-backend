@@ -1,3 +1,4 @@
+import { getLikeById } from '../services/likes.service';
 import {
   createPostWithTags,
   deletePost,
@@ -70,11 +71,18 @@ export const getPostsOfUserAndHisFollowingsHandler = async (req, res) => {
 
     const posts = await getPostsOfUserAndHisFollowings(userId, page);
 
+    const postsWithLikes = posts.map(post => ({ ...post, doILike: false }));
+
+    for (let i = 0; i < postsWithLikes.length; i++) {
+      const doIlikeThePost = await getLikeById(posts[i].id, req.user.id);
+      postsWithLikes[i].doILike = !!doIlikeThePost;
+    }
+
     if (!posts) {
       return res.status(404).json({ error: 'Aucune publication trouvée' });
     }
 
-    res.status(200).json({ message: 'Publications récupérées avec succès', data: posts });
+    res.status(200).json({ message: 'Publications récupérées avec succès', data: postsWithLikes });
   } catch (error) {
     res.status(500).json({ error: 'Erreur Interne du Serveur' });
   }
