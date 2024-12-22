@@ -89,7 +89,15 @@ export const getPostsOfUserAndHisFollowingsHandler = async (req, res) => {
       postsWithLikes[i].doILike = !!doIlikeThePost;
     }
 
-    res.status(200).json({ message: 'Publications récupérées avec succès', data: postsWithLikes });
+    const postsWithInformations = postsWithLikes.map(post => ({ ...post, isMyPost: false }));
+
+    for (let i = 0; i < postsWithInformations.length; i++) {
+      if (postsWithInformations[i].authorId === req.user.id) {
+        postsWithInformations[i].isMyPost = true;
+      }
+    }
+
+    res.status(200).json({ message: 'Publications récupérées avec succès', data: postsWithInformations });
   } catch (error) {
     res.status(500).json({ error: 'Erreur Interne du Serveur' });
   }
