@@ -3,6 +3,8 @@ import { z } from 'zod';
 export const updateUserSchema = z.object({
   body: z.object({
     pseudo: z.string().min(1, 'Le pseudo ne doit pas être vide').optional(),
+    bio: z.string().optional(),
+    city: z.string().optional(),
     email: z
       .string()
       .email('Email invalide')

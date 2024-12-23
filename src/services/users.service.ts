@@ -1,4 +1,5 @@
 import prisma from '../database/db';
+import { findCityByName } from './city.service';
 
 export const getUsers = async () => {
   return await prisma.user.findMany();
@@ -57,11 +58,34 @@ export const findUserByEmail = async (email: string) => {
 
 export const updateUser = async (
   userId: string,
-  data: { pseudo?: string; email?: string; bio?: string; isBan?: boolean; passwordHash?: string; profilePhoto?: string }
+  data: { pseudo?: string; email?: string; bio?: string; isBan?: boolean; passwordHash?: string; profilePhoto?: string; city?: string }
 ) => {
+  const { city, ...otherData } = data;
+
+  if (city) {
+    const existingCity = await findCityByName(city);
+
+    return await prisma.user.update({
+      where: { id: userId },
+      data: {
+        ...otherData,
+        city: {
+          connectOrCreate: {
+            where: {
+              id: existingCity?.id ?? ''
+            },
+            create: {
+              name: city
+            }
+          }
+        }
+      }
+    });
+  }
+
   return await prisma.user.update({
     where: { id: userId },
-    data
+    data: otherData
   });
 };
 
