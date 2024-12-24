@@ -103,7 +103,6 @@ export const getLikesOfAUserHandler = async (req, res) => {
       return res.status(404).json({ error: "Aucun j'aime trouvé" });
     }
 
-    // Pour chaque like, nous récupérons le post associé
     const postsWithLikes = likes.map(like => {
       const post = like.posts;
       return {
