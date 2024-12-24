@@ -1,0 +1,15 @@
+meta {
+  name: Get all posts liked of a user
+  type: http
+  seq: 5
+}
+
+get {
+  url: http://localhost:3000/api/likes/users/:id
+  body: none
+  auth: none
+}
+
+params:path {
+  id: 
+}

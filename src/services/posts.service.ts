@@ -23,13 +23,22 @@ export const getAllPostsByUser = async (userId: string) => {
           tag: true
         }
       },
-      author: true,
+      author: {
+        select: {
+          id: true,
+          pseudo: true,
+          profilePhoto: true
+        }
+      },
       _count: {
         select: {
           likes: true,
           comments: true
         }
       }
+    },
+    orderBy: {
+      createdAt: 'desc'
     }
   });
 };
@@ -58,7 +67,13 @@ export const getPostsOfUserAndHisFollowings = async (userId: string, page: numbe
           tag: true
         }
       },
-      author: true,
+      author: {
+        select: {
+          id: true,
+          pseudo: true,
+          profilePhoto: true
+        }
+      },
       _count: {
         select: {
           likes: true,
