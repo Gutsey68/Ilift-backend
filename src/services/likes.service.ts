@@ -43,7 +43,7 @@ export const getLikes = async () => {
   return await prisma.usersLikes.findMany();
 };
 
-export const getLikesOfAUser = async (usersId: string) => {
+export const getLikesOfAUser = async (usersId: string, page: number = 1) => {
   return await prisma.usersLikes.findMany({
     where: {
       usersId
@@ -83,6 +83,8 @@ export const getLikesOfAUser = async (usersId: string) => {
       posts: {
         createdAt: 'desc'
       }
-    }
+    },
+    take: 10,
+    skip: (page - 1) * 10
   });
 };

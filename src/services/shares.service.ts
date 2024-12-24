@@ -35,7 +35,7 @@ export const unsharePost = async (postsId: string, usersId: string) => {
   });
 };
 
-export const getSharesOfAUser = async (usersId: string) => {
+export const getSharesOfAUser = async (usersId: string, page: number = 1) => {
   return await prisma.usersShares.findMany({
     where: {
       usersId
@@ -79,6 +79,8 @@ export const getSharesOfAUser = async (usersId: string) => {
     },
     orderBy: {
       createdAt: 'desc'
-    }
+    },
+    take: 10,
+    skip: (page - 1) * 10
   });
 };

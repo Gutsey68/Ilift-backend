@@ -42,12 +42,13 @@ export const getPostByIdHandler = async (req, res) => {
 export const getAllPostsByUserHandler = async (req, res) => {
   try {
     const userId = req.params.userId;
+    const page = parseInt(req.query.page) || 1;
 
     if (!userId) {
       return res.status(400).json({ error: "Id de l'utilisateur manquant" });
     }
 
-    const posts = await getAllPostsByUser(userId);
+    const posts = await getAllPostsByUser(userId, page);
 
     if (!posts) {
       return res.status(404).json({ error: 'Aucune publication trouvée' });

@@ -18,27 +18,27 @@ export const getSharesHandler = async (req, res) => {
 export const getSharesOfUserHandler = async (req, res) => {
   try {
     const userId = req.params.id;
-    const shares = await getSharesOfAUser(userId);
+    const page = parseInt(req.query.page) || 1;
+
+    const shares = await getSharesOfAUser(userId, page);
 
     if (!shares || shares.length === 0) {
       return res.status(404).json({ error: 'Aucune publication republiée trouvée' });
     }
 
-    const postsWithShares = shares.map(share => {
-      const post = share.posts;
-      return {
-        ...post,
-        isShared: true,
-        sharedBy: share.usersId,
-        sharedByUser: share.users,
-        sharedAt: share.createdAt,
-        doILike: false
-      };
-    });
+    const postsWithShares = shares.map(share => ({
+      ...share.posts,
+      isShared: true,
+      sharedBy: share.usersId,
+      sharedByUser: share.users,
+      sharedAt: share.createdAt,
+      doILike: false
+    }));
 
     res.status(200).json({
       message: 'Republications récupérées avec succès',
-      data: postsWithShares
+      data: postsWithShares,
+      pageParam: page
     });
   } catch (error) {
     console.error('Erreur getSharesOfUserHandler:', error);

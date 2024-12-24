@@ -7,8 +7,8 @@ const sharesRoutes = Router();
 sharesRoutes.use(protect);
 
 sharesRoutes.get('/', getSharesHandler);
-sharesRoutes.get('/user/:id', getSharesOfUserHandler);
-sharesRoutes.post('/post/:id', shareHandler);
-sharesRoutes.delete('/post/:id', unshareHandler);
+sharesRoutes.get('/users/:id', getSharesOfUserHandler);
+sharesRoutes.post('/posts/:id', shareHandler);
+sharesRoutes.delete('/posts/:id', unshareHandler);
 
 export default sharesRoutes;

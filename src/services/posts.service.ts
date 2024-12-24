@@ -10,7 +10,7 @@ export const getPostById = async (id: string) => {
   });
 };
 
-export const getAllPostsByUser = async (userId: string) => {
+export const getAllPostsByUser = async (userId: string, page: number) => {
   return await prisma.posts.findMany({
     where: {
       author: {
@@ -39,7 +39,9 @@ export const getAllPostsByUser = async (userId: string) => {
     },
     orderBy: {
       createdAt: 'desc'
-    }
+    },
+    take: 10,
+    skip: (page - 1) * 10
   });
 };
 
