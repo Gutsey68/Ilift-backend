@@ -18,18 +18,27 @@ export const getSharesHandler = async (req, res) => {
 export const getSharesOfUserHandler = async (req, res) => {
   try {
     const userId = req.params.id;
-
     const shares = await getSharesOfAUser(userId);
 
     if (!shares || shares.length === 0) {
       return res.status(404).json({ error: 'Aucune publication republiée trouvée' });
     }
 
+    const postsWithShares = shares.map(share => {
+      const post = share.posts;
+      return {
+        ...post,
+        isShared: true,
+        doILike: false
+      };
+    });
+
     res.status(200).json({
-      message: "J'aime récupéré avec succès",
-      data: shares
+      message: 'Republications récupérées avec succès',
+      data: postsWithShares
     });
   } catch (error) {
+    console.error('Erreur getSharesOfUserHandler:', error);
     res.status(500).json({ error: 'Erreur Interne du Serveur' });
   }
 };

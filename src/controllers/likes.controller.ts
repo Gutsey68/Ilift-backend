@@ -91,7 +91,6 @@ export const getLikesHandler = async (req, res) => {
 export const getLikesOfAUserHandler = async (req, res) => {
   try {
     const userId = req.params.id;
-
     const existingUser = await getUserById(userId);
 
     if (!existingUser) {
@@ -104,16 +103,21 @@ export const getLikesOfAUserHandler = async (req, res) => {
       return res.status(404).json({ error: "Aucun j'aime trouvé" });
     }
 
-    const postsWithLikes = likes.map(like => ({
-      ...like.posts,
-      doILike: true
-    }));
+    // Pour chaque like, nous récupérons le post associé
+    const postsWithLikes = likes.map(like => {
+      const post = like.posts;
+      return {
+        ...post,
+        doILike: true
+      };
+    });
 
     res.status(200).json({
       message: "J'aime récupéré avec succès",
       data: postsWithLikes
     });
   } catch (error) {
+    console.error('Erreur getLikesOfAUserHandler:', error);
     res.status(500).json({ error: 'Erreur Interne du Serveur' });
   }
 };

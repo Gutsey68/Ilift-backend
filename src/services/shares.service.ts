@@ -72,9 +72,7 @@ export const getSharesOfAUser = async (usersId: string) => {
       }
     },
     orderBy: {
-      posts: {
-        createdAt: 'desc'
-      }
+      createdAt: 'desc'
     }
   });
 };
