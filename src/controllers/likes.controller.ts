@@ -1,5 +1,6 @@
-import { getLikeById, getLikes, getLikesOfPost, likePost, unlikePost } from '../services/likes.service';
+import { getLikeById, getLikes, getLikesOfAUser, getLikesOfPost, likePost, unlikePost } from '../services/likes.service';
 import { getPostById } from '../services/posts.service';
+import { getUserById } from '../services/users.service';
 
 export const likePostHandler = async (req, res) => {
   try {
@@ -77,6 +78,37 @@ export const getLikesHandler = async (req, res) => {
 
     res.status(200).json({ message: "J'aime récupéré avec succès", data: likes });
   } catch (error) {
+    res.status(500).json({ error: 'Erreur Interne du Serveur' });
+  }
+};
+
+export const getLikesOfAUserHandler = async (req, res) => {
+  try {
+    const userId = req.params.id;
+
+    const existingUser = await getUserById(userId);
+
+    if (!existingUser) {
+      return res.status(404).json({ error: 'Utilisateur non trouvé' });
+    }
+
+    const likes = await getLikesOfAUser(userId);
+
+    if (!likes || likes.length === 0) {
+      return res.status(404).json({ error: "Aucun j'aime trouvé" });
+    }
+
+    const postsWithLikes = likes.map(like => ({
+      ...like.posts,
+      doILike: true
+    }));
+
+    res.status(200).json({
+      message: "J'aime récupéré avec succès",
+      data: postsWithLikes
+    });
+  } catch (error) {
+    console.error('Erreur getLikesOfAUserHandler:', error);
     res.status(500).json({ error: 'Erreur Interne du Serveur' });
   }
 };

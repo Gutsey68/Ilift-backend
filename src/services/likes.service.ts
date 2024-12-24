@@ -42,3 +42,47 @@ export const getLikesOfPost = async (postsId: string) => {
 export const getLikes = async () => {
   return await prisma.usersLikes.findMany();
 };
+
+export const getLikesOfAUser = async (usersId: string) => {
+  return await prisma.usersLikes.findMany({
+    where: {
+      usersId
+    },
+    include: {
+      posts: {
+        include: {
+          tags: {
+            include: {
+              tag: {
+                select: {
+                  id: true,
+                  name: true
+                }
+              }
+            }
+          },
+          comments: true,
+          likes: true,
+          author: {
+            select: {
+              id: true,
+              pseudo: true,
+              profilePhoto: true
+            }
+          },
+          _count: {
+            select: {
+              likes: true,
+              comments: true
+            }
+          }
+        }
+      }
+    },
+    orderBy: {
+      posts: {
+        createdAt: 'desc'
+      }
+    }
+  });
+};
