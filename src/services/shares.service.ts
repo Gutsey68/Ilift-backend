@@ -1,7 +1,11 @@
 import prisma from '../database/db';
 
-export const getLikeById = async (postsId: string, usersId: string) => {
-  return await prisma.usersLikes.findUnique({
+export const getShares = async () => {
+  return await prisma.usersShares.findMany();
+};
+
+export const getShareById = async (usersId, postsId) => {
+  return await prisma.usersShares.findUnique({
     where: {
       postsId_usersId: {
         postsId,
@@ -11,8 +15,8 @@ export const getLikeById = async (postsId: string, usersId: string) => {
   });
 };
 
-export const likePost = async (postsId: string, usersId: string) => {
-  return await prisma.usersLikes.create({
+export const sharePost = async (postsId: string, usersId: string) => {
+  return await prisma.usersShares.create({
     data: {
       postsId,
       usersId
@@ -20,8 +24,8 @@ export const likePost = async (postsId: string, usersId: string) => {
   });
 };
 
-export const unlikePost = async (postsId: string, usersId: string) => {
-  return await prisma.usersLikes.delete({
+export const unsharePost = async (postsId: string, usersId: string) => {
+  return await prisma.usersShares.delete({
     where: {
       postsId_usersId: {
         postsId,
@@ -31,24 +35,18 @@ export const unlikePost = async (postsId: string, usersId: string) => {
   });
 };
 
-export const getLikesOfPost = async (postsId: string) => {
-  return await prisma.usersLikes.count({
-    where: {
-      postsId
-    }
-  });
-};
-
-export const getLikes = async () => {
-  return await prisma.usersLikes.findMany();
-};
-
-export const getLikesOfAUser = async (usersId: string, page: number = 1) => {
-  return await prisma.usersLikes.findMany({
+export const getSharesOfAUser = async (usersId: string, page: number = 1) => {
+  return await prisma.usersShares.findMany({
     where: {
       usersId
     },
     include: {
+      users: {
+        select: {
+          id: true,
+          pseudo: true
+        }
+      },
       posts: {
         include: {
           tags: {
@@ -80,9 +78,7 @@ export const getLikesOfAUser = async (usersId: string, page: number = 1) => {
       }
     },
     orderBy: {
-      posts: {
-        createdAt: 'desc'
-      }
+      createdAt: 'desc'
     },
     take: 10,
     skip: (page - 1) * 10

@@ -6,6 +6,12 @@ export const likePostHandler = async (req, res) => {
   try {
     const postId = req.params.id;
 
+    const existingPost = await getPostById(postId);
+
+    if (!existingPost) {
+      return res.status(404).json({ error: 'Publication non trouvée' });
+    }
+
     const existingLike = await getLikeById(req.user.id, postId);
 
     if (existingLike) {
@@ -85,6 +91,7 @@ export const getLikesHandler = async (req, res) => {
 export const getLikesOfAUserHandler = async (req, res) => {
   try {
     const userId = req.params.id;
+    const page = parseInt(req.query.page) || 1;
 
     const existingUser = await getUserById(userId);
 
@@ -92,7 +99,7 @@ export const getLikesOfAUserHandler = async (req, res) => {
       return res.status(404).json({ error: 'Utilisateur non trouvé' });
     }
 
-    const likes = await getLikesOfAUser(userId);
+    const likes = await getLikesOfAUser(userId, page);
 
     if (!likes || likes.length === 0) {
       return res.status(404).json({ error: "Aucun j'aime trouvé" });
@@ -105,7 +112,8 @@ export const getLikesOfAUserHandler = async (req, res) => {
 
     res.status(200).json({
       message: "J'aime récupéré avec succès",
-      data: postsWithLikes
+      data: postsWithLikes,
+      pageParam: page
     });
   } catch (error) {
     console.error('Erreur getLikesOfAUserHandler:', error);
