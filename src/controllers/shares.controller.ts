@@ -29,6 +29,9 @@ export const getSharesOfUserHandler = async (req, res) => {
       return {
         ...post,
         isShared: true,
+        sharedBy: share.usersId,
+        sharedByUser: share.users,
+        sharedAt: share.createdAt,
         doILike: false
       };
     });

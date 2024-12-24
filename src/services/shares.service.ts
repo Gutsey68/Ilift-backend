@@ -41,6 +41,12 @@ export const getSharesOfAUser = async (usersId: string) => {
       usersId
     },
     include: {
+      users: {
+        select: {
+          id: true,
+          pseudo: true
+        }
+      },
       posts: {
         include: {
           tags: {

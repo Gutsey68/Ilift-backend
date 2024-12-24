@@ -55,7 +55,7 @@ export const getPostsOfUserAndHisFollowings = async (userId: string, page: numbe
 
   const userIds = [userId, ...followedUsers.map(follow => follow.followingId)];
 
-  const posts = await prisma.posts.findMany({
+  const directPosts = await prisma.posts.findMany({
     where: {
       authorId: {
         in: userIds
@@ -80,15 +80,73 @@ export const getPostsOfUserAndHisFollowings = async (userId: string, page: numbe
           comments: true
         }
       }
-    },
-    orderBy: {
-      createdAt: 'desc'
-    },
-    skip: (page - 1) * 10,
-    take: 10
+    }
   });
 
-  return posts;
+  const sharedPosts = await prisma.usersShares.findMany({
+    where: {
+      usersId: {
+        in: userIds
+      }
+    },
+    include: {
+      posts: {
+        include: {
+          tags: {
+            include: {
+              tag: true
+            }
+          },
+          author: {
+            select: {
+              id: true,
+              pseudo: true,
+              profilePhoto: true
+            }
+          },
+          _count: {
+            select: {
+              likes: true,
+              comments: true
+            }
+          }
+        }
+      },
+      users: {
+        select: {
+          id: true,
+          pseudo: true
+        }
+      }
+    }
+  });
+
+  const formattedSharedPosts = sharedPosts.map(share => ({
+    ...share.posts,
+    isShared: true,
+    sharedBy: share.usersId,
+    sharedByUser: share.users,
+    sharedAt: share.createdAt
+  }));
+
+  const allPosts = [
+    ...directPosts.map(post => ({
+      ...post,
+      isShared: false,
+      sharedAt: null
+    })),
+    ...formattedSharedPosts
+  ];
+
+  const sortedPosts = allPosts.sort((a, b) => {
+    const dateA = a.sharedAt || a.createdAt;
+    const dateB = b.sharedAt || b.createdAt;
+    return new Date(dateB).getTime() - new Date(dateA).getTime();
+  });
+
+  const paginatedPosts = sortedPosts.slice((page - 1) * 10, page * 10);
+
+  return paginatedPosts;
 };
 
 type CreatePostParams = {
