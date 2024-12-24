@@ -6,6 +6,12 @@ export const likePostHandler = async (req, res) => {
   try {
     const postId = req.params.id;
 
+    const existingPost = await getPostById(postId);
+
+    if (!existingPost) {
+      return res.status(404).json({ error: 'Publication non trouvée' });
+    }
+
     const existingLike = await getLikeById(req.user.id, postId);
 
     if (existingLike) {
@@ -108,7 +114,6 @@ export const getLikesOfAUserHandler = async (req, res) => {
       data: postsWithLikes
     });
   } catch (error) {
-    console.error('Erreur getLikesOfAUserHandler:', error);
     res.status(500).json({ error: 'Erreur Interne du Serveur' });
   }
 };

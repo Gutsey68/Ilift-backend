@@ -7,6 +7,7 @@ import likesRoutes from './likes.routes';
 import notificationsRoutes from './notifications.routes';
 import postsRoutes from './posts.routes';
 import programsRoute from './programs.routes';
+import sharesRoutes from './shares.routes';
 import tagsRoutes from './tags.routes';
 import userRoutes from './users.routes';
 
@@ -22,5 +23,6 @@ router.use('/notifications', notificationsRoutes);
 router.use('/comments', commentsRoutes);
 router.use('/likes', likesRoutes);
 router.use('/follows', followsRoutes);
+router.use('/shares', sharesRoutes);
 
 export default router;

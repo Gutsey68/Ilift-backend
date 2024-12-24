@@ -1,0 +1,15 @@
+meta {
+  name: Get all shares of a user
+  type: http
+  seq: 2
+}
+
+get {
+  url: http://localhost:3000/api/shares/user/:id
+  body: none
+  auth: none
+}
+
+params:path {
+  id: 
+}
