@@ -1,3 +1,4 @@
+import crypto from 'crypto';
 import prisma from '../database/db';
 import { hashPassword } from '../utils/hash';
 
@@ -51,6 +52,30 @@ export const FindRefreshToken = async (token: string) => {
   return await prisma.refreshToken.findFirst({
     where: {
       token
+    }
+  });
+};
+
+export const createResetToken = async (userId: string) => {
+  return await prisma.passwordReset.create({
+    data: {
+      userId,
+      token: crypto.randomBytes(32).toString('hex'),
+      expiresAt: new Date(Date.now() + 3600000)
+    }
+  });
+};
+
+export const findResetToken = async (token: string) => {
+  return await prisma.passwordReset.findFirst({
+    where: {
+      token,
+      expiresAt: {
+        gt: new Date()
+      }
+    },
+    include: {
+      user: true
     }
   });
 };

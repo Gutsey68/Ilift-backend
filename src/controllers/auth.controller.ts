@@ -1,7 +1,9 @@
 import { z } from 'zod';
-import { createUser, FindRefreshToken, saveRefreshToken, unvalidateRefreshToken } from '../services/auth.service';
-import { findUserByEmail, findUserByPseudo } from '../services/users.service';
-import { comparePasswords } from '../utils/hash';
+import prisma from '../database/db';
+import { createResetToken, createUser, FindRefreshToken, findResetToken, saveRefreshToken, unvalidateRefreshToken } from '../services/auth.service';
+import { sendResetPasswordEmail } from '../services/mail.service';
+import { findUserByEmail, findUserByPseudo, updateUser } from '../services/users.service';
+import { comparePasswords, hashPassword } from '../utils/hash';
 import { createJWT, createRefreshToken } from '../utils/jwt';
 
 export const registerHandler = async (req, res) => {
@@ -131,5 +133,51 @@ export const unvalidateRefreshTokenHandler = async (req, res) => {
     res.status(200).json({ message: 'Token invalidé avec succès' });
   } catch (error) {
     res.status(500).json({ error: 'Erreur Interne du Serveur' });
+  }
+};
+
+export const resetPasswordHandler = async (req, res) => {
+  try {
+    const { email } = req.body;
+    const user = await findUserByEmail(email);
+
+    if (!user) {
+      // Retourner le même message même si l'utilisateur n'existe pas pour des raisons de sécurité
+      return res.status(200).json({ message: 'Si votre email existe dans notre base de données, vous recevrez un lien de réinitialisation.' });
+    }
+
+    const resetToken = await createResetToken(user.id);
+    await sendResetPasswordEmail(email, resetToken.token);
+
+    res.status(200).json({
+      message: 'Si votre email existe dans notre base de données, vous recevrez un lien de réinitialisation.'
+    });
+  } catch (error) {
+    res.status(500).json({ error: 'Erreur lors de la réinitialisation du mot de passe' });
+  }
+};
+
+export const updatePasswordHandler = async (req, res) => {
+  try {
+    const { token, newPassword } = req.body;
+    const resetToken = await findResetToken(token);
+
+    if (!resetToken) {
+      return res.status(400).json({ error: 'Token invalide ou expiré' });
+    }
+
+    const newPasswordHash = await hashPassword(newPassword);
+    // Utiliser updateUser au lieu de updateUserPassword
+    await updateUser(resetToken.userId, { passwordHash: newPasswordHash });
+
+    // Invalider tous les refresh tokens de l'utilisateur
+    await prisma.refreshToken.updateMany({
+      where: { userId: resetToken.userId },
+      data: { isValid: false }
+    });
+
+    res.status(200).json({ message: 'Mot de passe mis à jour avec succès' });
+  } catch (error) {
+    res.status(500).json({ error: 'Erreur lors de la mise à jour du mot de passe' });
   }
 };
