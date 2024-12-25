@@ -142,11 +142,11 @@ export const resetPasswordHandler = async (req, res) => {
     const user = await findUserByEmail(email);
 
     if (!user) {
-      // Retourner le même message même si l'utilisateur n'existe pas pour des raisons de sécurité
       return res.status(200).json({ message: 'Si votre email existe dans notre base de données, vous recevrez un lien de réinitialisation.' });
     }
 
     const resetToken = await createResetToken(user.id);
+
     await sendResetPasswordEmail(email, resetToken.token);
 
     res.status(200).json({
@@ -160,6 +160,11 @@ export const resetPasswordHandler = async (req, res) => {
 export const updatePasswordHandler = async (req, res) => {
   try {
     const { token, newPassword } = req.body;
+
+    if (!token || !newPassword) {
+      return res.status(400).json({ error: 'Token et nouveau mot de passe requis' });
+    }
+
     const resetToken = await findResetToken(token);
 
     if (!resetToken) {
@@ -167,13 +172,16 @@ export const updatePasswordHandler = async (req, res) => {
     }
 
     const newPasswordHash = await hashPassword(newPassword);
-    // Utiliser updateUser au lieu de updateUserPassword
+
     await updateUser(resetToken.userId, { passwordHash: newPasswordHash });
 
-    // Invalider tous les refresh tokens de l'utilisateur
     await prisma.refreshToken.updateMany({
       where: { userId: resetToken.userId },
       data: { isValid: false }
+    });
+
+    await prisma.passwordReset.delete({
+      where: { id: resetToken.id }
     });
 
     res.status(200).json({ message: 'Mot de passe mis à jour avec succès' });

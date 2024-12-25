@@ -30,6 +30,6 @@ export const resetPasswordRequestSchema = z.object({
 export const updatePasswordSchema = z.object({
   body: z.object({
     token: z.string().min(1, 'Token requis'),
-    newPassword: z.string().min(6, 'Le mot de passe doit contenir au moins 6 caractères')
+    newPassword: z.string().min(3, 'Le mot de passe doit contenir au moins 3 caractères')
   })
 });
