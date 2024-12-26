@@ -11,15 +11,39 @@ import {
 
 export const getPostsHandler = async (req, res) => {
   try {
-    const posts = await getPosts();
+    const page = parseInt(req.query.page) || 1;
+    const size = parseInt(req.query.size) || 20;
 
-    if (!posts) {
+    let sort;
+    if (req.query.sort) {
+      try {
+        sort = JSON.parse(req.query.sort);
+        // Validation du format de tri
+        if (!sort.field || !['asc', 'desc'].includes(sort.order)) {
+          return res.status(400).json({
+            error: 'Format de tri invalide. Attendu: { "field": "string", "order": "asc" | "desc" }'
+          });
+        }
+      } catch (e) {
+        return res.status(400).json({
+          error: 'Paramètre de tri invalide'
+        });
+      }
+    }
+
+    const posts = await getPosts(page, size, sort);
+
+    if (!posts.data.length) {
       return res.status(404).json({ error: 'Aucune publication trouvée' });
     }
 
-    res.status(200).json({ message: 'Publications récupérées avec succès', data: posts });
+    res.status(200).json(posts);
   } catch (error) {
-    res.status(500).json({ error: 'Erreur Interne du Serveur' });
+    console.error('Error in getPostsHandler:', error);
+    res.status(500).json({
+      error: 'Erreur Interne du Serveur',
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   }
 };
 

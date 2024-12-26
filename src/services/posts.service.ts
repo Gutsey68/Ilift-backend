@@ -1,7 +1,78 @@
+import { Prisma } from '@prisma/client';
 import prisma from '../database/db';
 
-export const getPosts = async () => {
-  return await prisma.posts.findMany();
+// Définir le type pour les paramètres de tri
+type SortParams = {
+  field: string;
+  order: 'asc' | 'desc';
+};
+
+export const getPosts = async (page: number, size: number, sort?: SortParams) => {
+  const skip = (page - 1) * size;
+
+  // Conversion de 'asc'/'desc' en Prisma.SortOrder
+  const sortOrder = sort?.order === 'desc' ? Prisma.SortOrder.desc : Prisma.SortOrder.asc;
+
+  // Gestion du tri pour les champs imbriqués
+  let orderBy: Prisma.PostsOrderByWithRelationInput = { createdAt: Prisma.SortOrder.desc };
+
+  if (sort?.field) {
+    if (sort.field.includes('.')) {
+      // Gestion des champs imbriqués (ex: author.pseudo)
+      const [relation, field] = sort.field.split('.');
+      orderBy = {
+        [relation]: {
+          [field]: sortOrder
+        }
+      };
+    } else {
+      // Gestion des champs directs
+      orderBy = {
+        [sort.field]: sortOrder
+      };
+    }
+  }
+
+  try {
+    const [posts, total] = await Promise.all([
+      prisma.posts.findMany({
+        skip,
+        take: size,
+        orderBy,
+        include: {
+          tags: {
+            include: {
+              tag: true
+            }
+          },
+          author: {
+            select: {
+              id: true,
+              pseudo: true,
+              profilePhoto: true
+            }
+          },
+          _count: {
+            select: {
+              likes: true,
+              comments: true
+            }
+          }
+        }
+      }),
+      prisma.posts.count()
+    ]);
+
+    return {
+      data: posts,
+      meta: {
+        totalRowCount: total
+      }
+    };
+  } catch (error) {
+    console.error('Erreur dans getPosts:', error);
+    throw error;
+  }
 };
 
 export const getPostById = async (id: string) => {

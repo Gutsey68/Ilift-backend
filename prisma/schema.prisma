@@ -43,6 +43,8 @@ model Posts {
   content               String
   createdAt             DateTime @default(now())
   updatedAt             DateTime @updatedAt
+  isValid               Boolean @default(true)
+
 
   comments              UsersComments[]
   shares                UsersShares[]
