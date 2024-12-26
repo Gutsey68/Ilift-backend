@@ -43,6 +43,10 @@ export const loginHandler = async (req, res) => {
       return res.status(401).json({ error: 'Pseudo ou mot de passe incorrect' });
     }
 
+    if (user.isBan) {
+      return res.status(401).json({ error: 'Votre compte a été banni' });
+    }
+
     const isValid = await comparePasswords(req.body.password, user.passwordHash);
 
     if (!isValid) {

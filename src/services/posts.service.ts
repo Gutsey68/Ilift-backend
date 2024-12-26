@@ -1,7 +1,6 @@
 import { Prisma } from '@prisma/client';
 import prisma from '../database/db';
 
-// Définir le type pour les paramètres de tri
 type SortParams = {
   field: string;
   order: 'asc' | 'desc';
@@ -10,15 +9,12 @@ type SortParams = {
 export const getPosts = async (page: number, size: number, sort?: SortParams) => {
   const skip = (page - 1) * size;
 
-  // Conversion de 'asc'/'desc' en Prisma.SortOrder
   const sortOrder = sort?.order === 'desc' ? Prisma.SortOrder.desc : Prisma.SortOrder.asc;
 
-  // Gestion du tri pour les champs imbriqués
   let orderBy: Prisma.PostsOrderByWithRelationInput = { createdAt: Prisma.SortOrder.desc };
 
   if (sort?.field) {
     if (sort.field.includes('.')) {
-      // Gestion des champs imbriqués (ex: author.pseudo)
       const [relation, field] = sort.field.split('.');
       orderBy = {
         [relation]: {
@@ -26,7 +22,6 @@ export const getPosts = async (page: number, size: number, sort?: SortParams) =>
         }
       };
     } else {
-      // Gestion des champs directs
       orderBy = {
         [sort.field]: sortOrder
       };
@@ -39,17 +34,22 @@ export const getPosts = async (page: number, size: number, sort?: SortParams) =>
         skip,
         take: size,
         orderBy,
-        include: {
-          tags: {
-            include: {
-              tag: true
-            }
-          },
+        select: {
+          id: true,
+          content: true,
+          photo: true,
+          createdAt: true,
+          isValid: true,
           author: {
             select: {
               id: true,
               pseudo: true,
               profilePhoto: true
+            }
+          },
+          tags: {
+            include: {
+              tag: true
             }
           },
           _count: {
@@ -84,6 +84,7 @@ export const getPostById = async (id: string) => {
 export const getAllPostsByUser = async (userId: string, page: number) => {
   return await prisma.posts.findMany({
     where: {
+      isValid: true,
       author: {
         id: userId
       }
@@ -130,6 +131,7 @@ export const getPostsOfUserAndHisFollowings = async (userId: string, page: numbe
 
   const directPosts = await prisma.posts.findMany({
     where: {
+      isValid: true,
       authorId: {
         in: userIds
       }
@@ -160,6 +162,9 @@ export const getPostsOfUserAndHisFollowings = async (userId: string, page: numbe
     where: {
       usersId: {
         in: userIds
+      },
+      posts: {
+        isValid: true
       }
     },
     include: {
@@ -264,11 +269,16 @@ export const createPostWithTags = async ({ photo, content, userId, tags }: Creat
   });
 };
 
-export const updatePost = async (data, id) => {
-  return await prisma.posts.update({
+export const updatePost = async (id: string, data: { content?: string; photo?: string; isValid?: boolean }) => {
+  const updatedPost = await prisma.posts.update({
     where: { id },
-    data
+    data: {
+      ...data,
+      isValid: data.isValid !== undefined ? data.isValid : undefined
+    }
   });
+
+  return updatedPost;
 };
 
 export const deletePost = async (id: string) => {

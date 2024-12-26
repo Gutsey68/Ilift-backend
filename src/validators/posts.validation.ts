@@ -10,7 +10,9 @@ export const createPostSchema = z.object({
 
 export const updatePostSchema = z.object({
   body: z.object({
-    content: z.string().nonempty('Le contenu de la publication ne peut être vide')
+    content: z.string().optional(),
+    photo: z.string().optional(),
+    isValid: z.boolean().optional()
   })
 });
 
