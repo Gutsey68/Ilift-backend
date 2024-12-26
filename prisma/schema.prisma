@@ -27,6 +27,7 @@ model User {
   comments              UsersComments[]
   likes                 UsersLikes[]
   shares                UsersShares[]
+  passwordResets        PasswordReset[]
   posts                 Posts[]
   programs              Programs[]
   workouts              Workouts[]
@@ -42,6 +43,8 @@ model Posts {
   content               String
   createdAt             DateTime @default(now())
   updatedAt             DateTime @updatedAt
+  isValid               Boolean @default(true)
+
 
   comments              UsersComments[]
   shares                UsersShares[]
@@ -267,6 +270,16 @@ model RefreshToken {
 
   user      User @relation(fields: [userId], references: [id])
 }
+
+model PasswordReset {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}
+
 
 // ajouter des messages ?
 // ajouter des images pour les programmes ? pour les exercices ?

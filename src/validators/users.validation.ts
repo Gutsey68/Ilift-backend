@@ -13,6 +13,7 @@ export const updateUserSchema = z.object({
     profilePhoto: z
       .string()
       .optional()
-      .refine(val => val === undefined || val.trim() !== '', 'La photo de profil ne doit pas être vide')
+      .refine(val => val === undefined || val.trim() !== '', 'La photo de profil ne doit pas être vide'),
+    isBan: z.boolean().optional()
   })
 });

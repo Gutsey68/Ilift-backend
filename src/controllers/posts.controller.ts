@@ -11,13 +11,31 @@ import {
 
 export const getPostsHandler = async (req, res) => {
   try {
-    const posts = await getPosts();
+    const page = parseInt(req.query.page) || 1;
+    const size = parseInt(req.query.size) || 20;
 
-    if (!posts) {
+    let sort;
+    if (req.query.sort) {
+      try {
+        sort = JSON.parse(req.query.sort);
+
+        if (!sort.field || !['asc', 'desc'].includes(sort.order)) {
+          return res.status(400).json({
+            error: 'Format de tri invalide. Attendu: { "field": "string", "order": "asc" | "desc" }'
+          });
+        }
+      } catch (e) {
+        return res.status(400).json({ error: 'Paramètre de tri invalide' });
+      }
+    }
+
+    const posts = await getPosts(page, size, sort);
+
+    if (!posts.data.length) {
       return res.status(404).json({ error: 'Aucune publication trouvée' });
     }
 
-    res.status(200).json({ message: 'Publications récupérées avec succès', data: posts });
+    res.status(200).json(posts);
   } catch (error) {
     res.status(500).json({ error: 'Erreur Interne du Serveur' });
   }
@@ -138,11 +156,7 @@ export const createPostHandler = async (req, res) => {
       data: post
     });
   } catch (error) {
-    console.error('Erreur création post:', error);
-    res.status(500).json({
-      error: 'Erreur lors de la création du post',
-      details: error.message
-    });
+    res.status(500).json({ error: 'Erreur lors de la création du post' });
   }
 };
 
@@ -156,19 +170,31 @@ export const updatePostHandler = async (req, res) => {
       return res.status(404).json({ error: 'Publication non trouvée' });
     }
 
-    if (req.file) {
-      req.body.photo = req.file.path.replace(/\\/g, '/');
+    const updateData: {
+      content?: string;
+      photo?: string;
+      isValid?: boolean;
+    } = {};
+
+    if (req.body.content) {
+      updateData.content = req.body.content;
     }
 
-    const { content } = req.body;
+    if (req.file) {
+      updateData.photo = req.file.path.replace(/\\/g, '/');
+    }
 
-    const post = await updatePost({ content, photo: req.body.photo }, id);
+    if (req.body.isValid !== undefined) {
+      updateData.isValid = req.body.isValid;
+    }
 
-    if (!post) {
+    const updatedPost = await updatePost(id, updateData);
+
+    if (!updatedPost) {
       return res.status(400).json({ error: "La publication n'a pas pu être mise à jour" });
     }
 
-    res.status(200).json({ message: 'Publication mise à jour avec succès', data: post });
+    res.status(200).json(updatedPost);
   } catch (error) {
     res.status(500).json({ error: 'Erreur Interne du Serveur' });
   }

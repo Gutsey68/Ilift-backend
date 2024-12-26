@@ -20,3 +20,16 @@ export const registerSchema = z.object({
       path: ['body', 'confirmPassword']
     })
 });
+
+export const resetPasswordRequestSchema = z.object({
+  body: z.object({
+    email: z.string().email('Email invalide')
+  })
+});
+
+export const updatePasswordSchema = z.object({
+  body: z.object({
+    token: z.string().min(1, 'Token requis'),
+    newPassword: z.string().min(3, 'Le mot de passe doit contenir au moins 3 caractères')
+  })
+});

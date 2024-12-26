@@ -1,8 +1,18 @@
+import { Prisma } from '@prisma/client';
 import prisma from '../database/db';
 import { findCityByName } from './city.service';
 
+type SortParams = {
+  field: string;
+  order: 'asc' | 'desc';
+};
+
 export const getUsers = async () => {
-  return await prisma.user.findMany();
+  return await prisma.user.findMany({
+    where: {
+      isBan: false
+    }
+  });
 };
 
 export const getUserProfile = async (userId: string) => {
@@ -100,6 +110,7 @@ export const getUserById = async (id: string) => {
 export const getUsersIfollow = async (userId: string) => {
   return await prisma.user.findMany({
     where: {
+      isBan: false,
       NOT: {
         id: userId
       },
@@ -118,6 +129,7 @@ export const getUsersIfollow = async (userId: string) => {
 export const getUsersFollowedByUsersIfollow = async (userId: string, usersIfollowIds: string[]) => {
   const users = await prisma.user.findMany({
     where: {
+      isBan: false,
       NOT: {
         id: {
           in: [userId, ...usersIfollowIds]
@@ -180,6 +192,7 @@ export const getAdditionalUsers = async (userId: string, existingUserIds: string
 export const getFollowers = async (userId: string) => {
   return await prisma.user.findMany({
     where: {
+      isBan: false,
       NOT: {
         id: userId
       },
@@ -208,6 +221,7 @@ export const getFollowers = async (userId: string) => {
 export const getFollowings = async (userId: string) => {
   return await prisma.user.findMany({
     where: {
+      isBan: false,
       NOT: {
         id: userId
       },
@@ -223,4 +237,58 @@ export const getFollowings = async (userId: string) => {
       profilePhoto: true
     }
   });
+};
+
+export const getUsersAdmin = async (page: number, size: number, sort?: SortParams) => {
+  const skip = (page - 1) * size;
+  const sortOrder = sort?.order === 'desc' ? Prisma.SortOrder.desc : Prisma.SortOrder.asc;
+
+  let orderBy: Prisma.UserOrderByWithRelationInput = { createdAt: Prisma.SortOrder.desc };
+
+  if (sort?.field) {
+    if (sort.field.includes('.')) {
+      const [relation, field] = sort.field.split('.');
+      orderBy = {
+        [relation]: {
+          [field]: sortOrder
+        }
+      };
+    } else {
+      orderBy = {
+        [sort.field]: sortOrder
+      };
+    }
+  }
+
+  const [users, total] = await Promise.all([
+    prisma.user.findMany({
+      skip,
+      take: size,
+      orderBy,
+      select: {
+        id: true,
+        pseudo: true,
+        email: true,
+        createdAt: true,
+        profilePhoto: true,
+        roleId: true,
+        isBan: true,
+        _count: {
+          select: {
+            posts: true,
+            followedBy: true,
+            following: true
+          }
+        }
+      }
+    }),
+    prisma.user.count()
+  ]);
+
+  return {
+    data: users,
+    meta: {
+      totalRowCount: total
+    }
+  };
 };

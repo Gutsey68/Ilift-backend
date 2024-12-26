@@ -1,7 +1,73 @@
+import { Prisma } from '@prisma/client';
 import prisma from '../database/db';
 
-export const getPosts = async () => {
-  return await prisma.posts.findMany();
+type SortParams = {
+  field: string;
+  order: 'asc' | 'desc';
+};
+
+export const getPosts = async (page: number, size: number, sort?: SortParams) => {
+  const skip = (page - 1) * size;
+
+  const sortOrder = sort?.order === 'desc' ? Prisma.SortOrder.desc : Prisma.SortOrder.asc;
+
+  let orderBy: Prisma.PostsOrderByWithRelationInput = { createdAt: Prisma.SortOrder.desc };
+
+  if (sort?.field) {
+    if (sort.field.includes('.')) {
+      const [relation, field] = sort.field.split('.');
+      orderBy = {
+        [relation]: {
+          [field]: sortOrder
+        }
+      };
+    } else {
+      orderBy = {
+        [sort.field]: sortOrder
+      };
+    }
+  }
+
+  const [posts, total] = await Promise.all([
+    prisma.posts.findMany({
+      skip,
+      take: size,
+      orderBy,
+      select: {
+        id: true,
+        content: true,
+        photo: true,
+        createdAt: true,
+        isValid: true,
+        author: {
+          select: {
+            id: true,
+            pseudo: true,
+            profilePhoto: true
+          }
+        },
+        tags: {
+          include: {
+            tag: true
+          }
+        },
+        _count: {
+          select: {
+            likes: true,
+            comments: true
+          }
+        }
+      }
+    }),
+    prisma.posts.count()
+  ]);
+
+  return {
+    data: posts,
+    meta: {
+      totalRowCount: total
+    }
+  };
 };
 
 export const getPostById = async (id: string) => {
@@ -13,6 +79,7 @@ export const getPostById = async (id: string) => {
 export const getAllPostsByUser = async (userId: string, page: number) => {
   return await prisma.posts.findMany({
     where: {
+      isValid: true,
       author: {
         id: userId
       }
@@ -59,6 +126,7 @@ export const getPostsOfUserAndHisFollowings = async (userId: string, page: numbe
 
   const directPosts = await prisma.posts.findMany({
     where: {
+      isValid: true,
       authorId: {
         in: userIds
       }
@@ -89,6 +157,9 @@ export const getPostsOfUserAndHisFollowings = async (userId: string, page: numbe
     where: {
       usersId: {
         in: userIds
+      },
+      posts: {
+        isValid: true
       }
     },
     include: {
@@ -193,11 +264,16 @@ export const createPostWithTags = async ({ photo, content, userId, tags }: Creat
   });
 };
 
-export const updatePost = async (data, id) => {
-  return await prisma.posts.update({
+export const updatePost = async (id: string, data: { content?: string; photo?: string; isValid?: boolean }) => {
+  const updatedPost = await prisma.posts.update({
     where: { id },
-    data
+    data: {
+      ...data,
+      isValid: data.isValid !== undefined ? data.isValid : undefined
+    }
   });
+
+  return updatedPost;
 };
 
 export const deletePost = async (id: string) => {
