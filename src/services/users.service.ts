@@ -1,5 +1,11 @@
+import { Prisma } from '@prisma/client';
 import prisma from '../database/db';
 import { findCityByName } from './city.service';
+
+type SortParams = {
+  field: string;
+  order: 'asc' | 'desc';
+};
 
 export const getUsers = async () => {
   return await prisma.user.findMany();
@@ -223,4 +229,63 @@ export const getFollowings = async (userId: string) => {
       profilePhoto: true
     }
   });
+};
+
+export const getUsersAdmin = async (page: number, size: number, sort?: SortParams) => {
+  const skip = (page - 1) * size;
+  const sortOrder = sort?.order === 'desc' ? Prisma.SortOrder.desc : Prisma.SortOrder.asc;
+
+  let orderBy: Prisma.UserOrderByWithRelationInput = { createdAt: Prisma.SortOrder.desc };
+
+  if (sort?.field) {
+    if (sort.field.includes('.')) {
+      const [relation, field] = sort.field.split('.');
+      orderBy = {
+        [relation]: {
+          [field]: sortOrder
+        }
+      };
+    } else {
+      orderBy = {
+        [sort.field]: sortOrder
+      };
+    }
+  }
+
+  try {
+    const [users, total] = await Promise.all([
+      prisma.user.findMany({
+        skip,
+        take: size,
+        orderBy,
+        select: {
+          id: true,
+          pseudo: true,
+          email: true,
+          createdAt: true,
+          profilePhoto: true,
+          roleId: true,
+          isBan: true,
+          _count: {
+            select: {
+              posts: true,
+              followedBy: true,
+              following: true
+            }
+          }
+        }
+      }),
+      prisma.user.count()
+    ]);
+
+    return {
+      data: users,
+      meta: {
+        totalRowCount: total
+      }
+    };
+  } catch (error) {
+    console.error('Erreur dans getUsersAdmin:', error);
+    throw error;
+  }
 };
