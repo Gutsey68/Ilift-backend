@@ -116,7 +116,6 @@ export const getLikesOfAUserHandler = async (req, res) => {
       pageParam: page
     });
   } catch (error) {
-    console.error('Erreur getLikesOfAUserHandler:', error);
     res.status(500).json({ error: 'Erreur Interne du Serveur' });
   }
 };

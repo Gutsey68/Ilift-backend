@@ -245,10 +245,8 @@ export const getUsersAdminHandler = async (req, res) => {
 
     res.status(200).json(users);
   } catch (error) {
-    console.error('Error in getUsersAdminHandler:', error);
     res.status(500).json({
-      error: 'Erreur Interne du Serveur',
-      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+      error: 'Erreur Interne du Serveur'
     });
   }
 };

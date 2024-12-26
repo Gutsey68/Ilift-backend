@@ -21,14 +21,11 @@ export const sendResetPasswordEmail = async (to: string, token: string) => {
     });
 
     if (error) {
-      console.error("Erreur lors de l'envoi de l'email:", error);
       return false;
     }
 
-    console.log("Email envoyé avec l'ID:", data?.id);
     return true;
-  } catch (error) {
-    console.error("Erreur lors de l'envoi de l'email:", error);
+  } catch {
     return false;
   }
 };

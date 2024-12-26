@@ -28,51 +28,46 @@ export const getPosts = async (page: number, size: number, sort?: SortParams) =>
     }
   }
 
-  try {
-    const [posts, total] = await Promise.all([
-      prisma.posts.findMany({
-        skip,
-        take: size,
-        orderBy,
-        select: {
-          id: true,
-          content: true,
-          photo: true,
-          createdAt: true,
-          isValid: true,
-          author: {
-            select: {
-              id: true,
-              pseudo: true,
-              profilePhoto: true
-            }
-          },
-          tags: {
-            include: {
-              tag: true
-            }
-          },
-          _count: {
-            select: {
-              likes: true,
-              comments: true
-            }
+  const [posts, total] = await Promise.all([
+    prisma.posts.findMany({
+      skip,
+      take: size,
+      orderBy,
+      select: {
+        id: true,
+        content: true,
+        photo: true,
+        createdAt: true,
+        isValid: true,
+        author: {
+          select: {
+            id: true,
+            pseudo: true,
+            profilePhoto: true
+          }
+        },
+        tags: {
+          include: {
+            tag: true
+          }
+        },
+        _count: {
+          select: {
+            likes: true,
+            comments: true
           }
         }
-      }),
-      prisma.posts.count()
-    ]);
-
-    return {
-      data: posts,
-      meta: {
-        totalRowCount: total
       }
-    };
-  } catch (error) {
-    console.error('Erreur dans getPosts:', error);
-    throw error;
-  }
+    }),
+    prisma.posts.count()
+  ]);
+
+  return {
+    data: posts,
+    meta: {
+      totalRowCount: total
+    }
+  };
 };
 
 export const getPostById = async (id: string) => {

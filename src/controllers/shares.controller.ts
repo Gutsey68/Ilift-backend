@@ -41,7 +41,6 @@ export const getSharesOfUserHandler = async (req, res) => {
       pageParam: page
     });
   } catch (error) {
-    console.error('Erreur getSharesOfUserHandler:', error);
     res.status(500).json({ error: 'Erreur Interne du Serveur' });
   }
 };

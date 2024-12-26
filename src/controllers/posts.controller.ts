@@ -37,7 +37,6 @@ export const getPostsHandler = async (req, res) => {
 
     res.status(200).json(posts);
   } catch (error) {
-    console.error('Error in getPostsHandler:', error);
     res.status(500).json({ error: 'Erreur Interne du Serveur' });
   }
 };
@@ -157,7 +156,6 @@ export const createPostHandler = async (req, res) => {
       data: post
     });
   } catch (error) {
-    console.error('Erreur création post:', error);
     res.status(500).json({ error: 'Erreur lors de la création du post' });
   }
 };
