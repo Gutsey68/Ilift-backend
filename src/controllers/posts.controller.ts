@@ -141,7 +141,7 @@ export const createPostHandler = async (req, res) => {
 
     let photo = null;
     if (req.file) {
-      photo = req.file.path.replace(/\\/g, '/');
+      photo = '/' + req.file.path.replace(/\\/g, '/');
     }
 
     const post = await createPostWithTags({
@@ -181,7 +181,7 @@ export const updatePostHandler = async (req, res) => {
     }
 
     if (req.file) {
-      updateData.photo = req.file.path.replace(/\\/g, '/');
+      updateData.photo = '/' + req.file.path.replace(/\\/g, '/');
     }
 
     if (req.body.isValid !== undefined) {
