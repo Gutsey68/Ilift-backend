@@ -270,6 +270,7 @@ export const updatePost = async (
     content?: string;
     photo?: string | null;
     isValid?: boolean;
+    tags?: string[];
   }
 ) => {
   const updatedPost = await prisma.posts.update({
@@ -277,7 +278,28 @@ export const updatePost = async (
     data: {
       ...data,
       isValid: data.isValid !== undefined ? data.isValid : undefined,
-      photo: data.photo !== undefined ? data.photo : undefined
+      photo: data.photo !== undefined ? data.photo : undefined,
+      tags:
+        data.tags !== undefined
+          ? {
+              deleteMany: {},
+              create: data.tags.map(tagName => ({
+                tag: {
+                  connectOrCreate: {
+                    where: { name: tagName },
+                    create: { name: tagName }
+                  }
+                }
+              }))
+            }
+          : undefined
+    },
+    include: {
+      tags: {
+        include: {
+          tag: true
+        }
+      }
     }
   });
 

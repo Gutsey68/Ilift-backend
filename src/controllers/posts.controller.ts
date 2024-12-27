@@ -174,13 +174,23 @@ export const updatePostHandler = async (req, res) => {
       content?: string;
       photo?: string | null;
       isValid?: boolean;
+      tags?: any[];
     } = {};
 
     if (req.body.content) {
       updateData.content = req.body.content;
     }
 
-    // Conversion explicite de removePhoto en booléen
+    if (req.body.removeTags === 'true' || req.body.removeTags === true) {
+      updateData.tags = [];
+    } else if (req.body.tags) {
+      try {
+        updateData.tags = JSON.parse(req.body.tags);
+      } catch (e) {
+        updateData.tags = [req.body.tags];
+      }
+    }
+
     if (req.body.removePhoto === 'true' || req.body.removePhoto === true) {
       updateData.photo = null;
     } else if (req.file) {

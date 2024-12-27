@@ -14,7 +14,8 @@ export const updatePostSchema = z.object({
     photo: z.string().nullable().optional(),
     isValid: z.boolean().optional(),
     tags: z.string().nullable().optional(),
-    removePhoto: z.union([z.literal('true'), z.literal('false'), z.boolean()]).optional()
+    removePhoto: z.union([z.literal('true'), z.literal('false'), z.boolean()]).optional(),
+    removeTags: z.union([z.literal('true'), z.literal('false'), z.boolean()]).optional()
   })
 });
 
