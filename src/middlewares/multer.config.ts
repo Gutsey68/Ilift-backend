@@ -21,7 +21,7 @@ const fileFilter = (req, file, cb) => {
   if (mimetype && extname) {
     return cb(null, true);
   } else {
-    cb(new Error("Le format du fichier n'est pas pris en charge!"));
+    cb(new Error("Le format du fichier n'est pas pris en charge."));
   }
 };
 
