@@ -172,7 +172,7 @@ export const updatePostHandler = async (req, res) => {
 
     const updateData: {
       content?: string;
-      photo?: string;
+      photo?: string | null;
       isValid?: boolean;
     } = {};
 
@@ -180,7 +180,10 @@ export const updatePostHandler = async (req, res) => {
       updateData.content = req.body.content;
     }
 
-    if (req.file) {
+    // Conversion explicite de removePhoto en booléen
+    if (req.body.removePhoto === 'true' || req.body.removePhoto === true) {
+      updateData.photo = null;
+    } else if (req.file) {
       updateData.photo = '/' + req.file.path.replace(/\\/g, '/');
     }
 
