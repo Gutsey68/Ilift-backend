@@ -11,8 +11,11 @@ export const createPostSchema = z.object({
 export const updatePostSchema = z.object({
   body: z.object({
     content: z.string().optional(),
-    photo: z.string().optional(),
-    isValid: z.boolean().optional()
+    photo: z.string().nullable().optional(),
+    isValid: z.boolean().optional(),
+    tags: z.string().nullable().optional(),
+    removePhoto: z.union([z.literal('true'), z.literal('false'), z.boolean()]).optional(),
+    removeTags: z.union([z.literal('true'), z.literal('false'), z.boolean()]).optional()
   })
 });
 

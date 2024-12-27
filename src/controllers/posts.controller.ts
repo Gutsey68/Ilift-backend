@@ -141,7 +141,7 @@ export const createPostHandler = async (req, res) => {
 
     let photo = null;
     if (req.file) {
-      photo = req.file.path.replace(/\\/g, '/');
+      photo = '/' + req.file.path.replace(/\\/g, '/');
     }
 
     const post = await createPostWithTags({
@@ -172,16 +172,29 @@ export const updatePostHandler = async (req, res) => {
 
     const updateData: {
       content?: string;
-      photo?: string;
+      photo?: string | null;
       isValid?: boolean;
+      tags?: any[];
     } = {};
 
     if (req.body.content) {
       updateData.content = req.body.content;
     }
 
-    if (req.file) {
-      updateData.photo = req.file.path.replace(/\\/g, '/');
+    if (req.body.removeTags === 'true' || req.body.removeTags === true) {
+      updateData.tags = [];
+    } else if (req.body.tags) {
+      try {
+        updateData.tags = JSON.parse(req.body.tags);
+      } catch (e) {
+        updateData.tags = [req.body.tags];
+      }
+    }
+
+    if (req.body.removePhoto === 'true' || req.body.removePhoto === true) {
+      updateData.photo = null;
+    } else if (req.file) {
+      updateData.photo = '/' + req.file.path.replace(/\\/g, '/');
     }
 
     if (req.body.isValid !== undefined) {

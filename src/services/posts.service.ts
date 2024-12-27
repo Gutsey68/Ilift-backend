@@ -264,12 +264,42 @@ export const createPostWithTags = async ({ photo, content, userId, tags }: Creat
   });
 };
 
-export const updatePost = async (id: string, data: { content?: string; photo?: string; isValid?: boolean }) => {
+export const updatePost = async (
+  id: string,
+  data: {
+    content?: string;
+    photo?: string | null;
+    isValid?: boolean;
+    tags?: string[];
+  }
+) => {
   const updatedPost = await prisma.posts.update({
     where: { id },
     data: {
       ...data,
-      isValid: data.isValid !== undefined ? data.isValid : undefined
+      isValid: data.isValid !== undefined ? data.isValid : undefined,
+      photo: data.photo !== undefined ? data.photo : undefined,
+      tags:
+        data.tags !== undefined
+          ? {
+              deleteMany: {},
+              create: data.tags.map(tagName => ({
+                tag: {
+                  connectOrCreate: {
+                    where: { name: tagName },
+                    create: { name: tagName }
+                  }
+                }
+              }))
+            }
+          : undefined
+    },
+    include: {
+      tags: {
+        include: {
+          tag: true
+        }
+      }
     }
   });
 
