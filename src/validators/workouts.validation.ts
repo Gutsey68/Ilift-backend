@@ -27,3 +27,12 @@ export const getExercicesOfWorkoutSchema = z.object({
     id: z.string().min(1, "L'identifiant de la séance est requis")
   })
 });
+
+export const updateWorkoutExercicesSchema = z.object({
+  body: z.object({
+    exerciceIds: z.array(z.string())
+  }),
+  params: z.object({
+    id: z.string().min(1, "L'identifiant de la séance est requis")
+  })
+});

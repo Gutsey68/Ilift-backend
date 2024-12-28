@@ -72,3 +72,22 @@ export const deleteWorkout = async (id: string) => {
     }
   });
 };
+
+export const updateWorkoutExercices = async (workoutId: string, exerciceIds: string[]) => {
+  // D'abord supprimer toutes les relations existantes
+  await prisma.workoutsExercises.deleteMany({
+    where: {
+      workoutId
+    }
+  });
+
+  // Ensuite créer les nouvelles relations
+  await prisma.workoutsExercises.createMany({
+    data: exerciceIds.map(exerciceId => ({
+      workoutId,
+      exerciceId
+    }))
+  });
+
+  return await getExercicesOfWorkout(workoutId);
+};
