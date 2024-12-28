@@ -38,6 +38,13 @@ export const getExercicesOfWorkout = async (workoutId: string) => {
         }
       }
     },
+    include: {
+      musclesGroups: {
+        include: {
+          muscleGroups: true
+        }
+      }
+    },
     orderBy: {
       createdAt: 'asc'
     }
@@ -74,14 +81,12 @@ export const deleteWorkout = async (id: string) => {
 };
 
 export const updateWorkoutExercices = async (workoutId: string, exerciceIds: string[]) => {
-  // D'abord supprimer toutes les relations existantes
   await prisma.workoutsExercises.deleteMany({
     where: {
       workoutId
     }
   });
 
-  // Ensuite créer les nouvelles relations
   await prisma.workoutsExercises.createMany({
     data: exerciceIds.map(exerciceId => ({
       workoutId,

@@ -4,6 +4,7 @@ import commentsRoutes from './comments.routes';
 import exercicesRoute from './exercices.routes';
 import followsRoutes from './follows.routes';
 import likesRoutes from './likes.routes';
+import musclesgroupRouter from './muscles.routes';
 import notificationsRoutes from './notifications.routes';
 import postsRoutes from './posts.routes';
 import programsRoute from './programs.routes';
@@ -26,5 +27,6 @@ router.use('/comments', commentsRoutes);
 router.use('/likes', likesRoutes);
 router.use('/follows', followsRoutes);
 router.use('/shares', sharesRoutes);
+router.use('/muscles', musclesgroupRouter);
 
 export default router;

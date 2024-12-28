@@ -1,9 +1,9 @@
 import {
   createExercice,
   deleteExercice,
+  getAllExercices,
   getExerciceAndResults,
   getExerciceByIdWithoutResults,
-  getExercices,
   getWorkoutById,
   updateExercice
 } from '../services/exercices.service';
@@ -32,13 +32,11 @@ export const getExerciceAndResultsHandler = async (req, res) => {
 
 export const getExercicesHandler = async (req, res) => {
   try {
-    const exercices = await getExercices();
-
-    if (!exercices) {
-      return res.status(404).json({ error: 'Exercices non trouvés' });
-    }
-
-    res.status(200).json({ message: 'Exercices récupérés avec succès', data: exercices });
+    const exercices = await getAllExercices();
+    res.status(200).json({
+      message: 'Exercices récupérés avec succès',
+      data: exercices
+    });
   } catch (error) {
     res.status(500).json({ error: 'Erreur Interne du Serveur' });
   }

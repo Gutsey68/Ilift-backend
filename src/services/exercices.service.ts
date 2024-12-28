@@ -88,3 +88,18 @@ export const deleteExercice = async id => {
     }
   });
 };
+
+export const getAllExercices = async () => {
+  return await prisma.exercices.findMany({
+    include: {
+      musclesGroups: {
+        include: {
+          muscleGroups: true
+        }
+      }
+    },
+    orderBy: {
+      name: 'asc'
+    }
+  });
+};
