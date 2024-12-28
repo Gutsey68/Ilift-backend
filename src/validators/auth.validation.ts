@@ -2,8 +2,8 @@ import { z } from 'zod';
 
 export const loginSchema = z.object({
   body: z.object({
-    pseudo: z.string().nonempty('Pseudo requis'),
-    password: z.string().nonempty('Mot de passe requis')
+    pseudo: z.string().min(1, 'Pseudo requis'),
+    password: z.string().min(1, 'Mot de passe requis')
   })
 });
 
