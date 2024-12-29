@@ -12,6 +12,7 @@ import sharesRoutes from './shares.routes';
 import tagsRoutes from './tags.routes';
 import userRoutes from './users.routes';
 import workoutsRoute from './workouts.routes';
+import resultsRouter from './results.routes';
 
 const router = Router();
 
@@ -28,5 +29,6 @@ router.use('/likes', likesRoutes);
 router.use('/follows', followsRoutes);
 router.use('/shares', sharesRoutes);
 router.use('/muscles', musclesgroupRouter);
+router.use('/results', resultsRouter);
 
 export default router;
