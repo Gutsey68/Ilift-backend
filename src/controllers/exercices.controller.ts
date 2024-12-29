@@ -11,6 +11,7 @@ import {
 export const getExerciceAndResultsHandler = async (req, res) => {
   try {
     const workoutId = req.params.id;
+    const userId = req.user.id;
 
     const workout = await getWorkoutById(workoutId);
 
@@ -18,7 +19,7 @@ export const getExerciceAndResultsHandler = async (req, res) => {
       return res.status(404).json({ error: 'Workout non trouvé' });
     }
 
-    const exercices = await getExerciceAndResults(workoutId);
+    const exercices = await getExerciceAndResults(workoutId, userId);
 
     if (!exercices) {
       return res.status(404).json({ error: 'Exercices non trouvés' });

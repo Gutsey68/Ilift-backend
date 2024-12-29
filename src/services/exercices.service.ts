@@ -1,12 +1,15 @@
 import prisma from '../database/db';
 
-export const getExerciceAndResults = async (id: string) => {
+export const getExerciceAndResults = async (id: string, userId: string) => {
   return await prisma.exercices.findUnique({
     where: {
       id
     },
     include: {
       results: {
+        where: {
+          userId: userId
+        },
         orderBy: {
           createdAt: 'desc'
         },
