@@ -16,7 +16,7 @@ const programsRoute = Router();
 programsRoute.use(protect);
 
 programsRoute.get('/', getProgramsHandler);
-programsRoute.get('/users/:id', getProgramsOfUserHandler);
+programsRoute.get('/me', getProgramsOfUserHandler);
 programsRoute.get('/:id/workouts', getWorkoutsOfProgramHandler);
 programsRoute.post('/', validate(createProgramSchema), createProgramHandler);
 programsRoute.put('/:id', validate(updateProgramSchema), updateProgramHandler);

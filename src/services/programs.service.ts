@@ -22,7 +22,17 @@ export const getProgramById = async (id: string) => {
     },
     select: {
       name: true,
-      id: true
+      id: true,
+      author: {
+        select: {
+          id: true
+        }
+      },
+      usersFollows: {
+        select: {
+          userId: true
+        }
+      }
     }
   });
 };

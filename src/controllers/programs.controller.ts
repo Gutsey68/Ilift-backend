@@ -7,7 +7,6 @@ import {
   getWorkoutsOfProgram,
   updateProgram
 } from '../services/programs.service';
-import { getUserById } from '../services/users.service';
 
 export const getProgramsHandler = async (req, res) => {
   try {
@@ -25,14 +24,7 @@ export const getProgramsHandler = async (req, res) => {
 
 export const getProgramsOfUserHandler = async (req, res) => {
   try {
-    const userId = req.params.id;
-
-    const existingUser = await getUserById(req.params.id);
-
-    if (!existingUser) {
-      return res.status(404).json({ error: 'Utilisateur non trouvé' });
-    }
-
+    const userId = req.user.id;
     const programs = await getProgramsOfUser(userId);
 
     if (!programs) {
@@ -48,11 +40,19 @@ export const getProgramsOfUserHandler = async (req, res) => {
 export const getWorkoutsOfProgramHandler = async (req, res) => {
   try {
     const programId = req.params.id;
+    const userId = req.user.id;
 
     const program = await getProgramById(programId);
 
     if (!program) {
       return res.status(404).json({ error: 'Programme non trouvé' });
+    }
+
+    const isAuthor = program.author.id === userId;
+    const isFollower = program.usersFollows.some(follow => follow.userId === userId);
+
+    if (!isAuthor && !isFollower) {
+      return res.status(403).json({ error: 'Non autorisé' });
     }
 
     const workouts = await getWorkoutsOfProgram(programId);
