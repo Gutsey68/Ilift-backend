@@ -67,7 +67,7 @@ model City {
 model Programs {
   id            String   @id @default(cuid())
   name          String
-  description   String
+  description   String?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
   authorId      String
@@ -201,7 +201,7 @@ model Role {
 model ExercicesResultsPosts {
   posts                 Posts    @relation(fields: [postsId], references: [id], onDelete: Cascade)
   postsId               String
-  exercicesResults      ExerciceResults @relation(fields: [exercicesResultsId], references: [id])
+  exercicesResults      ExerciceResults @relation(fields: [exercicesResultsId], references: [id], onDelete: Cascade)
   exercicesResultsId    String
   createdAt             DateTime @default(now())
   updatedAt             DateTime @updatedAt
@@ -237,7 +237,7 @@ model Sets {
   updatedAt        DateTime @updatedAt
   exerciceResultId String
 
-  exerciceResult   ExerciceResults @relation(fields: [exerciceResultId], references: [id])
+  exerciceResult   ExerciceResults @relation(fields: [exerciceResultId], references: [id], onDelete: Cascade)
 }
 
 model Tags {

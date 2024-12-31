@@ -1,12 +1,15 @@
 import prisma from '../database/db';
 
-export const getExerciceAndResults = async (id: string) => {
+export const getExerciceAndResults = async (id: string, userId: string) => {
   return await prisma.exercices.findUnique({
     where: {
       id
     },
     include: {
       results: {
+        where: {
+          userId: userId
+        },
         orderBy: {
           createdAt: 'desc'
         },
@@ -85,6 +88,21 @@ export const deleteExercice = async id => {
   return await prisma.exercices.delete({
     where: {
       id
+    }
+  });
+};
+
+export const getAllExercices = async () => {
+  return await prisma.exercices.findMany({
+    include: {
+      musclesGroups: {
+        include: {
+          muscleGroups: true
+        }
+      }
+    },
+    orderBy: {
+      name: 'asc'
     }
   });
 };

@@ -38,6 +38,13 @@ export const getExercicesOfWorkout = async (workoutId: string) => {
         }
       }
     },
+    include: {
+      musclesGroups: {
+        include: {
+          muscleGroups: true
+        }
+      }
+    },
     orderBy: {
       createdAt: 'asc'
     }
@@ -71,4 +78,21 @@ export const deleteWorkout = async (id: string) => {
       id
     }
   });
+};
+
+export const updateWorkoutExercices = async (workoutId: string, exerciceIds: string[]) => {
+  await prisma.workoutsExercises.deleteMany({
+    where: {
+      workoutId
+    }
+  });
+
+  await prisma.workoutsExercises.createMany({
+    data: exerciceIds.map(exerciceId => ({
+      workoutId,
+      exerciceId
+    }))
+  });
+
+  return await getExercicesOfWorkout(workoutId);
 };

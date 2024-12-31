@@ -4,6 +4,7 @@ import commentsRoutes from './comments.routes';
 import exercicesRoute from './exercices.routes';
 import followsRoutes from './follows.routes';
 import likesRoutes from './likes.routes';
+import musclesgroupRouter from './muscles.routes';
 import notificationsRoutes from './notifications.routes';
 import postsRoutes from './posts.routes';
 import programsRoute from './programs.routes';
@@ -11,6 +12,7 @@ import sharesRoutes from './shares.routes';
 import tagsRoutes from './tags.routes';
 import userRoutes from './users.routes';
 import workoutsRoute from './workouts.routes';
+import resultsRouter from './results.routes';
 
 const router = Router();
 
@@ -26,5 +28,7 @@ router.use('/comments', commentsRoutes);
 router.use('/likes', likesRoutes);
 router.use('/follows', followsRoutes);
 router.use('/shares', sharesRoutes);
+router.use('/muscles', musclesgroupRouter);
+router.use('/results', resultsRouter);
 
 export default router;

@@ -1,22 +1,39 @@
-import { createWorkout, deleteWorkout, getExercicesOfWorkout, getWorkoutById, getWorkoutByIdWithoutSelect, updateWorkout } from '../services/workouts.service';
+import prisma from '../database/db';
+import { createWorkout, deleteWorkout, getWorkoutById, getWorkoutByIdWithoutSelect, updateWorkout, updateWorkoutExercices } from '../services/workouts.service';
 
 export const getExercicesOfWorkoutHandler = async (req, res) => {
   try {
     const workoutId = req.params.id;
-
     const workout = await getWorkoutById(workoutId);
 
     if (!workout) {
       return res.status(404).json({ error: 'Séance non trouvée' });
     }
 
-    const exercices = await getExercicesOfWorkout(workoutId);
+    const exercices = await prisma.exercices.findMany({
+      where: {
+        workouts: {
+          some: {
+            workoutId
+          }
+        }
+      },
+      include: {
+        musclesGroups: {
+          include: {
+            muscleGroups: true
+          }
+        }
+      },
+      orderBy: {
+        createdAt: 'asc'
+      }
+    });
 
-    if (!exercices) {
-      return res.status(404).json({ error: 'Exercices non trouvés' });
-    }
-
-    res.status(200).json({ message: 'Exercices récupérés avec succès', data: { exercices, workout } });
+    res.status(200).json({
+      message: 'Exercices récupérés avec succès',
+      data: { exercices, workout }
+    });
   } catch (error) {
     res.status(500).json({ error: 'Erreur Interne du Serveur' });
   }
@@ -80,6 +97,28 @@ export const deleteWorkoutHandler = async (req, res) => {
     }
 
     res.status(200).json({ message: 'Séance supprimée avec succès' });
+  } catch (error) {
+    res.status(500).json({ error: 'Erreur Interne du Serveur' });
+  }
+};
+
+export const updateWorkoutExercicesHandler = async (req, res) => {
+  try {
+    const { exerciceIds } = req.body;
+    const workoutId = req.params.id;
+
+    const existingWorkout = await getWorkoutByIdWithoutSelect(workoutId);
+
+    if (!existingWorkout) {
+      return res.status(404).json({ error: 'Séance non trouvée' });
+    }
+
+    const updatedExercices = await updateWorkoutExercices(workoutId, exerciceIds);
+
+    res.status(200).json({
+      message: 'Exercices de la séance mis à jour avec succès',
+      data: updatedExercices
+    });
   } catch (error) {
     res.status(500).json({ error: 'Erreur Interne du Serveur' });
   }
