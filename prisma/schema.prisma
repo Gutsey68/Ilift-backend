@@ -34,7 +34,8 @@ model User {
   role                  Role? @relation(fields: [roleId], references: [id])
   city                  City? @relation(fields: [cityId], references: [id])
   programsFollowed      UsersProgramsFollows[]
-  notifications  Notifications[]
+  receivedNotifications Notifications[] @relation("receivedNotifications")
+  sentNotifications     Notifications[] @relation("sentNotifications")
 }
 
 model Posts {
@@ -69,7 +70,7 @@ model Programs {
   name          String
   description   String?
   createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  updatedAt     DateTime @default(now())
   authorId      String
 
   author        User @relation(fields: [authorId], references: [id])
@@ -81,7 +82,7 @@ model Workouts {
   id           String   @id @default(cuid())
   name         String
   createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  updatedAt    DateTime @default(now())
   programId    String
   userId       String
 
@@ -94,7 +95,7 @@ model Exercices {
   id                String   @id @default(cuid())
   name              String
   createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  updatedAt         DateTime @default(now())
 
   workouts          WorkoutsExercises[]
   results           ExerciceResults[]
@@ -184,7 +185,7 @@ model UsersProgramsFollows {
   userId       String
   user         User         @relation(fields: [userId], references: [id])
   createdAt    DateTime     @default(now())
-  updatedAt    DateTime     @updatedAt
+  updatedAt    DateTime     @default(now())
 
   @@id([programId, userId])
 }
@@ -220,13 +221,15 @@ model Follows {
 
 model Notifications {
   id             String   @id @default(cuid())
-  userId         String 
+  userId         String   
+  senderId       String 
   type           String   
   content        String   
   isRead         Boolean  @default(false) 
   createdAt      DateTime @default(now())
 
-  user           User     @relation(fields: [userId], references: [id])
+  user           User     @relation("receivedNotifications", fields: [userId], references: [id])
+  sender         User     @relation("sentNotifications", fields: [senderId], references: [id])
 }
 
 model Sets {

@@ -1,4 +1,5 @@
 import { getLikeById, getLikes, getLikesOfAUser, getLikesOfPost, likePost, unlikePost } from '../services/likes.service';
+import { createNotification } from '../services/notifications.service';
 import { getPostById } from '../services/posts.service';
 import { getUserById } from '../services/users.service';
 
@@ -22,6 +23,10 @@ export const likePostHandler = async (req, res) => {
 
     if (!like) {
       return res.status(400).json({ error: 'Erreur lors de la mise à jour de la publication' });
+    }
+
+    if (existingPost.authorId !== req.user.id) {
+      await createNotification(existingPost.authorId, req.user.id, 'like', `${req.user.pseudo} a aimé votre publication`);
     }
 
     res.status(200).json({ message: 'Publication aimée avec succès', data: like });

@@ -1,4 +1,5 @@
 import { followUser, getFollowById, unfollowUser } from '../services/follows.service';
+import { createNotification } from '../services/notifications.service';
 import { getUserById } from '../services/users.service';
 
 export const followHandler = async (req, res) => {
@@ -24,6 +25,8 @@ export const followHandler = async (req, res) => {
     if (!follows) {
       return res.status(400).json({ error: "Erreur lors du suivi de l'utilisateur" });
     }
+
+    await createNotification(req.params.id, req.user.id, 'follow', `${req.user.pseudo} a commencé à vous suivre`);
 
     res.status(200).json({ message: 'Utilisateur suivi avec succès', data: follows });
   } catch (error) {
