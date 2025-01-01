@@ -74,7 +74,13 @@ export const loginHandler = async (req, res) => {
     res.status(200).json({
       message: 'Connexion réussie',
       data: {
-        user: { id: user.id, pseudo: user.pseudo, email: user.email }
+        user: {
+          id: user.id,
+          pseudo: user.pseudo,
+          email: user.email,
+          onboardingStep: user.onboardingStep,
+          isOnboardingCompleted: user.isOnboardingCompleted
+        }
       },
       token,
       refreshToken

@@ -19,6 +19,8 @@ model User {
   roleId                String?
   cityId                String?
   isBan                 Boolean @default(false)
+  onboardingStep        Int      @default(0)
+  isOnboardingCompleted Boolean  @default(false)
   exercicesResults      ExerciceResults[]
   refreshtokens                RefreshToken[]
 
