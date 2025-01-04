@@ -9,6 +9,19 @@ import {
   updatePost
 } from '../services/posts.service';
 
+interface PostWithExtras extends Omit<any, 'isSuggested'> {
+  doILike?: boolean;
+  isMyPost?: boolean;
+  isSuggested?: boolean;
+  isShared: boolean;
+  sharedAt: any;
+  author: {
+    id: string;
+    pseudo: string;
+    profilePhoto: string;
+  };
+}
+
 export const getPostsHandler = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
@@ -101,17 +114,24 @@ export const getPostsOfUserAndHisFollowingsHandler = async (req, res) => {
       return res.status(404).json({ error: 'Aucune publication trouvée' });
     }
 
-    const postsWithLikes = posts.map(post => ({ ...post, doILike: false }));
+    const postsWithLikes = (posts as PostWithExtras[]).map(post => ({
+      ...post,
+      doILike: false
+    }));
 
     for (let i = 0; i < postsWithLikes.length; i++) {
       const doIlikeThePost = await getLikeById(posts[i].id, req.user.id);
       postsWithLikes[i].doILike = !!doIlikeThePost;
     }
 
-    const postsWithInformations = postsWithLikes.map(post => ({ ...post, isMyPost: false }));
+    const postsWithInformations = postsWithLikes.map(post => ({
+      ...post,
+      isMyPost: false,
+      isSuggested: post.isSuggested ?? false
+    }));
 
     for (let i = 0; i < postsWithInformations.length; i++) {
-      if (postsWithInformations[i].authorId === req.user.id) {
+      if (postsWithInformations[i].author.id === req.user.id) {
         postsWithInformations[i].isMyPost = true;
       }
     }
