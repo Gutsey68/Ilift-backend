@@ -25,6 +25,7 @@ export const getUserProfile = async (userId: string) => {
       bio: true,
       createdAt: true,
       profilePhoto: true,
+      isOnboardingCompleted: true,
       roleId: true,
       workouts: {
         select: {
