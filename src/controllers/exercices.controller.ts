@@ -4,29 +4,28 @@ import {
   getAllExercices,
   getExerciceAndResults,
   getExerciceByIdWithoutResults,
-  getWorkoutById,
   updateExercice
 } from '../services/exercices.service';
 
 export const getExerciceAndResultsHandler = async (req, res) => {
   try {
-    const workoutId = req.params.id;
+    const exerciceId = req.params.id;
     const userId = req.user.id;
 
-    const workout = await getWorkoutById(workoutId);
+    const exercice = await getExerciceAndResults(exerciceId, userId);
 
-    if (!workout) {
-      return res.status(404).json({ error: 'Workout non trouvé' });
+    if (!exercice) {
+      return res.status(404).json({ error: 'Exercice non trouvé' });
     }
 
-    const exercices = await getExerciceAndResults(workoutId, userId);
-
-    if (!exercices) {
-      return res.status(404).json({ error: 'Exercices non trouvés' });
-    }
-
-    res.status(200).json({ message: 'Exercices récupérés avec succès', data: { exercices, workout } });
+    res.status(200).json({
+      message: 'Données récupérées avec succès',
+      data: {
+        exercices: exercice
+      }
+    });
   } catch (error) {
+    console.error('Erreur:', error);
     res.status(500).json({ error: 'Erreur Interne du Serveur' });
   }
 };

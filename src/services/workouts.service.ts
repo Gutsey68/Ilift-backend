@@ -46,29 +46,38 @@ export const getExercicesOfWorkout = async (workoutId: string) => {
       }
     },
     orderBy: {
-      createdAt: 'asc'
+      position: 'asc'
     }
   });
 };
 
 export const createWorkout = async (name: string, programId: string, userId: string) => {
+  const maxPosition = await prisma.workouts.aggregate({
+    where: { programId },
+    _max: { position: true }
+  });
+
+  const position = (maxPosition._max.position || 0) + 1;
+
   return await prisma.workouts.create({
     data: {
       name,
       programId,
-      userId
+      userId,
+      position
     }
   });
 };
 
-export const updateWorkout = async (id: string, name: string) => {
+type UpdateWorkoutData = {
+  name?: string;
+  position?: number;
+};
+
+export const updateWorkout = async (id: string, data: UpdateWorkoutData) => {
   return await prisma.workouts.update({
-    where: {
-      id
-    },
-    data: {
-      name
-    }
+    where: { id },
+    data
   });
 };
 
@@ -88,9 +97,10 @@ export const updateWorkoutExercices = async (workoutId: string, exerciceIds: str
   });
 
   await prisma.workoutsExercises.createMany({
-    data: exerciceIds.map(exerciceId => ({
+    data: exerciceIds.map((exerciceId, index) => ({
       workoutId,
-      exerciceId
+      exerciceId,
+      position: index + 1
     }))
   });
 

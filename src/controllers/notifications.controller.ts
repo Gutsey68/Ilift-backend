@@ -4,7 +4,8 @@ import {
   getNotificationById,
   getNotifications,
   getNotificationsOfUser,
-  updateNotification
+  updateNotification,
+  markAllAsRead
 } from '../services/notifications.service';
 
 export const getNotificationsHandler = async (req, res) => {
@@ -37,7 +38,7 @@ export const getNotificationsOfUserHandler = async (req, res) => {
 
 export const createNotificationHandler = async (req, res) => {
   try {
-    const notification = await createNotification(req.user.id, req.body.type, req.body.content);
+    const notification = await createNotification(req.user.id, req.body.senderId, req.body.type, req.body.content);
 
     if (!notification) {
       return res.status(404).json({ error: "La notification n'a pas pu être crée" });
@@ -80,10 +81,23 @@ export const updateNotificationHandler = async (req, res) => {
     const notification = await updateNotification(req.params.id, req.body.content);
 
     if (!notification) {
-      return res.status(404).json({ error: "La notification n'a pas pu être crée" });
+      return res.status(404).json({ error: "La notification n'a pas pu être modifiée" });
     }
 
     res.status(200).json({ message: 'Notification modifiée avec succès', data: notification });
+  } catch (error) {
+    res.status(500).json({ error: 'Erreur Interne du Serveur' });
+  }
+};
+
+export const markAllAsReadHandler = async (req, res) => {
+  try {
+    const notifications = await markAllAsRead(req.user.id);
+
+    res.status(200).json({
+      message: 'Notifications marquées comme lues',
+      data: notifications
+    });
   } catch (error) {
     res.status(500).json({ error: 'Erreur Interne du Serveur' });
   }

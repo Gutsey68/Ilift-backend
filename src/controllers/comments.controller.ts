@@ -1,4 +1,5 @@
 import { commentPost, deleteComment, getCommentById, getComments, getCommentsOfPost, updateComment } from '../services/comments.service';
+import { createNotification } from '../services/notifications.service';
 import { getPostById } from '../services/posts.service';
 
 export const createCommentHandler = async (req, res) => {
@@ -17,6 +18,10 @@ export const createCommentHandler = async (req, res) => {
 
     if (!comment) {
       return res.status(400).json({ error: "Le commentaire n'a pas pu être posté" });
+    }
+
+    if (existingPost.authorId !== req.user.id) {
+      await createNotification(existingPost.authorId, req.user.id, 'comment', `${req.user.pseudo} a commenté votre publication`);
     }
 
     res.status(201).json({ message: 'Commentaire créé avec succès', data: comment });

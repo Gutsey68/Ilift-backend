@@ -219,7 +219,19 @@ export const getPostsOfUserAndHisFollowings = async (userId: string, page: numbe
 
   const paginatedPosts = sortedPosts.slice((page - 1) * 10, page * 10);
 
-  return paginatedPosts;
+  const randomPosts = await getRandomsPosts();
+
+  const existingPostIds = new Set(paginatedPosts.map(post => post.id));
+  const filteredRandomPosts = randomPosts
+    .filter(post => !existingPostIds.has(post.id))
+    .map(post => ({
+      ...post,
+      isShared: false,
+      sharedAt: null,
+      isSuggested: true
+    }));
+
+  return [...paginatedPosts, ...filteredRandomPosts].slice(0, 10);
 };
 
 type CreatePostParams = {
@@ -309,5 +321,39 @@ export const updatePost = async (
 export const deletePost = async (id: string) => {
   return await prisma.posts.delete({
     where: { id }
+  });
+};
+
+export const getRandomsPosts = async () => {
+  return await prisma.posts.findMany({
+    where: {
+      isValid: true
+    },
+    take: 20,
+    orderBy: {
+      likes: {
+        _count: 'desc'
+      }
+    },
+    include: {
+      tags: {
+        include: {
+          tag: true
+        }
+      },
+      _count: {
+        select: {
+          likes: true,
+          comments: true
+        }
+      },
+      author: {
+        select: {
+          id: true,
+          pseudo: true,
+          profilePhoto: true
+        }
+      }
+    }
   });
 };

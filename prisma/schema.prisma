@@ -19,6 +19,8 @@ model User {
   roleId                String?
   cityId                String?
   isBan                 Boolean @default(false)
+  onboardingStep        Int      @default(0)
+  isOnboardingCompleted Boolean  @default(false)
   exercicesResults      ExerciceResults[]
   refreshtokens                RefreshToken[]
 
@@ -34,7 +36,8 @@ model User {
   role                  Role? @relation(fields: [roleId], references: [id])
   city                  City? @relation(fields: [cityId], references: [id])
   programsFollowed      UsersProgramsFollows[]
-  notifications  Notifications[]
+  receivedNotifications Notifications[] @relation("receivedNotifications")
+  sentNotifications     Notifications[] @relation("sentNotifications")
 }
 
 model Posts {
@@ -59,7 +62,7 @@ model City {
   id          String   @id @default(cuid())
   name        String
   createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  updatedAt   DateTime @default(now())
 
   users        User[]
 }
@@ -68,8 +71,9 @@ model Programs {
   id            String   @id @default(cuid())
   name          String
   description   String?
+  position      Int      @default(0)
   createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  updatedAt     DateTime @default(now())
   authorId      String
 
   author        User @relation(fields: [authorId], references: [id])
@@ -80,8 +84,9 @@ model Programs {
 model Workouts {
   id           String   @id @default(cuid())
   name         String
+  position     Int      @default(0)
   createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  updatedAt    DateTime @default(now())
   programId    String
   userId       String
 
@@ -94,7 +99,8 @@ model Exercices {
   id                String   @id @default(cuid())
   name              String
   createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  updatedAt         DateTime @default(now())
+  position          Int      @default(0)
 
   workouts          WorkoutsExercises[]
   results           ExerciceResults[]
@@ -172,6 +178,7 @@ model WorkoutsExercises {
   workout      Workouts @relation(fields: [workoutId], references: [id])
   exerciceId   String
   exercice     Exercices @relation(fields: [exerciceId], references: [id])
+  position     Int      @default(0)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
@@ -184,7 +191,7 @@ model UsersProgramsFollows {
   userId       String
   user         User         @relation(fields: [userId], references: [id])
   createdAt    DateTime     @default(now())
-  updatedAt    DateTime     @updatedAt
+  updatedAt    DateTime     @default(now())
 
   @@id([programId, userId])
 }
@@ -220,13 +227,15 @@ model Follows {
 
 model Notifications {
   id             String   @id @default(cuid())
-  userId         String 
+  userId         String   
+  senderId       String 
   type           String   
   content        String   
   isRead         Boolean  @default(false) 
   createdAt      DateTime @default(now())
 
-  user           User     @relation(fields: [userId], references: [id])
+  user           User     @relation("receivedNotifications", fields: [userId], references: [id])
+  sender         User     @relation("sentNotifications", fields: [senderId], references: [id])
 }
 
 model Sets {

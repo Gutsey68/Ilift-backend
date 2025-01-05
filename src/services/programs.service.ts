@@ -1,5 +1,11 @@
 import prisma from '../database/db';
 
+type UpdateProgramData = {
+  name?: string;
+  description?: string;
+  position?: number;
+};
+
 export const getPrograms = async () => {
   return await prisma.programs.findMany();
 };
@@ -10,7 +16,7 @@ export const getProgramsOfUser = async (authorId: string) => {
       authorId
     },
     orderBy: {
-      createdAt: 'desc'
+      position: 'asc'
     }
   });
 };
@@ -43,30 +49,35 @@ export const getWorkoutsOfProgram = async (programId: string) => {
       programId
     },
     orderBy: {
-      id: 'asc'
+      position: 'asc'
     }
   });
 };
 
 export const createProgram = async (name: string, description: string, authorId: string) => {
+  const maxPosition = await prisma.programs.aggregate({
+    where: { authorId },
+    _max: { position: true }
+  });
+
+  const position = (maxPosition._max.position || 0) + 1;
+
   return await prisma.programs.create({
     data: {
       name,
       description,
-      authorId
+      authorId,
+      position
     }
   });
 };
 
-export const updateProgram = async (id: string, name: string, description: string) => {
+export const updateProgram = async (id: string, data: UpdateProgramData) => {
   return await prisma.programs.update({
     where: {
       id
     },
-    data: {
-      name,
-      description
-    }
+    data
   });
 };
 
