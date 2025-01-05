@@ -190,7 +190,9 @@ export const getAdditionalUsers = async (userId: string, existingUserIds: string
   });
 };
 
-export const getFollowers = async (userId: string) => {
+export const getFollowers = async (userId: string, loggedId?: string) => {
+  const loggedInUser = loggedId;
+
   return await prisma.user.findMany({
     where: {
       isBan: false,
@@ -209,10 +211,7 @@ export const getFollowers = async (userId: string) => {
       profilePhoto: true,
       following: {
         where: {
-          followedById: userId
-        },
-        select: {
-          followedById: true
+          followedById: loggedInUser
         }
       }
     }

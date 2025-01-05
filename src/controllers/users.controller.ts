@@ -168,6 +168,7 @@ export const updateUserHandler = async (req, res) => {
 export const getFollowersHandler = async (req, res) => {
   try {
     const userId = req.params.id;
+    const loggedInUserId = req.user.id;
 
     const user = await getUserById(userId);
 
@@ -175,7 +176,7 @@ export const getFollowersHandler = async (req, res) => {
       return res.status(404).json({ error: 'Utilisateur non trouvé' });
     }
 
-    const followers = await getFollowers(userId);
+    const followers = await getFollowers(userId, loggedInUserId);
 
     if (!followers) {
       return res.status(404).json({ error: 'Aucun abonné trouvé' });
@@ -185,7 +186,7 @@ export const getFollowersHandler = async (req, res) => {
       id: follower.id,
       pseudo: follower.pseudo,
       profilePhoto: follower.profilePhoto,
-      isFollowing: follower.following.length > 0
+      amIFollowing: follower.following.length > 0 // Utilisation de amIFollowing au lieu de isFollowing
     }));
 
     res.status(200).json({ message: 'Abonnés récupérés avec succès', data: formattedFollowers });
