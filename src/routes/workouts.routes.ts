@@ -3,8 +3,9 @@ import {
   createWorkoutHandler,
   deleteWorkoutHandler,
   getExercicesOfWorkoutHandler,
-  updateWorkoutHandler,
-  updateWorkoutExercicesHandler
+  updateExercicePositionHandler,
+  updateWorkoutExercicesHandler,
+  updateWorkoutHandler
 } from '../controllers/workouts.controller';
 import { protect } from '../middlewares/protect';
 import { validate } from '../middlewares/validate';
@@ -18,6 +19,7 @@ workoutsRoute.get('/:id/exercices', validate(getExercicesOfWorkoutSchema), getEx
 workoutsRoute.post('/', validate(createWorkoutSchema), createWorkoutHandler);
 workoutsRoute.put('/:id', validate(updateWorkoutSchema), updateWorkoutHandler);
 workoutsRoute.put('/:id/exercices', updateWorkoutExercicesHandler);
+workoutsRoute.put('/:workoutId/exercices/:exerciceId', updateExercicePositionHandler);
 workoutsRoute.delete('/:id', validate(deleteWorkoutSchema), deleteWorkoutHandler);
 
 export default workoutsRoute;

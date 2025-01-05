@@ -9,7 +9,8 @@ export const createWorkoutSchema = z.object({
 
 export const updateWorkoutSchema = z.object({
   body: z.object({
-    name: z.string().min(1, 'Le nom de la séance est requis')
+    name: z.string().min(1, 'Le nom de la séance est requis').optional(),
+    position: z.number().int().optional()
   }),
   params: z.object({
     id: z.string().min(1, "L'identifiant de la séance est requis")

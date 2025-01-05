@@ -106,3 +106,28 @@ export const getAllExercices = async () => {
     }
   });
 };
+
+export const getExercicesOfWorkout = async (workoutId: string) => {
+  const workoutExercices = await prisma.workoutsExercises.findMany({
+    where: { workoutId },
+    include: {
+      exercice: {
+        include: {
+          musclesGroups: {
+            include: {
+              muscleGroups: true
+            }
+          }
+        }
+      }
+    },
+    orderBy: {
+      position: 'asc'
+    }
+  });
+
+  return workoutExercices.map(we => ({
+    ...we.exercice,
+    position: we.position
+  }));
+};

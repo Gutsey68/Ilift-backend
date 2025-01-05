@@ -93,9 +93,13 @@ export const updateProgramHandler = async (req, res) => {
       return res.status(404).json({ error: 'Programme non trouvé' });
     }
 
-    const { name, description } = req.body;
+    const { name, description, position } = req.body;
 
-    const program = await updateProgram(req.params.id, name, description);
+    const program = await updateProgram(req.params.id, {
+      ...(name && { name }),
+      ...(description && { description }),
+      ...(typeof position === 'number' && { position })
+    });
 
     if (!program) {
       return res.status(404).json({ error: 'Programme non trouvé' });
