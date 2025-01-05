@@ -10,7 +10,7 @@ export const getProgramsOfUser = async (authorId: string) => {
       authorId
     },
     orderBy: {
-      createdAt: 'desc'
+      position: 'asc'
     }
   });
 };
@@ -43,17 +43,25 @@ export const getWorkoutsOfProgram = async (programId: string) => {
       programId
     },
     orderBy: {
-      id: 'asc'
+      position: 'asc'
     }
   });
 };
 
 export const createProgram = async (name: string, description: string, authorId: string) => {
+  const maxPosition = await prisma.programs.aggregate({
+    where: { authorId },
+    _max: { position: true }
+  });
+
+  const position = (maxPosition._max.position || 0) + 1;
+
   return await prisma.programs.create({
     data: {
       name,
       description,
-      authorId
+      authorId,
+      position
     }
   });
 };

@@ -62,7 +62,7 @@ model City {
   id          String   @id @default(cuid())
   name        String
   createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  updatedAt   DateTime @default(now())
 
   users        User[]
 }
@@ -71,6 +71,7 @@ model Programs {
   id            String   @id @default(cuid())
   name          String
   description   String?
+  position      Int      @default(0)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @default(now())
   authorId      String
@@ -83,6 +84,7 @@ model Programs {
 model Workouts {
   id           String   @id @default(cuid())
   name         String
+  position     Int      @default(0)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @default(now())
   programId    String
@@ -98,6 +100,7 @@ model Exercices {
   name              String
   createdAt         DateTime @default(now())
   updatedAt         DateTime @default(now())
+  position          Int      @default(0)
 
   workouts          WorkoutsExercises[]
   results           ExerciceResults[]
@@ -175,6 +178,7 @@ model WorkoutsExercises {
   workout      Workouts @relation(fields: [workoutId], references: [id])
   exerciceId   String
   exercice     Exercices @relation(fields: [exerciceId], references: [id])
+  position     Int      @default(0)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
