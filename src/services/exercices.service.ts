@@ -5,7 +5,9 @@ export const getExerciceAndResults = async (id: string, userId: string) => {
     where: {
       id
     },
-    include: {
+    select: {
+      id: true,
+      name: true,
       results: {
         where: {
           userId: userId
@@ -18,8 +20,7 @@ export const getExerciceAndResults = async (id: string, userId: string) => {
             orderBy: {
               createdAt: 'asc'
             }
-          },
-          user: true
+          }
         }
       }
     }
@@ -27,25 +28,25 @@ export const getExerciceAndResults = async (id: string, userId: string) => {
 };
 
 export const getWorkoutById = async (id: string) => {
-  return await prisma.exercices.findUnique({
+  return await prisma.workoutsExercises.findFirst({
     where: {
-      id
+      exerciceId: id
     },
     select: {
-      id: true,
-      name: true,
-      workouts: {
+      exercice: {
         select: {
-          workout: {
+          id: true,
+          name: true
+        }
+      },
+      workout: {
+        select: {
+          id: true,
+          name: true,
+          program: {
             select: {
               id: true,
-              name: true,
-              program: {
-                select: {
-                  id: true,
-                  name: true
-                }
-              }
+              name: true
             }
           }
         }
