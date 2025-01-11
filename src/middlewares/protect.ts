@@ -1,21 +1,28 @@
+import { NextFunction, Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
+import { config } from '../config/environment';
+import { AppError, ErrorCodes } from '../errors/app.error';
 
-export const protect = (req, res, next) => {
-  const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1];
-
-  if (!token) {
-    return res.status(401).json({ message: 'Non autorisé. Veuillez vous connecter.' });
-  }
-
+export const protect = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const payload = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = payload;
-    next();
-  } catch (error) {
-    if (error.name === 'TokenExpiredError') {
-      return res.status(401).json({ message: 'Le jeton a expiré. Veuillez vous reconnecter.' });
+    const authHeader = req.headers.authorization;
+
+    const token = authHeader?.replace('Bearer ', '');
+
+    if (!token) {
+      throw AppError.Unauthorized('Non autorisé. Veuillez vous connecter.', ErrorCodes.INVALID_TOKEN);
     }
-    return res.status(401).json({ message: 'Token invalide ou expiré. Veuillez vous reconnecter.' });
+
+    try {
+      const decoded = jwt.verify(token, config.jwt.secret);
+
+      req.user = typeof decoded === 'string' ? JSON.parse(decoded) : decoded;
+      next();
+    } catch (error) {
+      console.error('JWT Error:', error);
+      throw AppError.Unauthorized('Token invalide. Veuillez vous reconnecter.', ErrorCodes.INVALID_TOKEN);
+    }
+  } catch (error) {
+    next(error);
   }
 };

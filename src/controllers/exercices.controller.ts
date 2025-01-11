@@ -1,36 +1,25 @@
-import {
-  createExercice,
-  deleteExercice,
-  getAllExercices,
-  getExerciceAndResults,
-  getExerciceByIdWithoutResults,
-  updateExercice
-} from '../services/exercices.service';
+import { NextFunction, Request, Response } from 'express';
+import { AppError, ErrorCodes } from '../errors/app.error';
+import { createExercice, deleteExercice, getAllExercices, getExerciceAndResults, updateExercice } from '../services/exercices.service';
 
-export const getExerciceAndResultsHandler = async (req, res) => {
+export const getExerciceAndResultsHandler = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const exerciceId = req.params.id;
-    const userId = req.user.id;
-
-    const exercice = await getExerciceAndResults(exerciceId, userId);
-
-    if (!exercice) {
-      return res.status(404).json({ error: 'Exercice non trouvé' });
+    if (!req.user) {
+      throw AppError.Unauthorized('Utilisateur non authentifié', ErrorCodes.INVALID_CREDENTIALS);
     }
+
+    const exercice = await getExerciceAndResults(req.params.id, req.user.id);
 
     res.status(200).json({
       message: 'Données récupérées avec succès',
-      data: {
-        exercices: exercice
-      }
+      data: { exercices: exercice }
     });
   } catch (error) {
-    console.error('Erreur:', error);
-    res.status(500).json({ error: 'Erreur Interne du Serveur' });
+    next(error);
   }
 };
 
-export const getExercicesHandler = async (req, res) => {
+export const getExercicesHandler = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const exercices = await getAllExercices();
     res.status(200).json({
@@ -38,68 +27,44 @@ export const getExercicesHandler = async (req, res) => {
       data: exercices
     });
   } catch (error) {
-    res.status(500).json({ error: 'Erreur Interne du Serveur' });
+    next(error);
   }
 };
 
-export const createExerciceHandler = async (req, res) => {
+export const createExerciceHandler = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const data = req.body;
+    const exercice = await createExercice(req.body);
 
-    const exercice = await createExercice(data);
-
-    if (!exercice) {
-      return res.status(404).json({ error: 'Erreur lors de la création de message' });
-    }
-
-    res.status(201).json({ message: 'Exercice créé avec succès', data: exercice });
+    res.status(201).json({
+      message: 'Exercice créé avec succès',
+      data: exercice
+    });
   } catch (error) {
-    res.status(500).json({ error: 'Erreur Interne du Serveur' });
+    next(error);
   }
 };
 
-export const updateExerciceHandler = async (req, res) => {
+export const updateExerciceHandler = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const exerciceId = req.params.id;
+    const exercice = await updateExercice(req.params.id, req.body);
 
-    const existingExercice = await getExerciceByIdWithoutResults(exerciceId);
-
-    if (!existingExercice) {
-      return res.status(404).json({ error: 'Exercice non trouvé' });
-    }
-
-    const data = req.body;
-
-    const exercice = await updateExercice(exerciceId, data);
-
-    if (!exercice) {
-      return res.status(404).json({ error: 'Exercice non trouvé' });
-    }
-
-    res.status(200).json({ message: 'Exercice mis à jour avec succès', data: exercice });
+    res.status(200).json({
+      message: 'Exercice mis à jour avec succès',
+      data: exercice
+    });
   } catch (error) {
-    res.status(500).json({ error: 'Erreur Interne du Serveur' });
+    next(error);
   }
 };
 
-export const deleteExerciceHandler = async (req, res) => {
+export const deleteExerciceHandler = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const exerciceId = req.params.id;
+    await deleteExercice(req.params.id);
 
-    const existingExercice = await getExerciceByIdWithoutResults(exerciceId);
-
-    if (!existingExercice) {
-      return res.status(404).json({ error: 'Exercice non trouvé' });
-    }
-
-    const deletedExercice = await deleteExercice(exerciceId);
-
-    if (!deletedExercice) {
-      return res.status(404).json({ error: "L'éxercice n'a pas pus être supprimé" });
-    }
-
-    res.status(200).json({ message: 'Exercice supprimé avec succès' });
+    res.status(200).json({
+      message: 'Exercice supprimé avec succès'
+    });
   } catch (error) {
-    res.status(500).json({ error: 'Erreur Interne du Serveur' });
+    next(error);
   }
 };

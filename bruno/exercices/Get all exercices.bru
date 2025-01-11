@@ -5,7 +5,11 @@ meta {
 }
 
 get {
-  url: http://localhost:3000/api/exercices
+  url: http://localhost:5000/api/exercices
   body: none
-  auth: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImdhdXRoaWVyIiwicHNldWRvIjoiSm9obiIsImlhdCI6MTczNjU0ODI3MiwiZXhwIjoxNzM2NTUxODcyfQ.oSNCBmPokPcd7Doon-l4fN3cM_A60Th6mevfpc5qvvU
 }

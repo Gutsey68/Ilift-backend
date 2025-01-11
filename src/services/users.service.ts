@@ -1,5 +1,7 @@
 import { Prisma } from '@prisma/client';
 import prisma from '../database/db';
+import { AppError, ErrorCodes } from '../errors/app.error';
+import { UpdateUserData } from '../types/user.types';
 import { findCityByName } from './city.service';
 
 type SortParams = {
@@ -8,15 +10,19 @@ type SortParams = {
 };
 
 export const getUsers = async () => {
-  return await prisma.user.findMany({
-    where: {
-      isBan: false
-    }
+  const users = await prisma.user.findMany({
+    where: { isBan: false }
   });
+
+  if (!users.length) {
+    throw AppError.NotFound('Aucun utilisateur trouvé', ErrorCodes.USER_NOT_FOUND);
+  }
+
+  return users;
 };
 
 export const getUserProfile = async (userId: string) => {
-  return await prisma.user.findUnique({
+  const user = await prisma.user.findUnique({
     where: { id: userId },
     select: {
       id: true,
@@ -33,9 +39,7 @@ export const getUserProfile = async (userId: string) => {
           name: true,
           createdAt: true
         },
-        orderBy: {
-          createdAt: 'desc'
-        },
+        orderBy: { createdAt: 'desc' },
         take: 1
       },
       _count: {
@@ -47,12 +51,16 @@ export const getUserProfile = async (userId: string) => {
         }
       },
       city: {
-        select: {
-          name: true
-        }
+        select: { name: true }
       }
     }
   });
+
+  if (!user) {
+    throw AppError.NotFound('Utilisateur non trouvé', ErrorCodes.USER_NOT_FOUND);
+  }
+
+  return user;
 };
 
 export const findUserByPseudo = async (pseudo: string) => {
@@ -67,37 +75,41 @@ export const findUserByEmail = async (email: string) => {
   });
 };
 
-export const updateUser = async (
-  userId: string,
-  data: { pseudo?: string; email?: string; bio?: string; isBan?: boolean; passwordHash?: string; profilePhoto?: string; city?: string }
-) => {
-  const { city, ...otherData } = data;
+export const updateUser = async (userId: string, data: UpdateUserData) => {
+  try {
+    const { city, ...otherData } = data;
 
-  if (city) {
-    const existingCity = await findCityByName(city);
-
-    return await prisma.user.update({
-      where: { id: userId },
-      data: {
-        ...otherData,
-        city: {
-          connectOrCreate: {
-            where: {
-              id: existingCity?.id ?? ''
-            },
-            create: {
-              name: city
+    if (city) {
+      const existingCity = await findCityByName(city);
+      return await prisma.user.update({
+        where: { id: userId },
+        data: {
+          ...otherData,
+          city: {
+            connectOrCreate: {
+              where: { id: existingCity?.id ?? '' },
+              create: { name: city }
             }
           }
         }
-      }
-    });
-  }
+      });
+    }
 
-  return await prisma.user.update({
-    where: { id: userId },
-    data: otherData
-  });
+    return await prisma.user.update({
+      where: { id: userId },
+      data: otherData
+    });
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error.code === 'P2002') {
+        throw AppError.Conflict('Cet email ou pseudo est déjà utilisé', ErrorCodes.DUPLICATE_ENTRY);
+      }
+      if (error.code === 'P2025') {
+        throw AppError.NotFound('Utilisateur non trouvé', ErrorCodes.USER_NOT_FOUND);
+      }
+    }
+    throw error;
+  }
 };
 
 export const getUserById = async (id: string) => {

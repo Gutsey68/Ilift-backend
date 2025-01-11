@@ -1,30 +1,32 @@
+import { NextFunction, Request, Response } from 'express';
+import { AppError, ErrorCodes } from '../errors/app.error';
 import { getPostById } from '../services/posts.service';
-import { getShareById, getShares, getSharesOfAUser, sharePost, unsharePost } from '../services/shares.service';
+import { getShares, getSharesOfAUser, sharePost, unsharePost } from '../services/shares.service';
 
-export const getSharesHandler = async (req, res) => {
+export const getSharesHandler = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const shares = await getShares();
-
-    if (!shares) {
-      return res.status(404).json({ error: 'Aucune republication trouvée' });
+    if (!req.user) {
+      throw AppError.Unauthorized('Utilisateur non authentifié', ErrorCodes.INVALID_CREDENTIALS);
     }
 
-    res.status(200).json({ message: 'Republications récupérées avec succès', data: shares });
+    const shares = await getShares();
+    res.status(200).json({
+      message: 'Republications récupérées avec succès',
+      data: shares
+    });
   } catch (error) {
-    res.status(500).json({ error: 'Erreur Interne du Serveur' });
+    next(error);
   }
 };
 
-export const getSharesOfUserHandler = async (req, res) => {
+export const getSharesOfUserHandler = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const userId = req.params.id;
-    const page = parseInt(req.query.page) || 1;
-
-    const shares = await getSharesOfAUser(userId, page);
-
-    if (!shares || shares.length === 0) {
-      return res.status(404).json({ error: 'Aucune publication republiée trouvée' });
+    if (!req.user) {
+      throw AppError.Unauthorized('Utilisateur non authentifié', ErrorCodes.INVALID_CREDENTIALS);
     }
+
+    const page = parseInt(req.query.page as string) || 1;
+    const shares = await getSharesOfAUser(req.params.id, page);
 
     const postsWithShares = shares.map(share => ({
       ...share.posts,
@@ -41,56 +43,40 @@ export const getSharesOfUserHandler = async (req, res) => {
       pageParam: page
     });
   } catch (error) {
-    res.status(500).json({ error: 'Erreur Interne du Serveur' });
+    next(error);
   }
 };
 
-export const shareHandler = async (req, res) => {
+export const shareHandler = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const postId = req.params.id;
-
-    const existingPost = await getPostById(postId);
-
-    if (!existingPost) {
-      return res.status(404).json({ error: 'Publication non trouvée' });
+    if (!req.user) {
+      throw AppError.Unauthorized('Utilisateur non authentifié', ErrorCodes.INVALID_CREDENTIALS);
     }
 
-    const existingShare = await getShareById(req.user.id, postId);
+    const post = await getPostById(req.params.id);
+    const share = await sharePost(req.params.id, req.user.id);
 
-    if (existingShare) {
-      return res.status(400).json({ error: 'Vous avez déjà republié cette publication' });
-    }
-
-    const share = await sharePost(postId, req.user.id);
-
-    if (!share) {
-      return res.status(400).json({ error: 'Erreur lors de la republication' });
-    }
-
-    res.status(200).json({ message: 'Publication republiée avec succès', data: share });
+    res.status(200).json({
+      message: 'Publication republiée avec succès',
+      data: share
+    });
   } catch (error) {
-    res.status(500).json({ error: 'Erreur Interne du Serveur' });
+    next(error);
   }
 };
 
-export const unshareHandler = async (req, res) => {
+export const unshareHandler = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const shareId = req.params.id;
-
-    const existingShare = await getShareById(req.user.id, shareId);
-
-    if (!existingShare) {
-      return res.status(400).json({ error: "Vous n'avez pas republié cette publication" });
+    if (!req.user) {
+      throw AppError.Unauthorized('Utilisateur non authentifié', ErrorCodes.INVALID_CREDENTIALS);
     }
 
-    const share = await unsharePost(shareId, req.user.id);
+    await unsharePost(req.params.id, req.user.id);
 
-    if (!share) {
-      return res.status(400).json({ error: 'Erreur lors de la republication' });
-    }
-
-    res.status(200).json({ message: 'Republication suprimée avec succès' });
+    res.status(200).json({
+      message: 'Republication supprimée avec succès'
+    });
   } catch (error) {
-    res.status(500).json({ error: 'Erreur Interne du Serveur' });
+    next(error);
   }
 };

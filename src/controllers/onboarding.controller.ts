@@ -1,30 +1,42 @@
+import { NextFunction, Request, Response } from 'express';
+import { AppError, ErrorCodes } from '../errors/app.error';
 import { completeOnboarding, updateOnboardingStep } from '../services/onboarding.service';
 
-export const completeOnboardingHandler = async (req, res) => {
+export const completeOnboardingHandler = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const userId = req.user.id;
-
-    const result = await completeOnboarding(userId);
-
-    if (!result) {
-      return res.status(400).json({ message: "Erreur lors de la complétion de l'onboarding" });
+    if (!req.user) {
+      throw AppError.Unauthorized('Utilisateur non authentifié', ErrorCodes.INVALID_CREDENTIALS);
     }
 
-    res.status(200).json({ message: 'Onboarding complété' });
+    const result = await completeOnboarding(req.user.id);
+
+    res.status(200).json({
+      message: 'Onboarding complété avec succès',
+      data: result
+    });
   } catch (error) {
-    res.status(500).json({ message: "Erreur lors de la complétion de l'onboarding" });
+    next(error);
   }
 };
 
-export const updateOnboardingStepHandler = async (req, res) => {
+export const updateOnboardingStepHandler = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const userId = req.user.id;
-    const step = req.body.step;
+    if (!req.user) {
+      throw AppError.Unauthorized('Utilisateur non authentifié', ErrorCodes.INVALID_CREDENTIALS);
+    }
 
-    await updateOnboardingStep(userId, step);
+    const step = Number(req.body.step);
+    if (isNaN(step)) {
+      throw AppError.BadRequest("L'étape doit être un nombre", ErrorCodes.BAD_REQUEST);
+    }
 
-    res.status(200).json({ message: "Étape de l'onboarding mise à jour" });
+    const result = await updateOnboardingStep(req.user.id, step);
+
+    res.status(200).json({
+      message: "Étape de l'onboarding mise à jour avec succès",
+      data: result
+    });
   } catch (error) {
-    res.status(500).json({ message: "Erreur lors de la mise à jour de l'étape de l'onboarding" });
+    next(error);
   }
 };

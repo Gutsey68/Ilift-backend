@@ -1,42 +1,75 @@
+import { Prisma } from '@prisma/client';
 import prisma from '../database/db';
+import { AppError, ErrorCodes } from '../errors/app.error';
 
 export const getLikeById = async (postsId: string, usersId: string) => {
+  const like = await prisma.usersLikes.findUnique({
+    where: {
+      postsId_usersId: { postsId, usersId }
+    }
+  });
+
+  if (!like) {
+    throw AppError.NotFound('Like non trouvé', ErrorCodes.NOT_FOUND);
+  }
+
+  return like;
+};
+
+export const checkLikeExists = async (postsId: string, usersId: string) => {
   return await prisma.usersLikes.findUnique({
     where: {
-      postsId_usersId: {
-        postsId,
-        usersId
-      }
+      postsId_usersId: { postsId, usersId }
     }
   });
 };
 
 export const likePost = async (postsId: string, usersId: string) => {
-  return await prisma.usersLikes.create({
-    data: {
-      postsId,
-      usersId
+  try {
+    const post = await prisma.posts.findUnique({
+      where: { id: postsId }
+    });
+
+    if (!post) {
+      throw AppError.NotFound('Publication non trouvée', ErrorCodes.NOT_FOUND);
     }
-  });
+
+    return await prisma.usersLikes.create({
+      data: { postsId, usersId }
+    });
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error.code === 'P2002') {
+        throw AppError.Conflict('Vous avez déjà aimé cette publication', ErrorCodes.DUPLICATE_ENTRY);
+      }
+    }
+    throw error;
+  }
 };
 
 export const unlikePost = async (postsId: string, usersId: string) => {
-  return await prisma.usersLikes.delete({
-    where: {
-      postsId_usersId: {
-        postsId,
-        usersId
+  try {
+    return await prisma.usersLikes.delete({
+      where: {
+        postsId_usersId: { postsId, usersId }
+      }
+    });
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error.code === 'P2025') {
+        throw AppError.NotFound("Vous n'avez pas aimé cette publication", ErrorCodes.NOT_FOUND);
       }
     }
-  });
+    throw error;
+  }
 };
 
 export const getLikesOfPost = async (postsId: string) => {
-  return await prisma.usersLikes.count({
-    where: {
-      postsId
-    }
+  const count = await prisma.usersLikes.count({
+    where: { postsId }
   });
+
+  return count;
 };
 
 export const getLikes = async () => {
@@ -44,10 +77,8 @@ export const getLikes = async () => {
 };
 
 export const getLikesOfAUser = async (usersId: string, page: number = 1) => {
-  return await prisma.usersLikes.findMany({
-    where: {
-      usersId
-    },
+  const likes = await prisma.usersLikes.findMany({
+    where: { usersId },
     include: {
       posts: {
         include: {
@@ -87,4 +118,10 @@ export const getLikesOfAUser = async (usersId: string, page: number = 1) => {
     take: 10,
     skip: (page - 1) * 10
   });
+
+  if (!likes.length) {
+    throw AppError.NotFound("Aucun j'aime trouvé", ErrorCodes.NOT_FOUND);
+  }
+
+  return likes;
 };
