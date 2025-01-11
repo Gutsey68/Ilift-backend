@@ -1,5 +1,6 @@
 import { Prisma } from '@prisma/client';
 import prisma from '../database/db';
+import { AppError, ErrorCodes } from '../errors/app.error';
 
 type SortParams = {
   field: string;
@@ -8,24 +9,11 @@ type SortParams = {
 
 export const getPosts = async (page: number, size: number, sort?: SortParams) => {
   const skip = (page - 1) * size;
-
   const sortOrder = sort?.order === 'desc' ? Prisma.SortOrder.desc : Prisma.SortOrder.asc;
-
   let orderBy: Prisma.PostsOrderByWithRelationInput = { createdAt: Prisma.SortOrder.desc };
 
   if (sort?.field) {
-    if (sort.field.includes('.')) {
-      const [relation, field] = sort.field.split('.');
-      orderBy = {
-        [relation]: {
-          [field]: sortOrder
-        }
-      };
-    } else {
-      orderBy = {
-        [sort.field]: sortOrder
-      };
-    }
+    orderBy = sort.field.includes('.') ? { [sort.field.split('.')[0]]: { [sort.field.split('.')[1]]: sortOrder } } : { [sort.field]: sortOrder };
   }
 
   const [posts, total] = await Promise.all([
@@ -47,9 +35,7 @@ export const getPosts = async (page: number, size: number, sort?: SortParams) =>
           }
         },
         tags: {
-          include: {
-            tag: true
-          }
+          include: { tag: true }
         },
         _count: {
           select: {
@@ -62,18 +48,23 @@ export const getPosts = async (page: number, size: number, sort?: SortParams) =>
     prisma.posts.count()
   ]);
 
-  return {
-    data: posts,
-    meta: {
-      totalRowCount: total
-    }
-  };
+  if (!posts.length) {
+    throw AppError.NotFound('Aucune publication trouvée', ErrorCodes.NOT_FOUND);
+  }
+
+  return { data: posts, meta: { totalRowCount: total } };
 };
 
 export const getPostById = async (id: string) => {
-  return await prisma.posts.findUnique({
+  const post = await prisma.posts.findUnique({
     where: { id }
   });
+
+  if (!post) {
+    throw AppError.NotFound('Publication non trouvée', ErrorCodes.NOT_FOUND);
+  }
+
+  return post;
 };
 
 export const getAllPostsByUser = async (userId: string, page: number) => {
@@ -234,94 +225,89 @@ export const getPostsOfUserAndHisFollowings = async (userId: string, page: numbe
   return [...paginatedPosts, ...filteredRandomPosts].slice(0, 10);
 };
 
-type CreatePostParams = {
-  photo: string | null;
-  content: string;
-  userId: string;
-  tags?: string[];
-};
-
 export const createPostWithTags = async ({ photo, content, userId, tags }: CreatePostParams) => {
-  return await prisma.posts.create({
-    data: {
-      photo,
-      content,
-      authorId: userId,
-      tags: {
-        create: tags
-          ? tags.map(tagName => ({
+  try {
+    return await prisma.posts.create({
+      data: {
+        photo,
+        content,
+        authorId: userId,
+        tags: {
+          create:
+            tags?.map(tagName => ({
               tag: {
                 connectOrCreate: {
                   where: { name: tagName },
                   create: { name: tagName }
                 }
               }
-            }))
-          : []
-      }
-    },
-    include: {
-      tags: {
-        include: {
-          tag: true
+            })) ?? []
         }
       },
-      author: true,
-      _count: {
-        select: {
-          likes: true
-        }
+      include: {
+        tags: { include: { tag: true } },
+        author: true,
+        _count: { select: { likes: true } }
       }
+    });
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      throw AppError.BadRequest('Erreur lors de la création de la publication', ErrorCodes.BAD_REQUEST);
     }
-  });
+    throw error;
+  }
 };
 
-export const updatePost = async (
-  id: string,
-  data: {
-    content?: string;
-    photo?: string | null;
-    isValid?: boolean;
-    tags?: string[];
-  }
-) => {
-  const updatedPost = await prisma.posts.update({
-    where: { id },
-    data: {
-      ...data,
-      isValid: data.isValid !== undefined ? data.isValid : undefined,
-      photo: data.photo !== undefined ? data.photo : undefined,
-      tags:
-        data.tags !== undefined
-          ? {
-              deleteMany: {},
-              create: data.tags.map(tagName => ({
-                tag: {
-                  connectOrCreate: {
-                    where: { name: tagName },
-                    create: { name: tagName }
+export const updatePost = async (id: string, data: UpdatePostParams) => {
+  try {
+    return await prisma.posts.update({
+      where: { id },
+      data: {
+        ...data,
+        isValid: data.isValid !== undefined ? data.isValid : undefined,
+        photo: data.photo !== undefined ? data.photo : undefined,
+        tags:
+          data.tags !== undefined
+            ? {
+                deleteMany: {},
+                create: data.tags.map(tagName => ({
+                  tag: {
+                    connectOrCreate: {
+                      where: { name: tagName },
+                      create: { name: tagName }
+                    }
                   }
-                }
-              }))
-            }
-          : undefined
-    },
-    include: {
-      tags: {
-        include: {
-          tag: true
-        }
+                }))
+              }
+            : undefined
+      },
+      include: {
+        tags: { include: { tag: true } }
+      }
+    });
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error.code === 'P2025') {
+        throw AppError.NotFound('Publication non trouvée', ErrorCodes.NOT_FOUND);
       }
     }
-  });
-
-  return updatedPost;
+    throw error;
+  }
 };
 
 export const deletePost = async (id: string) => {
-  return await prisma.posts.delete({
-    where: { id }
-  });
+  try {
+    return await prisma.posts.delete({
+      where: { id }
+    });
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error.code === 'P2025') {
+        throw AppError.NotFound('Publication non trouvée', ErrorCodes.NOT_FOUND);
+      }
+    }
+    throw error;
+  }
 };
 
 export const getRandomsPosts = async () => {
@@ -356,4 +342,18 @@ export const getRandomsPosts = async () => {
       }
     }
   });
+};
+
+type CreatePostParams = {
+  photo: string | null;
+  content: string;
+  userId: string;
+  tags?: string[];
+};
+
+type UpdatePostParams = {
+  content?: string;
+  photo?: string | null;
+  isValid?: boolean;
+  tags?: string[];
 };

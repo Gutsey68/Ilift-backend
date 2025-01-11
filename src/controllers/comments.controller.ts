@@ -1,23 +1,28 @@
+import { NextFunction, Request, Response } from 'express';
+import { AppError, ErrorCodes } from '../errors/app.error';
 import { commentPost, deleteComment, getCommentById, getComments, getCommentsOfPost, updateComment } from '../services/comments.service';
 import { createNotification } from '../services/notifications.service';
 import { getPostById } from '../services/posts.service';
 
-export const createCommentHandler = async (req, res) => {
+export const createCommentHandler = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const postId = req.params.id;
+
+    if (!req.user) {
+      throw AppError.Unauthorized('Utilisateur non authentifié', ErrorCodes.INVALID_CREDENTIALS);
+    }
 
     const existingPost = await getPostById(postId);
 
     if (!existingPost) {
-      return res.status(404).json({ error: 'Publication non trouvée' });
+      throw AppError.NotFound('Publication non trouvée', ErrorCodes.NOT_FOUND);
     }
 
     const { content } = req.body;
-
     const comment = await commentPost(content, req.user.id, postId);
 
     if (!comment) {
-      return res.status(400).json({ error: "Le commentaire n'a pas pu être posté" });
+      throw AppError.BadRequest("Le commentaire n'a pas pu être posté", ErrorCodes.BAD_REQUEST);
     }
 
     if (existingPost.authorId !== req.user.id) {
@@ -26,24 +31,28 @@ export const createCommentHandler = async (req, res) => {
 
     res.status(201).json({ message: 'Commentaire créé avec succès', data: comment });
   } catch (error) {
-    res.status(500).json({ error: 'Erreur Interne du Serveur' });
+    next(error);
   }
 };
 
-export const getCommentsOfAPostHandler = async (req, res) => {
+export const getCommentsOfAPostHandler = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const postId = req.params.id;
+
+    if (!req.user) {
+      throw AppError.Unauthorized('Utilisateur non authentifié', ErrorCodes.INVALID_CREDENTIALS);
+    }
 
     const existingPost = await getPostById(postId);
 
     if (!existingPost) {
-      return res.status(404).json({ error: 'Publication non trouvée' });
+      throw AppError.NotFound('Publication non trouvée', ErrorCodes.NOT_FOUND);
     }
 
     const comments = await getCommentsOfPost(postId);
 
     if (!comments) {
-      return res.status(404).json({ error: 'Aucun commentaire trouvé' });
+      throw AppError.NotFound('Aucun commentaire trouvé', ErrorCodes.NOT_FOUND);
     }
 
     const commentsWithPermission = comments.map(comment => ({
@@ -51,68 +60,88 @@ export const getCommentsOfAPostHandler = async (req, res) => {
       isMyComment: comment.usersId === req.user.id
     }));
 
-    res.status(200).json({ message: 'Commentaires récupérés avec succès', data: commentsWithPermission });
+    res.status(200).json({
+      message: 'Commentaires récupérés avec succès',
+      data: commentsWithPermission
+    });
   } catch (error) {
-    res.status(500).json({ error: 'Erreur Interne du Serveur' });
+    next(error);
   }
 };
 
-export const deleteCommentHandler = async (req, res) => {
+export const deleteCommentHandler = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const id = req.params.id;
+
+    if (!req.user) {
+      throw AppError.Unauthorized('Utilisateur non authentifié', ErrorCodes.INVALID_CREDENTIALS);
+    }
 
     const comment = await getCommentById(id, req.user.id);
 
     if (!comment) {
-      return res.status(404).json({ error: 'Commentaire non trouvé' });
+      throw AppError.NotFound('Commentaire non trouvé', ErrorCodes.NOT_FOUND);
     }
 
     const deletedComment = await deleteComment(id, req.user.id);
 
     if (!deletedComment) {
-      return res.status(400).json({ error: "Le commentaire n'a pas pu être supprimé" });
+      throw AppError.BadRequest("Le commentaire n'a pas pu être supprimé", ErrorCodes.BAD_REQUEST);
     }
 
     res.status(200).json({ message: 'Commentaire supprimé avec succès' });
   } catch (error) {
-    res.status(500).json({ error: 'Erreur Interne du Serveur' });
+    next(error);
   }
 };
 
-export const updateCommentHandler = async (req, res) => {
+export const updateCommentHandler = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const id = req.params.id;
+
+    if (!req.user) {
+      throw AppError.Unauthorized('Utilisateur non authentifié', ErrorCodes.INVALID_CREDENTIALS);
+    }
 
     const existingComment = await getCommentById(id, req.user.id);
 
     if (!existingComment) {
-      return res.status(404).json({ error: 'Commentaire non trouvé' });
+      throw AppError.NotFound('Commentaire non trouvé', ErrorCodes.NOT_FOUND);
     }
 
     const { content } = req.body;
-
     const comment = await updateComment(content, id, req.user.id);
 
     if (!comment) {
-      return res.status(400).json({ error: "Le commentaire n'a pas pu être mis à jour" });
+      throw AppError.BadRequest("Le commentaire n'a pas pu être mis à jour", ErrorCodes.BAD_REQUEST);
     }
 
-    res.status(200).json({ message: 'Commentaire mis à jour avec succès', data: comment });
+    res.status(200).json({
+      message: 'Commentaire mis à jour avec succès',
+      data: comment
+    });
   } catch (error) {
-    res.status(500).json({ error: 'Erreur Interne du Serveur' });
+    next(error);
   }
 };
 
-export const getCommentsHandler = async (req, res) => {
+export const getCommentsHandler = async (req: Request, res: Response, next: NextFunction) => {
   try {
+    if (!req.user) {
+      throw AppError.Unauthorized('Utilisateur non authentifié', ErrorCodes.INVALID_CREDENTIALS);
+    }
+
     const comments = await getComments();
 
     if (!comments) {
-      return res.status(404).json({ error: 'Aucun commentaire trouvé' });
+      throw AppError.NotFound('Aucun commentaire trouvé', ErrorCodes.NOT_FOUND);
     }
 
-    res.status(200).json({ message: 'Commentaires récupérés avec succès', data: comments });
+    res.status(200).json({
+      message: 'Commentaires récupérés avec succès',
+      data: comments
+    });
   } catch (error) {
-    res.status(500).json({ error: 'Erreur Interne du Serveur' });
+    next(error);
   }
 };

@@ -1,81 +1,57 @@
-import { getLikeById, getLikes, getLikesOfAUser, getLikesOfPost, likePost, unlikePost } from '../services/likes.service';
+import { NextFunction, Request, Response } from 'express';
+import { AppError, ErrorCodes } from '../errors/app.error';
+import { getLikes, getLikesOfAUser, getLikesOfPost, likePost, unlikePost } from '../services/likes.service';
 import { createNotification } from '../services/notifications.service';
 import { getPostById } from '../services/posts.service';
-import { getUserById } from '../services/users.service';
 
-export const likePostHandler = async (req, res) => {
+export const likePostHandler = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const postId = req.params.id;
-
-    const existingPost = await getPostById(postId);
-
-    if (!existingPost) {
-      return res.status(404).json({ error: 'Publication non trouvée' });
+    if (!req.user) {
+      throw AppError.Unauthorized('Utilisateur non authentifié', ErrorCodes.INVALID_CREDENTIALS);
     }
 
-    const existingLike = await getLikeById(req.user.id, postId);
+    const post = await getPostById(req.params.id);
+    const like = await likePost(req.params.id, req.user.id);
 
-    if (existingLike) {
-      return res.status(400).json({ error: 'Vous avez déjà aimé la publication' });
+    if (post.authorId !== req.user.id) {
+      await createNotification(post.authorId, req.user.id, 'like', `${req.user.pseudo} a aimé votre publication`);
     }
 
-    const like = await likePost(postId, req.user.id);
-
-    if (!like) {
-      return res.status(400).json({ error: 'Erreur lors de la mise à jour de la publication' });
-    }
-
-    if (existingPost.authorId !== req.user.id) {
-      await createNotification(existingPost.authorId, req.user.id, 'like', `${req.user.pseudo} a aimé votre publication`);
-    }
-
-    res.status(200).json({ message: 'Publication aimée avec succès', data: like });
+    res.status(200).json({
+      message: 'Publication aimée avec succès',
+      data: like
+    });
   } catch (error) {
-    res.status(500).json({ error: 'Erreur Interne du Serveur' });
+    next(error);
   }
 };
 
-export const unlikePostHandler = async (req, res) => {
+export const unlikePostHandler = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const postId = req.params.id;
-
-    const existingLike = await getLikeById(postId, req.user.id);
-
-    if (!existingLike) {
-      return res.status(400).json({ error: "Vous n'avez pas aimé la publication" });
+    if (!req.user) {
+      throw AppError.Unauthorized('Utilisateur non authentifié', ErrorCodes.INVALID_CREDENTIALS);
     }
 
-    const like = await unlikePost(postId, req.user.id);
+    await unlikePost(req.params.id, req.user.id);
 
-    if (!like) {
-      return res.status(400).json({ error: 'Erreur lors de la mise à jour de la publication' });
-    }
-
-    res.status(200).json({ message: 'Publication non aimée avec succès' });
+    res.status(200).json({
+      message: 'Publication non aimée avec succès'
+    });
   } catch (error) {
-    res.status(500).json({ error: 'Erreur Interne du Serveur' });
+    next(error);
   }
 };
 
-export const getLikesOfAPostHandler = async (req, res) => {
+export const getLikesOfAPostHandler = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const postId = req.params.id;
+    const likes = await getLikesOfPost(req.params.id);
 
-    const existingPost = await getPostById(postId);
-
-    if (!existingPost) {
-      return res.status(404).json({ error: 'Publication non trouvée' });
-    }
-
-    const likes = await getLikesOfPost(postId);
-
-    if (!likes) {
-      return res.status(404).json({ error: "Aucun j'aime trouvé" });
-    }
-
-    res.status(200).json({ message: "J'aime récupéré avec succès", data: likes });
+    res.status(200).json({
+      message: "J'aime récupéré avec succès",
+      data: likes
+    });
   } catch (error) {
-    res.status(500).json({ error: 'Erreur Interne du Serveur' });
+    next(error);
   }
 };
 
@@ -93,22 +69,14 @@ export const getLikesHandler = async (req, res) => {
   }
 };
 
-export const getLikesOfAUserHandler = async (req, res) => {
+export const getLikesOfAUserHandler = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const userId = req.params.id;
-    const page = parseInt(req.query.page) || 1;
-
-    const existingUser = await getUserById(userId);
-
-    if (!existingUser) {
-      return res.status(404).json({ error: 'Utilisateur non trouvé' });
+    if (!req.user) {
+      throw AppError.Unauthorized('Utilisateur non authentifié', ErrorCodes.INVALID_CREDENTIALS);
     }
 
-    const likes = await getLikesOfAUser(userId, page);
-
-    if (!likes || likes.length === 0) {
-      return res.status(404).json({ error: "Aucun j'aime trouvé" });
-    }
+    const page = parseInt(req.query.page as string) || 1;
+    const likes = await getLikesOfAUser(req.params.id, page);
 
     const postsWithLikes = likes.map(like => ({
       ...like.posts,
@@ -121,6 +89,6 @@ export const getLikesOfAUserHandler = async (req, res) => {
       pageParam: page
     });
   } catch (error) {
-    res.status(500).json({ error: 'Erreur Interne du Serveur' });
+    next(error);
   }
 };

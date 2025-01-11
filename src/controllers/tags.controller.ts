@@ -1,88 +1,70 @@
-import { createTag, deleteTag, getTagById, getTagByName, getTags, updateTag } from '../services/tags.service';
+import { NextFunction, Request, Response } from 'express';
+import { AppError, ErrorCodes } from '../errors/app.error';
+import { createTag, deleteTag, getTags, updateTag } from '../services/tags.service';
 
-export const getTagsHandler = async (req, res) => {
+export const getTagsHandler = async (req: Request, res: Response, next: NextFunction) => {
   try {
+    if (!req.user) {
+      throw AppError.Unauthorized('Utilisateur non authentifié', ErrorCodes.INVALID_CREDENTIALS);
+    }
+
     const tags = await getTags();
 
-    if (!tags) {
-      return res.status(404).json({ error: 'Aucun tag trouvé' });
-    }
-
-    res.status(200).json({ message: 'Tags récupérés avec succès', data: tags });
+    res.status(200).json({
+      message: 'Tags récupérés avec succès',
+      data: tags
+    });
   } catch (error) {
-    res.status(500).json({ error: 'Erreur Interne du Serveur' });
+    next(error);
   }
 };
 
-export const createTagHandler = async (req, res) => {
+export const createTagHandler = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const existingTag = await getTagByName(req.body.name);
-
-    if (existingTag) {
-      return res.status(400).json({ error: 'Ce tag existe déjà' });
+    if (!req.user) {
+      throw AppError.Unauthorized('Utilisateur non authentifié', ErrorCodes.INVALID_CREDENTIALS);
     }
 
-    const { name } = req.body;
+    const tag = await createTag(req.body.name);
 
-    const tag = await createTag(name);
-
-    if (!tag) {
-      return res.status(400).json({ error: 'Erreur lors de la création du tag' });
-    }
-
-    res.status(201).json({ message: 'Tag créé avec succès', data: tag });
+    res.status(201).json({
+      message: 'Tag créé avec succès',
+      data: tag
+    });
   } catch (error) {
-    res.status(500).json({ error: 'Erreur Interne du Serveur' });
+    next(error);
   }
 };
 
-export const deleteTagHandler = async (req, res) => {
+export const updateTagHandler = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const currentTag = await getTagById(req.params.id);
-
-    if (!currentTag) {
-      return res.status(404).json({ error: 'Tag non trouvé' });
+    if (!req.user) {
+      throw AppError.Unauthorized('Utilisateur non authentifié', ErrorCodes.INVALID_CREDENTIALS);
     }
 
-    const { id } = req.params;
+    const updatedTag = await updateTag(req.params.id, req.body.name);
 
-    const deletedTag = await deleteTag(id);
-
-    if (!deletedTag) {
-      return res.status(400).json({ error: 'Erreur lors de la suppression du tag' });
-    }
-
-    res.status(200).json({ message: 'Tag supprimé avec succès' });
+    res.status(200).json({
+      message: 'Tag modifié avec succès',
+      data: updatedTag
+    });
   } catch (error) {
-    res.status(500).json({ error: 'Erreur Interne du Serveur' });
+    next(error);
   }
 };
 
-export const updateTagHandler = async (req, res) => {
+export const deleteTagHandler = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const existingTag = await getTagByName(req.body.name);
-
-    if (existingTag) {
-      return res.status(400).json({ error: 'Ce tag existe déjà' });
+    if (!req.user) {
+      throw AppError.Unauthorized('Utilisateur non authentifié', ErrorCodes.INVALID_CREDENTIALS);
     }
 
-    const currentTag = await getTagById(req.params.id);
+    await deleteTag(req.params.id);
 
-    if (!currentTag) {
-      return res.status(404).json({ error: 'Tag non trouvé' });
-    }
-
-    const { id } = req.params;
-    const { name } = req.body;
-
-    const updatedTag = await updateTag(id, name);
-
-    if (!updatedTag) {
-      return res.status(400).json({ error: 'Erreur lors de la modification du tag' });
-    }
-
-    res.status(200).json({ message: 'Tag modifié avec succès' });
+    res.status(200).json({
+      message: 'Tag supprimé avec succès'
+    });
   } catch (error) {
-    res.status(500).json({ error: 'Erreur Interne du Serveur' });
+    next(error);
   }
 };

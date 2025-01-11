@@ -1,104 +1,105 @@
+import { NextFunction, Request, Response } from 'express';
+import { AppError, ErrorCodes } from '../errors/app.error';
 import {
   createNotification,
   deleteNotification,
-  getNotificationById,
   getNotifications,
   getNotificationsOfUser,
-  updateNotification,
-  markAllAsRead
+  markAllAsRead,
+  updateNotification
 } from '../services/notifications.service';
 
-export const getNotificationsHandler = async (req, res) => {
+export const getNotificationsHandler = async (req: Request, res: Response, next: NextFunction) => {
   try {
+    if (!req.user) {
+      throw AppError.Unauthorized('Utilisateur non authentifié', ErrorCodes.INVALID_CREDENTIALS);
+    }
+
     const notifications = await getNotifications();
-
-    if (!notifications) {
-      return res.status(404).json({ error: 'Notifications non trouvés' });
-    }
-
-    res.status(200).json({ message: 'Notifications récupérés avec succès', data: notifications });
-  } catch (error) {
-    res.status(500).json({ error: 'Erreur Interne du Serveur' });
-  }
-};
-
-export const getNotificationsOfUserHandler = async (req, res) => {
-  try {
-    const notifications = await getNotificationsOfUser(req.user.id);
-
-    if (!notifications) {
-      return res.status(404).json({ error: 'Notifications non trouvés' });
-    }
-
-    res.status(200).json({ message: 'Notifications récupérés avec succès', data: notifications });
-  } catch (error) {
-    res.status(500).json({ error: 'Erreur Interne du Serveur' });
-  }
-};
-
-export const createNotificationHandler = async (req, res) => {
-  try {
-    const notification = await createNotification(req.user.id, req.body.senderId, req.body.type, req.body.content);
-
-    if (!notification) {
-      return res.status(404).json({ error: "La notification n'a pas pu être crée" });
-    }
-
-    res.status(201).json({ message: 'Notification créée avec succès', data: notification });
-  } catch (error) {
-    res.status(500).json({ error: 'Erreur Interne du Serveur' });
-  }
-};
-
-export const deleteNotificationHandler = async (req, res) => {
-  try {
-    const existingNotification = await getNotificationById(req.params.id);
-
-    if (!existingNotification) {
-      return res.status(404).json({ error: 'Notification non trouvée' });
-    }
-
-    const notification = await deleteNotification(req.params.id);
-
-    if (!notification) {
-      return res.status(404).json({ error: "La notification n'a pas pu être supprimée" });
-    }
-
-    res.status(200).json({ message: 'Notification supprimée avec succès', data: notification });
-  } catch (error) {
-    res.status(500).json({ error: 'Erreur Interne du Serveur' });
-  }
-};
-
-export const updateNotificationHandler = async (req, res) => {
-  try {
-    const existingNotification = await getNotificationById(req.params.id);
-
-    if (!existingNotification) {
-      return res.status(404).json({ error: 'Notification non trouvée' });
-    }
-
-    const notification = await updateNotification(req.params.id, req.body.content);
-
-    if (!notification) {
-      return res.status(404).json({ error: "La notification n'a pas pu être modifiée" });
-    }
-
-    res.status(200).json({ message: 'Notification modifiée avec succès', data: notification });
-  } catch (error) {
-    res.status(500).json({ error: 'Erreur Interne du Serveur' });
-  }
-};
-
-export const markAllAsReadHandler = async (req, res) => {
-  try {
-    const notifications = await markAllAsRead(req.user.id);
-
     res.status(200).json({
-      message: 'Notifications marquées comme lues',
+      message: 'Notifications récupérées avec succès',
       data: notifications
     });
   } catch (error) {
-    res.status(500).json({ error: 'Erreur Interne du Serveur' });
+    next(error);
+  }
+};
+
+export const getNotificationsOfUserHandler = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    if (!req.user) {
+      throw AppError.Unauthorized('Utilisateur non authentifié', ErrorCodes.INVALID_CREDENTIALS);
+    }
+
+    const notifications = await getNotificationsOfUser(req.user.id);
+    res.status(200).json({
+      message: 'Notifications récupérées avec succès',
+      data: notifications
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const createNotificationHandler = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    if (!req.user) {
+      throw AppError.Unauthorized('Utilisateur non authentifié', ErrorCodes.INVALID_CREDENTIALS);
+    }
+
+    const notification = await createNotification(req.user.id, req.body.senderId, req.body.type, req.body.content);
+
+    res.status(201).json({
+      message: 'Notification créée avec succès',
+      data: notification
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const deleteNotificationHandler = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    if (!req.user) {
+      throw AppError.Unauthorized('Utilisateur non authentifié', ErrorCodes.INVALID_CREDENTIALS);
+    }
+
+    await deleteNotification(req.params.id);
+    res.status(200).json({
+      message: 'Notification supprimée avec succès'
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const updateNotificationHandler = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    if (!req.user) {
+      throw AppError.Unauthorized('Utilisateur non authentifié', ErrorCodes.INVALID_CREDENTIALS);
+    }
+
+    const notification = await updateNotification(req.params.id, req.body.content);
+    res.status(200).json({
+      message: 'Notification modifiée avec succès',
+      data: notification
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const markAllAsReadHandler = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    if (!req.user) {
+      throw AppError.Unauthorized('Utilisateur non authentifié', ErrorCodes.INVALID_CREDENTIALS);
+    }
+
+    await markAllAsRead(req.user.id);
+    res.status(200).json({
+      message: 'Notifications marquées comme lues'
+    });
+  } catch (error) {
+    next(error);
   }
 };

@@ -1,4 +1,6 @@
-import { getLikeById } from '../services/likes.service';
+import { NextFunction, Request, Response } from 'express';
+import { AppError, ErrorCodes } from '../errors/app.error';
+import { checkLikeExists } from '../services/likes.service';
 import {
   createPostWithTags,
   deletePost,
@@ -22,96 +24,103 @@ interface PostWithExtras extends Omit<any, 'isSuggested'> {
   };
 }
 
-export const getPostsHandler = async (req, res) => {
+export const getPostsHandler = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const page = parseInt(req.query.page) || 1;
-    const size = parseInt(req.query.size) || 20;
+    if (!req.user) {
+      throw AppError.Unauthorized('Utilisateur non authentifié', ErrorCodes.INVALID_CREDENTIALS);
+    }
 
+    const page = parseInt(req.query.page as string) || 1;
+    const size = parseInt(req.query.size as string) || 20;
     let sort;
+
     if (req.query.sort) {
       try {
-        sort = JSON.parse(req.query.sort);
-
+        sort = JSON.parse(req.query.sort as string);
         if (!sort.field || !['asc', 'desc'].includes(sort.order)) {
-          return res.status(400).json({
-            error: 'Format de tri invalide. Attendu: { "field": "string", "order": "asc" | "desc" }'
-          });
+          throw AppError.BadRequest('Format de tri invalide', ErrorCodes.BAD_REQUEST);
         }
-      } catch (e) {
-        return res.status(400).json({ error: 'Paramètre de tri invalide' });
+      } catch {
+        throw AppError.BadRequest('Paramètre de tri invalide', ErrorCodes.BAD_REQUEST);
       }
     }
 
     const posts = await getPosts(page, size, sort);
-
-    if (!posts.data.length) {
-      return res.status(404).json({ error: 'Aucune publication trouvée' });
-    }
-
     res.status(200).json(posts);
   } catch (error) {
-    res.status(500).json({ error: 'Erreur Interne du Serveur' });
+    next(error);
   }
 };
 
-export const getPostByIdHandler = async (req, res) => {
+export const getPostByIdHandler = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const id = req.params.id;
+    if (!req.user) {
+      throw AppError.Unauthorized('Utilisateur non authentifié', ErrorCodes.INVALID_CREDENTIALS);
+    }
 
+    const id = req.params.id;
     const post = await getPostById(id);
 
     if (!post) {
-      return res.status(404).json({ error: 'Poste non trouvé' });
+      throw AppError.NotFound('Poste non trouvé', ErrorCodes.NOT_FOUND);
     }
 
     res.status(200).json({ message: 'Publication récupérée avec succès', data: post });
   } catch (error) {
-    res.status(500).json({ error: 'Erreur Interne du Serveur' });
+    next(error);
   }
 };
 
-export const getAllPostsByUserHandler = async (req, res) => {
+export const getAllPostsByUserHandler = async (req: Request, res: Response, next: NextFunction) => {
   try {
+    if (!req.user) {
+      throw AppError.Unauthorized('Utilisateur non authentifié', ErrorCodes.INVALID_CREDENTIALS);
+    }
+
     const userId = req.params.userId;
-    const page = parseInt(req.query.page) || 1;
+    const page = parseInt(req.query.page as string) || 1;
 
     if (!userId) {
-      return res.status(400).json({ error: "Id de l'utilisateur manquant" });
+      throw AppError.BadRequest("Id de l'utilisateur manquant", ErrorCodes.BAD_REQUEST);
     }
 
     const posts = await getAllPostsByUser(userId, page);
 
     if (!posts) {
-      return res.status(404).json({ error: 'Aucune publication trouvée' });
+      throw AppError.NotFound('Aucune publication trouvée', ErrorCodes.NOT_FOUND);
     }
 
     const postsWithLikes = posts.map(post => ({ ...post, doILike: false }));
 
     for (let i = 0; i < postsWithLikes.length; i++) {
-      const doIlikeThePost = await getLikeById(posts[i].id, req.user.id);
-      postsWithLikes[i].doILike = !!doIlikeThePost;
+      const like = await checkLikeExists(posts[i].id, req.user.id);
+      postsWithLikes[i].doILike = !!like;
     }
 
     res.status(200).json({ message: 'Publications récupérées avec succès', data: postsWithLikes });
   } catch (error) {
-    res.status(500).json({ error: 'Erreur Interne du Serveur' });
+    next(error);
   }
 };
 
-export const getPostsOfUserAndHisFollowingsHandler = async (req, res) => {
+export const getPostsOfUserAndHisFollowingsHandler = async (req: Request, res: Response, next: NextFunction) => {
   try {
+    if (!req.user) {
+      throw AppError.Unauthorized('Utilisateur non authentifié', ErrorCodes.INVALID_CREDENTIALS);
+    }
+
     const userId = req.params.userId;
 
     if (!userId) {
-      return res.status(400).json({ error: "Id de l'utilisateur manquant" });
+      throw AppError.BadRequest("Id de l'utilisateur manquant", ErrorCodes.BAD_REQUEST);
     }
 
-    const page = parseInt(req.query.page) || 1;
+    const page = parseInt(req.query.page as string) || 1;
 
     const posts = await getPostsOfUserAndHisFollowings(userId, page);
 
     if (!posts) {
-      return res.status(404).json({ error: 'Aucune publication trouvée' });
+      throw AppError.NotFound('Aucune publication trouvée', ErrorCodes.NOT_FOUND);
     }
 
     const postsWithLikes = (posts as PostWithExtras[]).map(post => ({
@@ -120,8 +129,8 @@ export const getPostsOfUserAndHisFollowingsHandler = async (req, res) => {
     }));
 
     for (let i = 0; i < postsWithLikes.length; i++) {
-      const doIlikeThePost = await getLikeById(posts[i].id, req.user.id);
-      postsWithLikes[i].doILike = !!doIlikeThePost;
+      const like = await checkLikeExists(posts[i].id, req.user.id);
+      postsWithLikes[i].doILike = !!like;
     }
 
     const postsWithInformations = postsWithLikes.map(post => ({
@@ -138,31 +147,24 @@ export const getPostsOfUserAndHisFollowingsHandler = async (req, res) => {
 
     res.status(200).json({ message: 'Publications récupérées avec succès', data: postsWithInformations });
   } catch (error) {
-    res.status(500).json({ error: 'Erreur Interne du Serveur' });
+    next(error);
   }
 };
 
-export const createPostHandler = async (req, res) => {
+export const createPostHandler = async (req: Request, res: Response, next: NextFunction) => {
   try {
+    if (!req.user) {
+      throw AppError.Unauthorized('Utilisateur non authentifié', ErrorCodes.INVALID_CREDENTIALS);
+    }
+
     const { content } = req.body;
-
     let tags = [];
+
     if (req.body.tags) {
-      if (typeof req.body.tags === 'string') {
-        try {
-          tags = JSON.parse(req.body.tags);
-        } catch (e) {
-          tags = [req.body.tags];
-        }
-      } else if (Array.isArray(req.body.tags)) {
-        tags = req.body.tags;
-      }
+      tags = Array.isArray(req.body.tags) ? req.body.tags : typeof req.body.tags === 'string' ? JSON.parse(req.body.tags) : [req.body.tags];
     }
 
-    let photo = null;
-    if (req.file) {
-      photo = '/' + req.file.path.replace(/\\/g, '/');
-    }
+    const photo = req.file ? '/' + req.file.path.replace(/\\/g, '/') : null;
 
     const post = await createPostWithTags({
       photo,
@@ -176,18 +178,21 @@ export const createPostHandler = async (req, res) => {
       data: post
     });
   } catch (error) {
-    res.status(500).json({ error: 'Erreur lors de la création du post' });
+    next(error);
   }
 };
 
-export const updatePostHandler = async (req, res) => {
+export const updatePostHandler = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const id = req.params.id;
+    if (!req.user) {
+      throw AppError.Unauthorized('Utilisateur non authentifié', ErrorCodes.INVALID_CREDENTIALS);
+    }
 
+    const id = req.params.id;
     const existingPost = await getPostById(id);
 
     if (!existingPost) {
-      return res.status(404).json({ error: 'Publication non trouvée' });
+      throw AppError.NotFound('Publication non trouvée', ErrorCodes.NOT_FOUND);
     }
 
     const updateData: {
@@ -224,33 +229,36 @@ export const updatePostHandler = async (req, res) => {
     const updatedPost = await updatePost(id, updateData);
 
     if (!updatedPost) {
-      return res.status(400).json({ error: "La publication n'a pas pu être mise à jour" });
+      throw AppError.BadRequest("La publication n'a pas pu être mise à jour", ErrorCodes.BAD_REQUEST);
     }
 
     res.status(200).json(updatedPost);
   } catch (error) {
-    res.status(500).json({ error: 'Erreur Interne du Serveur' });
+    next(error);
   }
 };
 
-export const deletePostHandler = async (req, res) => {
+export const deletePostHandler = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const id = req.params.id;
+    if (!req.user) {
+      throw AppError.Unauthorized('Utilisateur non authentifié', ErrorCodes.INVALID_CREDENTIALS);
+    }
 
+    const id = req.params.id;
     const post = await getPostById(id);
 
     if (!post) {
-      return res.status(404).json({ error: 'Publication non trouvée' });
+      throw AppError.NotFound('Publication non trouvée', ErrorCodes.NOT_FOUND);
     }
 
     const deletedPost = await deletePost(id);
 
     if (!deletedPost) {
-      return res.status(400).json({ error: "La publication n'a pas pu être supprimée" });
+      throw AppError.BadRequest("La publication n'a pas pu être supprimée", ErrorCodes.BAD_REQUEST);
     }
 
     res.status(200).json({ message: 'Publication supprimée avec succès' });
   } catch (error) {
-    res.status(500).json({ error: 'Erreur Interne du Serveur' });
+    next(error);
   }
 };

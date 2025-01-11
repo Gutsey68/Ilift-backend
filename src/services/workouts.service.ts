@@ -1,10 +1,11 @@
+import { Prisma } from '@prisma/client';
 import prisma from '../database/db';
+import { AppError, ErrorCodes } from '../errors/app.error';
+import { UpdateWorkoutData } from '../types/workout.types';
 
 export const getWorkoutById = async (id: string) => {
-  return await prisma.workouts.findUnique({
-    where: {
-      id
-    },
+  const workout = await prisma.workouts.findUnique({
+    where: { id },
     select: {
       name: true,
       id: true,
@@ -16,6 +17,12 @@ export const getWorkoutById = async (id: string) => {
       }
     }
   });
+
+  if (!workout) {
+    throw AppError.NotFound('Séance non trouvée', ErrorCodes.WORKOUT_NOT_FOUND);
+  }
+
+  return workout;
 };
 
 export const getWorkoutByIdWithoutSelect = async (id: string) => {
@@ -30,79 +37,139 @@ export const getWorkoutByIdWithoutSelect = async (id: string) => {
 };
 
 export const getExercicesOfWorkout = async (workoutId: string) => {
-  return await prisma.exercices.findMany({
-    where: {
-      workouts: {
-        some: {
-          workoutId
+  const workout = await prisma.workouts.findUnique({
+    where: { id: workoutId },
+    select: {
+      id: true,
+      name: true,
+      program: {
+        select: {
+          id: true,
+          name: true
         }
-      }
-    },
-    include: {
-      musclesGroups: {
+      },
+      exercices: {
         include: {
-          muscleGroups: true
+          exercice: {
+            include: {
+              musclesGroups: {
+                include: {
+                  muscleGroups: true
+                }
+              }
+            }
+          }
+        },
+        orderBy: {
+          position: 'asc'
         }
       }
-    },
-    orderBy: {
-      position: 'asc'
     }
   });
+
+  if (!workout) {
+    throw AppError.NotFound('Séance non trouvée', ErrorCodes.WORKOUT_NOT_FOUND);
+  }
+
+  return {
+    workout: {
+      id: workout.id,
+      name: workout.name,
+      program: workout.program
+    },
+    exercices: workout.exercices.map(we => ({
+      ...we.exercice,
+      position: we.position
+    }))
+  };
 };
 
 export const createWorkout = async (name: string, programId: string, userId: string) => {
-  const maxPosition = await prisma.workouts.aggregate({
-    where: { programId },
-    _max: { position: true }
-  });
+  try {
+    const maxPosition = await prisma.workouts.aggregate({
+      where: { programId },
+      _max: { position: true }
+    });
 
-  const position = (maxPosition._max.position || 0) + 1;
+    const position = (maxPosition._max.position || 0) + 1;
 
-  return await prisma.workouts.create({
-    data: {
-      name,
-      programId,
-      userId,
-      position
+    return await prisma.workouts.create({
+      data: { name, programId, userId, position }
+    });
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error.code === 'P2003') {
+        throw AppError.BadRequest('Programme invalide', ErrorCodes.PROGRAM_NOT_FOUND);
+      }
     }
-  });
-};
-
-type UpdateWorkoutData = {
-  name?: string;
-  position?: number;
+    throw error;
+  }
 };
 
 export const updateWorkout = async (id: string, data: UpdateWorkoutData) => {
-  return await prisma.workouts.update({
-    where: { id },
-    data
-  });
+  try {
+    return await prisma.workouts.update({
+      where: { id },
+      data
+    });
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error.code === 'P2025') {
+        throw AppError.NotFound('Séance non trouvée', ErrorCodes.WORKOUT_NOT_FOUND);
+      }
+    }
+    throw error;
+  }
 };
 
 export const deleteWorkout = async (id: string) => {
-  return await prisma.workouts.delete({
-    where: {
-      id
+  try {
+    return await prisma.workouts.delete({
+      where: { id }
+    });
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error.code === 'P2025') {
+        throw AppError.NotFound('Séance non trouvée', ErrorCodes.WORKOUT_NOT_FOUND);
+      }
     }
-  });
+    throw error;
+  }
 };
 
 export const updateWorkoutExercices = async (workoutId: string, exerciceIds: string[]) => {
-  await prisma.workoutsExercises.deleteMany({
-    where: {
-      workoutId
+  try {
+    await prisma.workoutsExercises.deleteMany({
+      where: { workoutId }
+    });
+
+    await prisma.workoutsExercises.createMany({
+      data: exerciceIds.map((exerciceId, index) => ({
+        workoutId,
+        exerciceId,
+        position: index + 1
+      }))
+    });
+
+    return await prisma.exercices.findMany({
+      where: {
+        workouts: {
+          some: { workoutId }
+        }
+      },
+      include: {
+        musclesGroups: {
+          include: {
+            muscleGroups: true
+          }
+        }
+      },
+      orderBy: { position: 'asc' }
+    });
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      throw AppError.BadRequest('Erreur lors de la mise à jour des exercices', ErrorCodes.BAD_REQUEST);
     }
-  });
-
-  await prisma.workoutsExercises.createMany({
-    data: exerciceIds.map((exerciceId, index) => ({
-      workoutId,
-      exerciceId,
-      position: index + 1
-    }))
-  });
-
-  return await getExercicesOfWorkout(workoutId);
+    throw error;
+  }
 };

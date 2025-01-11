@@ -1,3 +1,5 @@
+import { NextFunction, Request, Response } from 'express';
+import { AppError, ErrorCodes } from '../errors/app.error';
 import {
   createProgram,
   deleteProgram,
@@ -8,125 +10,113 @@ import {
   updateProgram
 } from '../services/programs.service';
 
-export const getProgramsHandler = async (req, res) => {
+export const getProgramsHandler = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
+    if (!req.user) {
+      throw AppError.Unauthorized('Utilisateur non authentifié', ErrorCodes.INVALID_CREDENTIALS);
+    }
+
     const programs = await getPrograms();
-
-    if (!programs) {
-      return res.status(404).json({ error: 'Programmes non trouvés' });
-    }
-
-    res.status(200).json({ message: 'Programmes récupérés avec succès', data: programs });
+    res.status(200).json({
+      message: 'Programmes récupérés avec succès',
+      data: programs
+    });
   } catch (error) {
-    res.status(500).json({ error: 'Erreur Interne du Serveur' });
+    next(error);
   }
 };
 
-export const getProgramsOfUserHandler = async (req, res) => {
+export const getProgramsOfUserHandler = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const userId = req.user.id;
-    const programs = await getProgramsOfUser(userId);
-
-    if (!programs) {
-      return res.status(404).json({ error: 'Programmes non trouvés' });
+    if (!req.user) {
+      throw AppError.Unauthorized('Utilisateur non authentifié', ErrorCodes.INVALID_CREDENTIALS);
     }
 
-    res.status(200).json({ message: 'Programmes récupérés avec succès', data: programs });
+    const programs = await getProgramsOfUser(req.user.id);
+    res.status(200).json({
+      message: 'Programmes récupérés avec succès',
+      data: programs
+    });
   } catch (error) {
-    res.status(500).json({ error: 'Erreur Interne du Serveur' });
+    next(error);
   }
 };
 
-export const getWorkoutsOfProgramHandler = async (req, res) => {
+export const getWorkoutsOfProgramHandler = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const programId = req.params.id;
-    const userId = req.user.id;
-
-    const program = await getProgramById(programId);
-
-    if (!program) {
-      return res.status(404).json({ error: 'Programme non trouvé' });
+    if (!req.user) {
+      throw AppError.Unauthorized('Utilisateur non authentifié', ErrorCodes.INVALID_CREDENTIALS);
     }
 
-    const isAuthor = program.author.id === userId;
-    const isFollower = program.usersFollows.some(follow => follow.userId === userId);
+    const program = await getProgramById(req.params.id);
+    const isAuthor = program.author.id === req.user.id;
+    const isFollower = program.usersFollows.some(follow => follow.userId === req.user.id);
 
     if (!isAuthor && !isFollower) {
-      return res.status(403).json({ error: 'Non autorisé' });
+      throw AppError.Forbidden('Accès non autorisé', ErrorCodes.INVALID_CREDENTIALS);
     }
 
-    const workouts = await getWorkoutsOfProgram(programId);
-
-    if (!workouts) {
-      return res.status(404).json({ error: 'Séances non trouvées' });
-    }
-
-    res.status(200).json({ message: 'Séances récupérées avec succès', data: { workouts, program } });
+    const workouts = await getWorkoutsOfProgram(req.params.id);
+    res.status(200).json({
+      message: 'Séances récupérées avec succès',
+      data: { workouts, program }
+    });
   } catch (error) {
-    res.status(500).json({ error: 'Erreur Interne du Serveur' });
+    next(error);
   }
 };
 
-export const createProgramHandler = async (req, res) => {
+export const createProgramHandler = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
+    if (!req.user) {
+      throw AppError.Unauthorized('Utilisateur non authentifié', ErrorCodes.INVALID_CREDENTIALS);
+    }
+
     const { name, description } = req.body;
+    const program = await createProgram(name, description, req.user.id);
 
-    const authorId = req.user.id;
-
-    const program = await createProgram(name, description, authorId);
-
-    if (!program) {
-      return res.status(404).json({ error: "Le programme n'a pas pu être créé" });
-    }
-
-    res.status(201).json({ message: 'Programme créé avec succès', data: program });
+    res.status(201).json({
+      message: 'Programme créé avec succès',
+      data: program
+    });
   } catch (error) {
-    res.status(500).json({ error: 'Erreur Interne du Serveur' });
+    next(error);
   }
 };
 
-export const updateProgramHandler = async (req, res) => {
+export const updateProgramHandler = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const programId = await getProgramById(req.params.id);
-
-    if (!programId) {
-      return res.status(404).json({ error: 'Programme non trouvé' });
+    if (!req.user) {
+      throw AppError.Unauthorized('Utilisateur non authentifié', ErrorCodes.INVALID_CREDENTIALS);
     }
-
-    const { name, description, position } = req.body;
 
     const program = await updateProgram(req.params.id, {
-      ...(name && { name }),
-      ...(description && { description }),
-      ...(typeof position === 'number' && { position })
+      ...(req.body.name && { name: req.body.name }),
+      ...(req.body.description && { description: req.body.description }),
+      ...(typeof req.body.position === 'number' && { position: req.body.position })
     });
 
-    if (!program) {
-      return res.status(404).json({ error: 'Programme non trouvé' });
-    }
-
-    res.status(200).json({ message: 'Programme mis à jour avec succès', data: program });
+    res.status(200).json({
+      message: 'Programme mis à jour avec succès',
+      data: program
+    });
   } catch (error) {
-    res.status(500).json({ error: 'Erreur Interne du Serveur' });
+    next(error);
   }
 };
 
-export const deleteProgramHandler = async (req, res) => {
+export const deleteProgramHandler = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const programId = await getProgramById(req.params.id);
-
-    if (!programId) {
-      return res.status(404).json({ error: 'Programme non trouvé' });
+    if (!req.user) {
+      throw AppError.Unauthorized('Utilisateur non authentifié', ErrorCodes.INVALID_CREDENTIALS);
     }
 
-    const deletedProgram = await deleteProgram(req.params.id);
+    await deleteProgram(req.params.id);
 
-    if (!deletedProgram) {
-      return res.status(404).json({ error: 'Programme non trouvé' });
-    }
-
-    res.status(200).json({ message: 'Programme supprimé avec succès' });
+    res.status(200).json({
+      message: 'Programme supprimé avec succès'
+    });
   } catch (error) {
-    res.status(500).json({ error: 'Erreur Interne du Serveur' });
+    next(error);
   }
 };

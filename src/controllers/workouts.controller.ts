@@ -1,116 +1,93 @@
+import { NextFunction, Request, Response } from 'express';
 import prisma from '../database/db';
-import { createWorkout, deleteWorkout, getWorkoutById, getWorkoutByIdWithoutSelect, updateWorkout, updateWorkoutExercices } from '../services/workouts.service';
-import { getExercicesOfWorkout } from '../services/exercices.service';
+import { AppError, ErrorCodes } from '../errors/app.error';
+import { createWorkout, deleteWorkout, getExercicesOfWorkout, updateWorkout, updateWorkoutExercices } from '../services/workouts.service';
 
-export const getExercicesOfWorkoutHandler = async (req, res) => {
+export const getExercicesOfWorkoutHandler = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const workoutId = req.params.id;
-    const workout = await getWorkoutById(workoutId);
-
-    if (!workout) {
-      return res.status(404).json({ error: 'Séance non trouvée' });
+    if (!req.user) {
+      throw AppError.Unauthorized('Utilisateur non authentifié', ErrorCodes.INVALID_CREDENTIALS);
     }
 
-    const exercices = await getExercicesOfWorkout(workoutId);
+    const exercices = await getExercicesOfWorkout(req.params.id);
 
     res.status(200).json({
       message: 'Exercices récupérés avec succès',
-      data: { exercices, workout }
+      data: exercices
     });
   } catch (error) {
-    res.status(500).json({ error: 'Erreur Interne du Serveur' });
+    next(error);
   }
 };
 
-export const createWorkoutHandler = async (req, res) => {
+export const createWorkoutHandler = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { name, programId } = req.body;
-
-    const userId = req.user.id;
-
-    const workout = await createWorkout(name, programId, userId);
-
-    if (!workout) {
-      return res.status(404).json({ error: "Le programme n'a pas pu être créé" });
+    if (!req.user) {
+      throw AppError.Unauthorized('Utilisateur non authentifié', ErrorCodes.INVALID_CREDENTIALS);
     }
 
-    res.status(201).json({ message: 'Séance créée avec succès', data: workout });
-  } catch (error) {
-    res.status(500).json({ error: 'Erreur Interne du Serveur' });
-  }
-};
+    const workout = await createWorkout(req.body.name, req.body.programId, req.user.id);
 
-export const updateWorkoutHandler = async (req, res) => {
-  try {
-    const { name, position } = req.body;
-    const workoutId = req.params.id;
-
-    const existingWorkout = await getWorkoutByIdWithoutSelect(workoutId);
-
-    if (!existingWorkout) {
-      return res.status(404).json({ error: 'Séance non trouvée' });
-    }
-
-    const workout = await updateWorkout(workoutId, {
-      ...(name && { name }),
-      ...(typeof position === 'number' && { position })
+    res.status(201).json({
+      message: 'Séance créée avec succès',
+      data: workout
     });
-
-    if (!workout) {
-      return res.status(404).json({ error: "La séance n'a pas pu être modifiée" });
-    }
-
-    res.status(200).json({ message: 'Séance modifiée avec succès', data: workout });
   } catch (error) {
-    res.status(500).json({ error: 'Erreur Interne du Serveur' });
+    next(error);
   }
 };
 
-export const deleteWorkoutHandler = async (req, res) => {
+export const updateWorkoutHandler = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const workoutId = req.params.id;
-
-    const existingWorkout = await getWorkoutByIdWithoutSelect(workoutId);
-
-    if (!existingWorkout) {
-      return res.status(404).json({ error: 'Séance non trouvée' });
+    if (!req.user) {
+      throw AppError.Unauthorized('Utilisateur non authentifié', ErrorCodes.INVALID_CREDENTIALS);
     }
 
-    const deletedWorkout = await deleteWorkout(workoutId);
+    const workout = await updateWorkout(req.params.id, req.body);
 
-    if (!deletedWorkout) {
-      return res.status(404).json({ error: "La séance n'a pas pu être supprimée" });
-    }
-
-    res.status(200).json({ message: 'Séance supprimée avec succès' });
+    res.status(200).json({
+      message: 'Séance mise à jour avec succès',
+      data: workout
+    });
   } catch (error) {
-    res.status(500).json({ error: 'Erreur Interne du Serveur' });
+    next(error);
   }
 };
 
-export const updateWorkoutExercicesHandler = async (req, res) => {
+export const deleteWorkoutHandler = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const { exerciceIds } = req.body;
-    const workoutId = req.params.id;
-
-    const existingWorkout = await getWorkoutByIdWithoutSelect(workoutId);
-
-    if (!existingWorkout) {
-      return res.status(404).json({ error: 'Séance non trouvée' });
+    if (!req.user) {
+      throw AppError.Unauthorized('Utilisateur non authentifié', ErrorCodes.INVALID_CREDENTIALS);
     }
 
-    const updatedExercices = await updateWorkoutExercices(workoutId, exerciceIds);
+    await deleteWorkout(req.params.id);
+
+    res.status(200).json({
+      message: 'Séance supprimée avec succès'
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const updateWorkoutExercicesHandler = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    if (!req.user) {
+      throw AppError.Unauthorized('Utilisateur non authentifié', ErrorCodes.INVALID_CREDENTIALS);
+    }
+
+    const workout = await updateWorkoutExercices(req.params.id, req.body.exerciceIds);
 
     res.status(200).json({
       message: 'Exercices de la séance mis à jour avec succès',
-      data: updatedExercices
+      data: workout
     });
   } catch (error) {
-    res.status(500).json({ error: 'Erreur Interne du Serveur' });
+    next(error);
   }
 };
 
-export const updateExercicePositionHandler = async (req, res) => {
+export const updateExercicePositionHandler = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { workoutId, exerciceId } = req.params;
     const { position } = req.body;
@@ -131,6 +108,6 @@ export const updateExercicePositionHandler = async (req, res) => {
       message: 'Position mise à jour avec succès'
     });
   } catch (error) {
-    res.status(500).json({ error: 'Erreur Interne du Serveur' });
+    next(error);
   }
 };

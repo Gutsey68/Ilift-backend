@@ -1,7 +1,7 @@
-import { getFollowById } from '../services/follows.service';
+import { NextFunction, Request, Response } from 'express';
+import { AppError, ErrorCodes } from '../errors/app.error';
+import { checkFollowExists } from '../services/follows.service';
 import {
-  findUserByEmail,
-  findUserByPseudo,
   getAdditionalUsers,
   getFollowers,
   getFollowings,
@@ -14,37 +14,37 @@ import {
   updateUser
 } from '../services/users.service';
 
-export const getUsersHandler = async (req, res) => {
+export const getUsersHandler = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const users = await getUsers();
-
-    if (!users) {
-      return res.status(404).json({ error: 'Aucun utilisateur trouvé' });
+    if (!req.user) {
+      throw AppError.Unauthorized('Utilisateur non authentifié', ErrorCodes.INVALID_CREDENTIALS);
     }
 
-    res.status(200).json({ message: 'Utilisateurs récupérés avec succès', data: users });
+    const users = await getUsers();
+    res.status(200).json({
+      message: 'Utilisateurs récupérés avec succès',
+      data: users
+    });
   } catch (error) {
-    res.status(500).json({ error: 'Erreur Interne du Serveur' });
+    next(error);
   }
 };
 
-export const getUserProfileHandler = async (req, res) => {
+export const getUserProfileHandler = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const userId = req.params.id;
-
-    const user = await getUserProfile(userId);
-
-    if (!user) {
-      return res.status(404).json({ error: 'Utilisateur non trouvé' });
+    if (!req.user) {
+      throw AppError.Unauthorized('Utilisateur non authentifié', ErrorCodes.INVALID_CREDENTIALS);
     }
 
-    const amIFollowing = await getFollowById(req.user.id, userId);
+    const user = await getUserProfile(req.params.id);
+    const follow = await checkFollowExists(req.user.id, req.params.id);
 
-    const dataUser = { ...user, amIFollowing: !!amIFollowing };
-
-    res.status(200).json({ message: 'Utilisateur récupéré avec succès', data: dataUser });
+    res.status(200).json({
+      message: 'Utilisateur récupéré avec succès',
+      data: { ...user, amIFollowing: !!follow }
+    });
   } catch (error) {
-    res.status(500).json({ error: 'Erreur Interne du Serveur' });
+    next(error);
   }
 };
 
@@ -125,28 +125,10 @@ export const getSuggestedUsersHandler = async (req, res) => {
   }
 };
 
-export const updateUserHandler = async (req, res) => {
+export const updateUserHandler = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const existingUser = await getUserById(req.params.id);
-
-    if (!existingUser) {
-      return res.status(404).json({ error: 'Utilisateur non trouvé' });
-    }
-
-    if (req.body.pseudo) {
-      const existingPseudo = await findUserByPseudo(req.body.pseudo);
-
-      if (existingPseudo) {
-        return res.status(400).json({ error: 'Ce pseudo est déjà utilisé.' });
-      }
-    }
-
-    if (req.body.email) {
-      const existingEmail = await findUserByEmail(req.body.email);
-
-      if (existingEmail) {
-        return res.status(400).json({ error: 'Cet email est déjà utilisé.' });
-      }
+    if (!req.user) {
+      throw AppError.Unauthorized('Utilisateur non authentifié', ErrorCodes.INVALID_CREDENTIALS);
     }
 
     if (req.file) {
@@ -155,13 +137,12 @@ export const updateUserHandler = async (req, res) => {
 
     const updatedUser = await updateUser(req.params.id, req.body);
 
-    if (!updatedUser) {
-      return res.status(400).json({ error: "Erreur lors de la mise à jour de l'utilisateur" });
-    }
-
-    res.status(200).json({ message: 'Utilisateur modifié avec succès', data: updatedUser });
+    res.status(200).json({
+      message: 'Utilisateur modifié avec succès',
+      data: updatedUser
+    });
   } catch (error) {
-    res.status(500).json({ error: 'Erreur Interne du Serveur', details: error.message });
+    next(error);
   }
 };
 
@@ -186,7 +167,7 @@ export const getFollowersHandler = async (req, res) => {
       id: follower.id,
       pseudo: follower.pseudo,
       profilePhoto: follower.profilePhoto,
-      amIFollowing: follower.following.length > 0 // Utilisation de amIFollowing au lieu de isFollowing
+      amIFollowing: follower.following.length > 0
     }));
 
     res.status(200).json({ message: 'Abonnés récupérés avec succès', data: formattedFollowers });
