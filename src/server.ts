@@ -3,13 +3,12 @@ import express from 'express';
 import morgan from 'morgan';
 import path from 'path';
 import { config } from './config/environment';
-import { configureSecurityMiddleware } from './config/security';
 import { errorHandler } from './middlewares/error.handler';
 import router from './routes/router';
 
 const app = express();
 
-configureSecurityMiddleware(app);
+//configureSecurityMiddleware(app);
 
 app.use(
   cors({

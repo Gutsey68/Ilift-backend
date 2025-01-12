@@ -2,7 +2,6 @@ import { Prisma } from '@prisma/client';
 import prisma from '../database/db';
 import { AppError, ErrorCodes } from '../errors/app.error';
 import { UpdateUserData } from '../types/user.types';
-import { findCityByName } from './city.service';
 
 type SortParams = {
   field: string;
@@ -80,14 +79,13 @@ export const updateUser = async (userId: string, data: UpdateUserData) => {
     const { city, ...otherData } = data;
 
     if (city) {
-      const existingCity = await findCityByName(city);
       return await prisma.user.update({
         where: { id: userId },
         data: {
           ...otherData,
           city: {
             connectOrCreate: {
-              where: { id: existingCity?.id ?? '' },
+              where: { name: city },
               create: { name: city }
             }
           }

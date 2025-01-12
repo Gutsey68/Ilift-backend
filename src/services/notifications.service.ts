@@ -35,10 +35,6 @@ export const getNotificationsOfUser = async (userId: string) => {
     })
   ]);
 
-  if (!notifications.length) {
-    throw AppError.NotFound('Aucune notification trouvée', ErrorCodes.NOT_FOUND);
-  }
-
   return {
     notifications,
     unreadCount: notificationsCount

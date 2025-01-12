@@ -25,14 +25,11 @@ export const updateOnboardingStep = async (userId: string, step: number) => {
 export const completeOnboarding = async (userId: string) => {
   try {
     const user = await prisma.user.findUnique({
-      where: { id: userId }
+      where: { id: userId },
+      select: { onboardingStep: true }
     });
 
-    if (!user) {
-      throw AppError.NotFound('Utilisateur non trouvé', ErrorCodes.USER_NOT_FOUND);
-    }
-
-    if (user.onboardingStep < 3) {
+    if (!user || user.onboardingStep < 3) {
       throw AppError.BadRequest('Les étapes précédentes doivent être complétées', ErrorCodes.BAD_REQUEST);
     }
 
