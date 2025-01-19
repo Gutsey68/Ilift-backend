@@ -36,7 +36,15 @@ export const createResult = async (data: CreateResultData, userId: string) => {
 
 export const getResultById = async (id: string) => {
   const result = await prisma.exerciceResults.findUnique({
-    where: { id }
+    where: { id },
+    include: {
+      exercice: {
+        select: {
+          id: true,
+          name: true
+        }
+      }
+    }
   });
 
   if (!result) {

@@ -159,9 +159,18 @@ export const createPostHandler = async (req: Request, res: Response, next: NextF
 
     const { content } = req.body;
     let tags = [];
+    let exerciseResults = [];
 
     if (req.body.tags) {
       tags = Array.isArray(req.body.tags) ? req.body.tags : typeof req.body.tags === 'string' ? JSON.parse(req.body.tags) : [req.body.tags];
+    }
+
+    if (req.body.exerciseResults) {
+      exerciseResults = Array.isArray(req.body.exerciseResults)
+        ? req.body.exerciseResults
+        : typeof req.body.exerciseResults === 'string'
+        ? JSON.parse(req.body.exerciseResults)
+        : [req.body.exerciseResults];
     }
 
     const photo = req.file ? '/' + req.file.path.replace(/\\/g, '/') : null;
@@ -170,7 +179,8 @@ export const createPostHandler = async (req: Request, res: Response, next: NextF
       photo,
       content,
       userId: req.user.id,
-      tags
+      tags,
+      exerciseResults
     });
 
     res.status(201).json({

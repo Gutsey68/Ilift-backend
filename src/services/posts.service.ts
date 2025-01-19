@@ -7,6 +7,14 @@ type SortParams = {
   order: 'asc' | 'desc';
 };
 
+type CreatePostParams = {
+  photo: string | null;
+  content: string;
+  userId: string;
+  tags?: string[];
+  exerciseResults?: string[]; // Ajout du paramètre
+};
+
 export const getPosts = async (page: number, size: number, sort?: SortParams) => {
   const skip = (page - 1) * size;
   const sortOrder = sort?.order === 'desc' ? Prisma.SortOrder.desc : Prisma.SortOrder.asc;
@@ -21,12 +29,10 @@ export const getPosts = async (page: number, size: number, sort?: SortParams) =>
       skip,
       take: size,
       orderBy,
-      select: {
-        id: true,
-        content: true,
-        photo: true,
-        createdAt: true,
-        isValid: true,
+      include: {
+        tags: {
+          include: { tag: true }
+        },
         author: {
           select: {
             id: true,
@@ -34,8 +40,15 @@ export const getPosts = async (page: number, size: number, sort?: SortParams) =>
             profilePhoto: true
           }
         },
-        tags: {
-          include: { tag: true }
+        exercicesResultsPosts: {
+          include: {
+            exercicesResults: {
+              include: {
+                exercice: true,
+                sets: true
+              }
+            }
+          }
         },
         _count: {
           select: {
@@ -88,6 +101,16 @@ export const getAllPostsByUser = async (userId: string, page: number) => {
           profilePhoto: true
         }
       },
+      exercicesResultsPosts: {
+        include: {
+          exercicesResults: {
+            include: {
+              exercice: true,
+              sets: true
+            }
+          }
+        }
+      },
       _count: {
         select: {
           likes: true,
@@ -124,15 +147,23 @@ export const getPostsOfUserAndHisFollowings = async (userId: string, page: numbe
     },
     include: {
       tags: {
-        include: {
-          tag: true
-        }
+        include: { tag: true }
       },
       author: {
         select: {
           id: true,
           pseudo: true,
           profilePhoto: true
+        }
+      },
+      exercicesResultsPosts: {
+        include: {
+          exercicesResults: {
+            include: {
+              exercice: true,
+              sets: true
+            }
+          }
         }
       },
       _count: {
@@ -157,15 +188,24 @@ export const getPostsOfUserAndHisFollowings = async (userId: string, page: numbe
       posts: {
         include: {
           tags: {
-            include: {
-              tag: true
-            }
+            include: { tag: true }
           },
           author: {
             select: {
               id: true,
               pseudo: true,
               profilePhoto: true
+            }
+          },
+          exercicesResultsPosts: {
+            // Ajout de cette inclusion
+            include: {
+              exercicesResults: {
+                include: {
+                  exercice: true,
+                  sets: true
+                }
+              }
             }
           },
           _count: {
@@ -225,7 +265,7 @@ export const getPostsOfUserAndHisFollowings = async (userId: string, page: numbe
   return [...paginatedPosts, ...filteredRandomPosts].slice(0, 10);
 };
 
-export const createPostWithTags = async ({ photo, content, userId, tags }: CreatePostParams) => {
+export const createPostWithTags = async ({ photo, content, userId, tags, exerciseResults }: CreatePostParams) => {
   try {
     return await prisma.posts.create({
       data: {
@@ -242,11 +282,29 @@ export const createPostWithTags = async ({ photo, content, userId, tags }: Creat
                 }
               }
             })) ?? []
+        },
+        exercicesResultsPosts: {
+          create:
+            exerciseResults?.map(resultId => ({
+              exercicesResults: {
+                connect: { id: resultId }
+              }
+            })) ?? []
         }
       },
       include: {
         tags: { include: { tag: true } },
         author: true,
+        exercicesResultsPosts: {
+          include: {
+            exercicesResults: {
+              include: {
+                exercice: true,
+                sets: true
+              }
+            }
+          }
+        },
         _count: { select: { likes: true } }
       }
     });
@@ -258,7 +316,7 @@ export const createPostWithTags = async ({ photo, content, userId, tags }: Creat
   }
 };
 
-export const updatePost = async (id: string, data: UpdatePostParams) => {
+export const updatePost = async (id: string, data: { content?: string; photo?: string | null; isValid?: boolean; tags?: string[] }) => {
   try {
     return await prisma.posts.update({
       where: { id },
@@ -342,18 +400,4 @@ export const getRandomsPosts = async () => {
       }
     }
   });
-};
-
-type CreatePostParams = {
-  photo: string | null;
-  content: string;
-  userId: string;
-  tags?: string[];
-};
-
-type UpdatePostParams = {
-  content?: string;
-  photo?: string | null;
-  isValid?: boolean;
-  tags?: string[];
 };

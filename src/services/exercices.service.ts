@@ -12,6 +12,12 @@ export const getExerciceAndResults = async (id: string, userId: string) => {
         where: { userId },
         orderBy: { createdAt: 'desc' },
         include: {
+          exercice: {
+            select: {
+              id: true,
+              name: true
+            }
+          },
           sets: {
             orderBy: { createdAt: 'asc' }
           }

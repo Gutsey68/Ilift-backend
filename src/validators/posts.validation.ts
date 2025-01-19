@@ -4,7 +4,8 @@ export const createPostSchema = z.object({
   body: z.object({
     content: z.string().min(1, 'Le contenu de la publication est requis'),
     photo: z.string().optional(),
-    tags: z.string().optional()
+    tags: z.string().optional(),
+    exerciseResults: z.string().optional()
   })
 });
 
