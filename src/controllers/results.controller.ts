@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import { AppError, ErrorCodes } from '../errors/app.error';
-import { createResult, deleteResult, updateResult } from '../services/results.service';
+import { createResult, deleteResult, deleteSet, updateResult } from '../services/results.service';
 
 export const createResultHandler = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -46,6 +46,18 @@ export const deleteResultHandler = async (req: Request, res: Response, next: Nex
 
     res.status(200).json({
       message: 'Résultat supprimé avec succès'
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const deleteSetHandler = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    await deleteSet(req.params.resultId, req.params.setId);
+
+    res.status(200).json({
+      message: 'Série supprimée avec succès'
     });
   } catch (error) {
     next(error);

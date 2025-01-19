@@ -40,13 +40,8 @@ export const getCommentsOfPost = async (postsId: string) => {
       }
     });
 
-    if (!comments.length) {
-      throw AppError.NotFound('Aucun commentaire trouvé', ErrorCodes.NOT_FOUND);
-    }
-
     return comments;
   } catch (error) {
-    if (error instanceof AppError) throw error;
     throw AppError.BadRequest('Erreur lors de la récupération des commentaires', ErrorCodes.BAD_REQUEST);
   }
 };

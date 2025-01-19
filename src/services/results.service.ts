@@ -98,3 +98,33 @@ export const deleteResult = async (id: string) => {
     throw error;
   }
 };
+
+export const deleteSet = async (resultId: string, setId: string) => {
+  try {
+    const result = await prisma.exerciceResults.findUnique({
+      where: { id: resultId },
+      include: { sets: true }
+    });
+
+    if (!result) {
+      throw AppError.NotFound('Résultat non trouvé', ErrorCodes.NOT_FOUND);
+    }
+
+    await prisma.sets.delete({
+      where: { id: setId }
+    });
+
+    if (result.sets.length === 1) {
+      await prisma.exerciceResults.delete({
+        where: { id: resultId }
+      });
+    }
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error.code === 'P2025') {
+        throw AppError.NotFound('Série non trouvée', ErrorCodes.NOT_FOUND);
+      }
+    }
+    throw error;
+  }
+};
