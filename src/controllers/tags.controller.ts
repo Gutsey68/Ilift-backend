@@ -1,7 +1,16 @@
+/**
+ * @fileovview Contrôleurs pour la gestion des tags
+ * Gère les requêtes liées aux tags des publications
+ */
+
 import { NextFunction, Request, Response } from 'express';
 import { AppError, ErrorCodes } from '../errors/app.error';
 import { createTag, deleteTag, getTags, updateTag } from '../services/tags.service';
 
+/**
+ * Récupère tous les tags
+ * @throws {AppError} Si l'utilisateur n'est pas authentifié
+ */
 export const getTagsHandler = async (req: Request, res: Response, next: NextFunction) => {
   try {
     if (!req.user) {
@@ -19,6 +28,10 @@ export const getTagsHandler = async (req: Request, res: Response, next: NextFunc
   }
 };
 
+/**
+ * Crée un nouveau tag
+ * @throws {AppError} Si l'utilisateur n'est pas authentifié ou si le tag existe déjà
+ */
 export const createTagHandler = async (req: Request, res: Response, next: NextFunction) => {
   try {
     if (!req.user) {
@@ -36,6 +49,10 @@ export const createTagHandler = async (req: Request, res: Response, next: NextFu
   }
 };
 
+/**
+ * Modifie un tag existant
+ * @throws {AppError} Si l'utilisateur n'est pas authentifié
+ */
 export const updateTagHandler = async (req: Request, res: Response, next: NextFunction) => {
   try {
     if (!req.user) {
@@ -53,6 +70,10 @@ export const updateTagHandler = async (req: Request, res: Response, next: NextFu
   }
 };
 
+/**
+ * Supprime un tag existant
+ * @throws {AppError} Si l'utilisateur n'est pas authentifié
+ */
 export const deleteTagHandler = async (req: Request, res: Response, next: NextFunction) => {
   try {
     if (!req.user) {

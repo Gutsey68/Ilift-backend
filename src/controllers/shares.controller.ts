@@ -1,8 +1,17 @@
+/**
+ * @fileovview Contrôleurs pour la gestion des republications
+ * Gère les requêtes liées aux republications de posts
+ */
+
 import { NextFunction, Request, Response } from 'express';
 import { AppError, ErrorCodes } from '../errors/app.error';
 import { getPostById } from '../services/posts.service';
 import { getShares, getSharesOfAUser, sharePost, unsharePost } from '../services/shares.service';
 
+/**
+ * Récupère toutes les republications
+ * @throws {AppError} Si l'utilisateur n'est pas authentifié
+ */
 export const getSharesHandler = async (req: Request, res: Response, next: NextFunction) => {
   try {
     if (!req.user) {
@@ -19,6 +28,10 @@ export const getSharesHandler = async (req: Request, res: Response, next: NextFu
   }
 };
 
+/**
+ * Récupère les republications d'un utilisateur avec pagination
+ * @throws {AppError} Si l'utilisateur n'est pas authentifié
+ */
 export const getSharesOfUserHandler = async (req: Request, res: Response, next: NextFunction) => {
   try {
     if (!req.user) {
@@ -47,6 +60,10 @@ export const getSharesOfUserHandler = async (req: Request, res: Response, next: 
   }
 };
 
+/**
+ * Gère la republication d'un post
+ * @throws {AppError} Si l'utilisateur n'est pas authentifié ou si le post n'existe pas
+ */
 export const shareHandler = async (req: Request, res: Response, next: NextFunction) => {
   try {
     if (!req.user) {
@@ -65,6 +82,10 @@ export const shareHandler = async (req: Request, res: Response, next: NextFuncti
   }
 };
 
+/**
+ * Supprime une republication
+ * @throws {AppError} Si l'utilisateur n'est pas authentifié ou si la republication n'existe pas
+ */
 export const unshareHandler = async (req: Request, res: Response, next: NextFunction) => {
   try {
     if (!req.user) {

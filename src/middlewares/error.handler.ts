@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Gestionnaire d'erreurs global pour l'application
+ * Gère les différents types d'erreurs et formate les réponses d'erreur
+ */
+
 import { Prisma } from '@prisma/client';
 import { ErrorRequestHandler, Response } from 'express';
 import { ZodError } from 'zod';
@@ -5,6 +10,11 @@ import { AppError } from '../errors/app.error';
 import { ErrorType } from '../types/error.types';
 import { isProd } from '../utils/env';
 
+/**
+ * Middleware de gestion globale des erreurs
+ * Transforme les différents types d'erreurs en réponses HTTP cohérentes
+ * @type {ErrorRequestHandler}
+ */
 export const errorHandler: ErrorRequestHandler = (err, req, res, next): void => {
   if (!isProd) {
     console.error(err);
@@ -45,6 +55,12 @@ export const errorHandler: ErrorRequestHandler = (err, req, res, next): void => 
   });
 };
 
+/**
+ * Gère spécifiquement les erreurs Prisma
+ * Transforme les codes d'erreur Prisma en réponses HTTP appropriées
+ * @param {Prisma.PrismaClientKnownRequestError} err - L'erreur Prisma à traiter
+ * @param {Response} res - L'objet response Express
+ */
 const handlePrismaError = (err: Prisma.PrismaClientKnownRequestError, res: Response): void => {
   switch (err.code) {
     case 'P2002':

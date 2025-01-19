@@ -1,3 +1,8 @@
+/**
+ * @fileovview Contrôleurs pour la gestion des programmes d'entraînement
+ * Gère les requêtes liées aux programmes et leurs séances
+ */
+
 import { NextFunction, Request, Response } from 'express';
 import { AppError, ErrorCodes } from '../errors/app.error';
 import {
@@ -10,6 +15,10 @@ import {
   updateProgram
 } from '../services/programs.service';
 
+/**
+ * Récupère tous les programmes
+ * @throws {AppError} Si l'utilisateur n'est pas authentifié
+ */
 export const getProgramsHandler = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     if (!req.user) {
@@ -26,6 +35,10 @@ export const getProgramsHandler = async (req: Request, res: Response, next: Next
   }
 };
 
+/**
+ * Récupère les programmes de l'utilisateur connecté
+ * @throws {AppError} Si l'utilisateur n'est pas authentifié
+ */
 export const getProgramsOfUserHandler = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     if (!req.user) {
@@ -42,6 +55,11 @@ export const getProgramsOfUserHandler = async (req: Request, res: Response, next
   }
 };
 
+/**
+ * Récupère les séances d'un programme spécifique
+ * @throws {AppError} Si l'utilisateur n'est pas authentifié ou n'a pas les droits d'accès
+ * @throws {AppError} Si le programme n'existe pas
+ */
 export const getWorkoutsOfProgramHandler = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     if (!req.user) {
@@ -66,6 +84,11 @@ export const getWorkoutsOfProgramHandler = async (req: Request, res: Response, n
   }
 };
 
+/**
+ * Crée un nouveau programme d'entraînement
+ * @throws {AppError} Si l'utilisateur n'est pas authentifié
+ * @throws {AppError} Si les données sont invalides
+ */
 export const createProgramHandler = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     if (!req.user) {
@@ -84,6 +107,12 @@ export const createProgramHandler = async (req: Request, res: Response, next: Ne
   }
 };
 
+/**
+ * Met à jour un programme existant
+ * @throws {AppError} Si l'utilisateur n'est pas authentifié
+ * @throws {AppError} Si le programme n'existe pas
+ * @throws {AppError} Si les données de mise à jour sont invalides
+ */
 export const updateProgramHandler = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     if (!req.user) {
@@ -105,6 +134,11 @@ export const updateProgramHandler = async (req: Request, res: Response, next: Ne
   }
 };
 
+/**
+ * Supprime un programme
+ * @throws {AppError} Si l'utilisateur n'est pas authentifié
+ * @throws {AppError} Si le programme n'existe pas
+ */
 export const deleteProgramHandler = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     if (!req.user) {

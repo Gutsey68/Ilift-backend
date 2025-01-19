@@ -1,8 +1,17 @@
+/**
+ * @fileoverview Configuration des variables d'environnement de l'application
+ * Utilise dotenv pour charger les variables d'environnement et Zod pour la validation
+ */
+
 import dotenv from 'dotenv';
 import { z } from 'zod';
 
 dotenv.config();
 
+/**
+ * Schéma de validation des variables d'environnement
+ * @typedef {z.infer<typeof envSchema>} EnvSchema
+ */
 const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
   PORT: z.string().transform(Number).default('5000'),
@@ -17,8 +26,24 @@ const envSchema = z.object({
   MAX_FILE_SIZE: z.string().transform(Number).default('5242880')
 });
 
-const env = envSchema.parse(process.env);
+/**
+ * Variables d'environnement validées
+ * @type {z.infer<typeof envSchema>}
+ */
+const env: z.infer<typeof envSchema> = envSchema.parse(process.env);
 
+/**
+ * Configuration globale de l'application
+ * @typedef {typeof config} Config
+ * @property {boolean} isDev - Indique si l'application est en mode développement
+ * @property {boolean} isProd - Indique si l'application est en mode production
+ * @property {number} port - Port d'écoute du serveur
+ * @property {Object} database - Configuration de la base de données
+ * @property {Object} jwt - Configuration des tokens JWT
+ * @property {Object} email - Configuration du service d'emails
+ * @property {Object} client - Configuration du client frontend
+ * @property {Object} upload - Configuration des uploads de fichiers
+ */
 export const config = {
   isDev: env.NODE_ENV === 'development',
   isProd: env.NODE_ENV === 'production',

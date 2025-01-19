@@ -1,7 +1,16 @@
+/**
+ * @fileoverview Contrôleur pour la gestion des groupes musculaires
+ * Gère les requêtes liées aux groupes musculaires
+ */
+
 import { NextFunction, Request, Response } from 'express';
 import { AppError, ErrorCodes } from '../errors/app.error';
 import { getAllMuscleGroups } from '../services/musclegroups.service';
 
+/**
+ * Récupère tous les groupes musculaires
+ * @throws {AppError} Si l'utilisateur n'est pas authentifié ou si aucun groupe n'est trouvé
+ */
 export const getMuscleGroupsHandler = async (req: Request, res: Response, next: NextFunction) => {
   try {
     if (!req.user) {

@@ -1,6 +1,17 @@
+/**
+ * @fileoverview Middleware de validation des données entrantes
+ * Utilise Zod pour valider les données des requêtes (body, query, params)
+ */
+
 import { NextFunction, Request, Response } from 'express';
 import { AnyZodObject, ZodEffects } from 'zod';
 
+/**
+ * Crée un middleware de validation pour les requêtes HTTP
+ * @param {AnyZodObject | ZodEffects<AnyZodObject>} schema - Schéma de validation Zod
+ * @returns {Function} Middleware Express qui valide les données de la requête
+ * @throws {400} Si la validation échoue
+ */
 export const validate = (schema: AnyZodObject | ZodEffects<AnyZodObject>) => {
   return (req: Request, res: Response, next: NextFunction): void => {
     try {

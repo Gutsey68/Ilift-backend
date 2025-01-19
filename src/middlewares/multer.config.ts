@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Configuration de Multer pour la gestion des uploads de fichiers
+ * Inclut la validation des types de fichiers, le stockage et la gestion des erreurs
+ */
+
 import crypto from 'crypto';
 import { Request } from 'express';
 import multer, { FileFilterCallback } from 'multer';
@@ -9,10 +14,21 @@ import { ErrorType } from '../types/error.types';
 type DestinationCallback = (error: Error | null, destination: string) => void;
 type FileNameCallback = (error: Error | null, filename: string) => void;
 
+/**
+ * Configuration du stockage des fichiers
+ * Définit la destination et le nom des fichiers uploadés
+ */
 const storage = multer.diskStorage({
+  /**
+   * Définit le dossier de destination des fichiers
+   */
   destination: (req: Request, file: Express.Multer.File, cb: DestinationCallback): void => {
     cb(null, config.upload.dir);
   },
+
+  /**
+   * Génère un nom de fichier unique avec timestamp et hash
+   */
   filename: (req: Request, file: Express.Multer.File, cb: FileNameCallback): void => {
     crypto.randomBytes(16, (err, raw): void => {
       if (err) {
@@ -29,8 +45,17 @@ const storage = multer.diskStorage({
   }
 });
 
+/**
+ * Types MIME autorisés pour les uploads
+ */
 const MIME_TYPES = new Set(['image/jpeg', 'image/jpg', 'image/png', 'image/webp']);
 
+/**
+ * Filtre les fichiers selon leur type MIME et extension
+ * @param {Request} req - Requête Express
+ * @param {Express.Multer.File} file - Fichier uploadé
+ * @param {FileFilterCallback} cb - Callback de filtrage
+ */
 const fileFilter = (req: Request, file: Express.Multer.File, cb: FileFilterCallback): void => {
   if (!MIME_TYPES.has(file.mimetype)) {
     cb(
@@ -60,6 +85,9 @@ const fileFilter = (req: Request, file: Express.Multer.File, cb: FileFilterCallb
   cb(null, true);
 };
 
+/**
+ * Configuration principale de Multer
+ */
 const upload = multer({
   storage,
   fileFilter,
@@ -69,6 +97,11 @@ const upload = multer({
   }
 });
 
+/**
+ * Gère les erreurs spécifiques à Multer
+ * @param {any} err - Erreur à traiter
+ * @returns {AppError} Erreur formatée
+ */
 export const handleMulterError = (err: any): AppError => {
   if (err instanceof multer.MulterError) {
     switch (err.code) {

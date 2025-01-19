@@ -1,3 +1,8 @@
+/**
+ * @fileovview Contrôleurs pour la gestion des publications
+ * Gère les requêtes liées aux publications et leurs interactions
+ */
+
 import { NextFunction, Request, Response } from 'express';
 import { AppError, ErrorCodes } from '../errors/app.error';
 import { checkLikeExists } from '../services/likes.service';
@@ -10,20 +15,12 @@ import {
   getPostsOfUserAndHisFollowings,
   updatePost
 } from '../services/posts.service';
+import { PostWithExtras } from '../types/posts.types';
 
-interface PostWithExtras extends Omit<any, 'isSuggested'> {
-  doILike?: boolean;
-  isMyPost?: boolean;
-  isSuggested?: boolean;
-  isShared: boolean;
-  sharedAt: any;
-  author: {
-    id: string;
-    pseudo: string;
-    profilePhoto: string;
-  };
-}
-
+/**
+ * Récupère les publications avec pagination et tri
+ * @throws {AppError} Si l'utilisateur n'est pas authentifié ou si le format de tri est invalide
+ */
 export const getPostsHandler = async (req: Request, res: Response, next: NextFunction) => {
   try {
     if (!req.user) {
@@ -52,6 +49,10 @@ export const getPostsHandler = async (req: Request, res: Response, next: NextFun
   }
 };
 
+/**
+ * Récupère une publication par son identifiant
+ * @throws {AppError} Si l'utilisateur n'est pas authentifié ou si la publication n'existe pas
+ */
 export const getPostByIdHandler = async (req: Request, res: Response, next: NextFunction) => {
   try {
     if (!req.user) {
@@ -71,6 +72,10 @@ export const getPostByIdHandler = async (req: Request, res: Response, next: Next
   }
 };
 
+/**
+ * Récupère toutes les publications d'un utilisateur avec pagination
+ * @throws {AppError} Si l'utilisateur n'est pas authentifié ou si l'ID utilisateur est manquant
+ */
 export const getAllPostsByUserHandler = async (req: Request, res: Response, next: NextFunction) => {
   try {
     if (!req.user) {
@@ -103,6 +108,10 @@ export const getAllPostsByUserHandler = async (req: Request, res: Response, next
   }
 };
 
+/**
+ * Récupère les publications d'un utilisateur et de ses abonnements
+ * @throws {AppError} Si l'utilisateur n'est pas authentifié ou si l'ID utilisateur est manquant
+ */
 export const getPostsOfUserAndHisFollowingsHandler = async (req: Request, res: Response, next: NextFunction) => {
   try {
     if (!req.user) {
@@ -151,6 +160,10 @@ export const getPostsOfUserAndHisFollowingsHandler = async (req: Request, res: R
   }
 };
 
+/**
+ * Crée une nouvelle publication avec tags et résultats d'exercices
+ * @throws {AppError} Si l'utilisateur n'est pas authentifié ou si les données sont invalides
+ */
 export const createPostHandler = async (req: Request, res: Response, next: NextFunction) => {
   try {
     if (!req.user) {
@@ -192,6 +205,10 @@ export const createPostHandler = async (req: Request, res: Response, next: NextF
   }
 };
 
+/**
+ * Met à jour une publication existante
+ * @throws {AppError} Si l'utilisateur n'est pas authentifié ou si la publication n'existe pas
+ */
 export const updatePostHandler = async (req: Request, res: Response, next: NextFunction) => {
   try {
     if (!req.user) {
@@ -248,6 +265,10 @@ export const updatePostHandler = async (req: Request, res: Response, next: NextF
   }
 };
 
+/**
+ * Supprime une publication
+ * @throws {AppError} Si l'utilisateur n'est pas authentifié ou si la publication n'existe pas
+ */
 export const deletePostHandler = async (req: Request, res: Response, next: NextFunction) => {
   try {
     if (!req.user) {

@@ -1,3 +1,4 @@
+// Configuration du générateur et de la source de données
 generator client {
   provider = "prisma-client-js"
 }
@@ -7,6 +8,8 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// Modèle principal utilisateur
+/// Représente un utilisateur de l'application
 model User {
   id                    String   @id @default(cuid())
   pseudo                String   @unique
@@ -40,6 +43,8 @@ model User {
   sentNotifications     Notifications[] @relation("sentNotifications")
 }
 
+// Modèles liés aux publications
+/// Représente une publication dans le flux d'activité
 model Posts {
   id                    String   @id @default(cuid())
   photo                 String?
@@ -58,6 +63,8 @@ model Posts {
   tags                  TagsPosts[]
 }
 
+// Modèles géographiques
+/// Représente une ville
 model City {
   id          String   @id @default(cuid())
   name        String   @unique
@@ -67,6 +74,8 @@ model City {
   users        User[]
 }
 
+// Modèles d'entraînement
+/// Programme d'entraînement personnalisé
 model Programs {
   id            String   @id @default(cuid())
   name          String
@@ -81,6 +90,7 @@ model Programs {
   usersFollows  UsersProgramsFollows[]
 }
 
+/// Séance d'entraînement dans un programme
 model Workouts {
   id           String   @id @default(cuid())
   name         String
@@ -95,6 +105,7 @@ model Workouts {
   exercices    WorkoutsExercises[]
 }
 
+/// Exercice physique
 model Exercices {
   id                String   @id @default(cuid())
   name              String
@@ -107,6 +118,7 @@ model Exercices {
   musclesGroups     ExerciceMuscleGroups[]
 }
 
+/// Résultat d'un exercice
 model ExerciceResults {
   id                    String   @id @default(cuid())
   createdAt             DateTime @default(now())
@@ -120,6 +132,7 @@ model ExerciceResults {
   exercice              Exercices @relation(fields: [exerciceId], references: [id])
 }
 
+/// Groupe musculaire
 model MuscleGroups {
   id                String   @id @default(cuid())
   createdAt         DateTime @default(now())
@@ -129,7 +142,8 @@ model MuscleGroups {
   exercices         ExerciceMuscleGroups[]
 }
 
-
+// Modèles d'interactions sociales
+/// Likes sur les publications
 model UsersLikes {
   posts        Posts    @relation(fields: [postsId], references: [id], onDelete: Cascade)
   postsId      String
@@ -140,6 +154,7 @@ model UsersLikes {
   @@id([postsId, usersId])
 }
 
+/// Partages de publications
 model UsersShares {
   posts        Posts    @relation(fields: [postsId], references: [id], onDelete: Cascade)
   postsId      String
@@ -150,6 +165,7 @@ model UsersShares {
   @@id([postsId, usersId])
 }
 
+/// Commentaires sur les publications
 model UsersComments {
   posts        Posts    @relation(fields: [postsId], references: [id], onDelete: Cascade)
   postsId      String
@@ -162,6 +178,8 @@ model UsersComments {
   @@id([postsId, usersId])
 }
 
+// Modèles de relations
+/// Association entre exercices et groupes musculaires
 model ExerciceMuscleGroups {
   exercices         Exercices            @relation(fields: [exercicesId], references: [id])
   exercicesId       String
@@ -173,6 +191,7 @@ model ExerciceMuscleGroups {
   @@id([musculeGroupsId, exercicesId])
 }
 
+/// Association entre séances et exercices
 model WorkoutsExercises {
   workoutId    String
   workout      Workouts @relation(fields: [workoutId], references: [id])
@@ -185,6 +204,7 @@ model WorkoutsExercises {
   @@id([exerciceId, workoutId])
 }
 
+/// Abonnements aux programmes
 model UsersProgramsFollows {
   programId    String
   program      Programs     @relation(fields: [programId], references: [id])
@@ -196,6 +216,8 @@ model UsersProgramsFollows {
   @@id([programId, userId])
 }
 
+// Modèles de gestion et sécurité
+/// Rôle utilisateur pour les permissions
 model Role {
   id           String   @id @default(cuid())
   name         String
@@ -205,17 +227,19 @@ model Role {
   users        User[]
 }
 
+/// Association entre résultats d'exercices et publications
 model ExercicesResultsPosts {
   posts                 Posts    @relation(fields: [postsId], references: [id], onDelete: Cascade)
   postsId               String
   exercicesResults      ExerciceResults @relation(fields: [exercicesResultsId], references: [id], onDelete: Cascade)
   exercicesResultsId    String
   createdAt             DateTime @default(now())
-  updatedAt             DateTime @updatedAt
+  updatedAt             DateTime @default(now())
 
   @@id([exercicesResultsId, postsId])
 }
 
+/// Relations d'abonnement entre utilisateurs
 model Follows {
   followedBy   User @relation("followedBy", fields: [followedById], references: [id])
   followedById String
@@ -225,6 +249,7 @@ model Follows {
   @@id([followingId, followedById])
 }
 
+/// Notifications utilisateur
 model Notifications {
   id             String   @id @default(cuid())
   userId         String   
@@ -238,6 +263,7 @@ model Notifications {
   sender         User     @relation("sentNotifications", fields: [senderId], references: [id])
 }
 
+/// Séries d'exercices
 model Sets {
   id               String   @id @default(cuid())
   reps             Int
@@ -249,6 +275,7 @@ model Sets {
   exerciceResult   ExerciceResults @relation(fields: [exerciceResultId], references: [id], onDelete: Cascade)
 }
 
+/// Tags pour les publications
 model Tags {
   id        String      @id @default(cuid())
   name      String      @unique
@@ -258,6 +285,7 @@ model Tags {
   posts     TagsPosts[]
 }
 
+/// Association entre tags et publications
 model TagsPosts {
   postId    String
   post      Posts @relation(fields: [postId], references: [id], onDelete: Cascade)
@@ -269,6 +297,7 @@ model TagsPosts {
   @@id([postId, tagId]) 
 }
 
+/// Tokens de rafraîchissement pour l'authentification
 model RefreshToken {
   id        String   @id @default(cuid())
   userId    String
@@ -280,6 +309,7 @@ model RefreshToken {
   user      User @relation(fields: [userId], references: [id])
 }
 
+/// Tokens de réinitialisation de mot de passe
 model PasswordReset {
   id        String   @id @default(uuid())
   token     String   @unique
@@ -288,7 +318,3 @@ model PasswordReset {
   expiresAt DateTime
   createdAt DateTime @default(now())
 }
-
-
-// ajouter des messages ?
-// ajouter des images pour les programmes ? pour les exercices ?

@@ -1,21 +1,22 @@
+/**
+ * @fileoverview Service de gestion des publications
+ * Fournit les fonctions CRUD et les requêtes spécialisées pour les publications
+ */
+
 import { Prisma } from '@prisma/client';
 import prisma from '../database/db';
 import { AppError, ErrorCodes } from '../errors/app.error';
+import { CreatePostParams, PostsSortParams } from '../types/posts.types';
 
-type SortParams = {
-  field: string;
-  order: 'asc' | 'desc';
-};
-
-type CreatePostParams = {
-  photo: string | null;
-  content: string;
-  userId: string;
-  tags?: string[];
-  exerciseResults?: string[]; // Ajout du paramètre
-};
-
-export const getPosts = async (page: number, size: number, sort?: SortParams) => {
+/**
+ * Récupère les publications avec pagination et tri
+ * @param {number} page - Numéro de la page
+ * @param {number} size - Nombre d'éléments par page
+ * @param {PostsSortParams} sort - Paramètres de tri
+ * @returns {Promise<{data: Post[], meta: {totalRowCount: number}}>}
+ * @throws {AppError} Si aucune publication n'est trouvée
+ */
+export const getPosts = async (page: number, size: number, sort?: PostsSortParams) => {
   const skip = (page - 1) * size;
   const sortOrder = sort?.order === 'desc' ? Prisma.SortOrder.desc : Prisma.SortOrder.asc;
   let orderBy: Prisma.PostsOrderByWithRelationInput = { createdAt: Prisma.SortOrder.desc };
@@ -68,6 +69,12 @@ export const getPosts = async (page: number, size: number, sort?: SortParams) =>
   return { data: posts, meta: { totalRowCount: total } };
 };
 
+/**
+ * Récupère une publication par son identifiant
+ * @param {string} id - Identifiant de la publication
+ * @returns {Promise<Post>} La publication trouvée
+ * @throws {AppError} Si la publication n'est pas trouvée
+ */
 export const getPostById = async (id: string) => {
   const post = await prisma.posts.findUnique({
     where: { id }
@@ -80,6 +87,12 @@ export const getPostById = async (id: string) => {
   return post;
 };
 
+/**
+ * Récupère toutes les publications d'un utilisateur avec pagination
+ * @param {string} userId - Identifiant de l'utilisateur
+ * @param {number} page - Numéro de la page
+ * @returns {Promise<Post[]>} Liste des publications de l'utilisateur
+ */
 export const getAllPostsByUser = async (userId: string, page: number) => {
   return await prisma.posts.findMany({
     where: {
@@ -126,6 +139,12 @@ export const getAllPostsByUser = async (userId: string, page: number) => {
   });
 };
 
+/**
+ * Récupère les publications de l'utilisateur et de ses abonnements avec pagination
+ * @param {string} userId - Identifiant de l'utilisateur
+ * @param {number} page - Numéro de la page
+ * @returns {Promise<Post[]>} Liste des publications de l'utilisateur et de ses abonnements
+ */
 export const getPostsOfUserAndHisFollowings = async (userId: string, page: number) => {
   const followedUsers = await prisma.follows.findMany({
     where: {
@@ -198,7 +217,6 @@ export const getPostsOfUserAndHisFollowings = async (userId: string, page: numbe
             }
           },
           exercicesResultsPosts: {
-            // Ajout de cette inclusion
             include: {
               exercicesResults: {
                 include: {
@@ -265,6 +283,12 @@ export const getPostsOfUserAndHisFollowings = async (userId: string, page: numbe
   return [...paginatedPosts, ...filteredRandomPosts].slice(0, 10);
 };
 
+/**
+ * Crée une publication avec des tags et des résultats d'exercice
+ * @param {CreatePostParams} params - Paramètres de création de la publication
+ * @returns {Promise<Post>} La publication créée
+ * @throws {AppError} Si une erreur survient lors de la création
+ */
 export const createPostWithTags = async ({ photo, content, userId, tags, exerciseResults }: CreatePostParams) => {
   try {
     return await prisma.posts.create({
@@ -316,6 +340,17 @@ export const createPostWithTags = async ({ photo, content, userId, tags, exercis
   }
 };
 
+/**
+ * Met à jour une publication
+ * @param {string} id - Identifiant de la publication
+ * @param {Object} data - Données à mettre à jour
+ * @param {string} [data.content] - Nouveau contenu de la publication
+ * @param {string|null} [data.photo] - Nouvelle photo de la publication
+ * @param {boolean} [data.isValid] - Statut de validation de la publication
+ * @param {string[]} [data.tags] - Nouveaux tags de la publication
+ * @returns {Promise<Post>} La publication mise à jour
+ * @throws {AppError} Si la publication n'est pas trouvée ou si une erreur survient lors de la mise à jour
+ */
 export const updatePost = async (id: string, data: { content?: string; photo?: string | null; isValid?: boolean; tags?: string[] }) => {
   try {
     return await prisma.posts.update({
@@ -353,6 +388,12 @@ export const updatePost = async (id: string, data: { content?: string; photo?: s
   }
 };
 
+/**
+ * Supprime une publication
+ * @param {string} id - Identifiant de la publication
+ * @returns {Promise<Post>} La publication supprimée
+ * @throws {AppError} Si la publication n'est pas trouvée ou si une erreur survient lors de la suppression
+ */
 export const deletePost = async (id: string) => {
   try {
     return await prisma.posts.delete({
@@ -368,6 +409,10 @@ export const deletePost = async (id: string) => {
   }
 };
 
+/**
+ * Récupère des publications aléatoires populaires
+ * @returns {Promise<Post[]>} Liste des publications triées par nombre de likes
+ */
 export const getRandomsPosts = async () => {
   return await prisma.posts.findMany({
     where: {

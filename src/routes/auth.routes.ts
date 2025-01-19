@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Configuration des routes d'authentification
+ * Définit les endpoints et leurs middlewares associés
+ */
+
 import { Router } from 'express';
 import {
   getRefreshTokenHandler,
@@ -13,6 +18,15 @@ import { loginSchema, registerSchema, resetPasswordRequestSchema, updatePassword
 
 const authRoute = Router();
 
+/**
+ * Routes d'authentification
+ * @route POST /api/auth/login - Connexion utilisateur
+ * @route POST /api/auth/register - Inscription utilisateur
+ * @route POST /api/auth/reset-password - Demande de réinitialisation du mot de passe
+ * @route POST /api/auth/update-password - Mise à jour du mot de passe
+ * @route POST /api/auth/refresh - Rafraîchissement du token
+ * @route PUT /api/auth/unvalidate/:id - Invalidation du token
+ */
 authRoute.post('/login', validate(loginSchema), loginHandler);
 authRoute.post('/register', validate(registerSchema), registerHandler);
 authRoute.post('/reset-password', validate(resetPasswordRequestSchema), resetPasswordHandler);

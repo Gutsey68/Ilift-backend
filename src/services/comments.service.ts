@@ -1,7 +1,17 @@
+/**
+ * @fileoverview Service de gestion des commentaires
+ * Fournit les fonctions CRUD pour les commentaires des publications
+ */
+
 import { Prisma } from '@prisma/client';
 import prisma from '../database/db';
 import { AppError, ErrorCodes } from '../errors/app.error';
 
+/**
+ * Crée un nouveau commentaire sur une publication
+ * @returns {Promise<Comment>} Le commentaire créé
+ * @throws {AppError} Si la publication n'existe pas
+ */
 export const commentPost = async (content: string, usersId: string, postsId: string) => {
   try {
     const post = await prisma.posts.findUnique({
@@ -25,6 +35,10 @@ export const commentPost = async (content: string, usersId: string, postsId: str
   }
 };
 
+/**
+ * Récupère tous les commentaires d'une publication
+ * @returns {Promise<Comment[]>} Liste des commentaires
+ */
 export const getCommentsOfPost = async (postsId: string) => {
   try {
     const comments = await prisma.usersComments.findMany({
@@ -46,6 +60,11 @@ export const getCommentsOfPost = async (postsId: string) => {
   }
 };
 
+/**
+ * Supprime un commentaire d'une publication
+ * @returns {Promise<Comment>} Le commentaire supprimé
+ * @throws {AppError} Si le commentaire n'existe pas
+ */
 export const deleteComment = async (postsId: string, usersId: string) => {
   try {
     return await prisma.usersComments.delete({
@@ -66,6 +85,11 @@ export const deleteComment = async (postsId: string, usersId: string) => {
   }
 };
 
+/**
+ * Récupère un commentaire par ID
+ * @returns {Promise<Comment>} Le commentaire trouvé
+ * @throws {AppError} Si le commentaire n'existe pas
+ */
 export const getCommentById = async (postsId: string, usersId: string) => {
   const comment = await prisma.usersComments.findUnique({
     where: {
@@ -83,6 +107,11 @@ export const getCommentById = async (postsId: string, usersId: string) => {
   return comment;
 };
 
+/**
+ * Met à jour un commentaire
+ * @returns {Promise<Comment>} Le commentaire mis à jour
+ * @throws {AppError} Si le commentaire n'existe pas
+ */
 export const updateComment = async (content: string, postsId: string, usersId: string) => {
   try {
     return await prisma.usersComments.update({
@@ -104,6 +133,11 @@ export const updateComment = async (content: string, postsId: string, usersId: s
   }
 };
 
+/**
+ * Récupère tous les commentaires
+ * @returns {Promise<Comment[]>} Liste des commentaires
+ * @throws {AppError} Si aucun commentaire n'est trouvé
+ */
 export const getComments = async () => {
   const comments = await prisma.usersComments.findMany();
 
