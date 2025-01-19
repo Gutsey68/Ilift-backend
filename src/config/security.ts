@@ -1,10 +1,23 @@
+/**
+ * @fileoverview Configuration des middlewares de sécurité de l'application
+ * Inclut la limitation de débit, la protection contre les attaques XSS,
+ * la compression et d'autres mesures de sécurité
+ */
+
 import compression from 'compression';
 import { Express, NextFunction, Request, Response } from 'express';
 import rateLimit from 'express-rate-limit';
 import helmet from 'helmet';
 import { config } from './environment';
 
+/**
+ * Configure les middlewares de sécurité pour l'application Express
+ * @param {Express} app - L'instance de l'application Express
+ */
 export const configureSecurityMiddleware = (app: Express): void => {
+  /**
+   * Limiteur de débit global pour toutes les routes
+   */
   const limiter = rateLimit({
     windowMs: 15 * 60 * 1000,
     max: 100,
@@ -17,6 +30,9 @@ export const configureSecurityMiddleware = (app: Express): void => {
   app.use(limiter);
   app.disable('x-powered-by');
 
+  /**
+   * Configuration de Helmet avec les politiques de sécurité personnalisées
+   */
   app.use(
     helmet({
       contentSecurityPolicy: {
@@ -56,6 +72,9 @@ export const configureSecurityMiddleware = (app: Express): void => {
     })
   );
 
+  /**
+   * Configuration de la compression des réponses
+   */
   app.use(
     compression({
       filter: (req, res) => {
@@ -68,7 +87,13 @@ export const configureSecurityMiddleware = (app: Express): void => {
     })
   );
 
+  /**
+   * Middlewares spécifiques au mode production
+   */
   if (config.isProd) {
+    /**
+     * Redirection HTTPS
+     */
     app.use((req: Request, res: Response, next: NextFunction) => {
       if (req.secure) {
         next();
@@ -77,6 +102,9 @@ export const configureSecurityMiddleware = (app: Express): void => {
       }
     });
 
+    /**
+     * En-têtes de sécurité supplémentaires
+     */
     app.use((req: Request, res: Response, next: NextFunction) => {
       res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
       res.setHeader('X-Content-Type-Options', 'nosniff');
@@ -86,6 +114,9 @@ export const configureSecurityMiddleware = (app: Express): void => {
     });
   }
 
+  /**
+   * Limiteur de débit spécifique pour les routes d'authentification
+   */
   const authLimiter = rateLimit({
     windowMs: 60 * 60 * 1000,
     max: 5,

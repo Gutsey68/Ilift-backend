@@ -1,3 +1,8 @@
+/**
+ * @fileovview Contrôleurs pour la gestion des notifications
+ * Gère les requêtes liées aux notifications utilisateur
+ */
+
 import { NextFunction, Request, Response } from 'express';
 import { AppError, ErrorCodes } from '../errors/app.error';
 import {
@@ -9,6 +14,10 @@ import {
   updateNotification
 } from '../services/notifications.service';
 
+/**
+ * Récupère toutes les notifications
+ * @throws {AppError} Si l'utilisateur n'est pas authentifié
+ */
 export const getNotificationsHandler = async (req: Request, res: Response, next: NextFunction) => {
   try {
     if (!req.user) {
@@ -25,6 +34,10 @@ export const getNotificationsHandler = async (req: Request, res: Response, next:
   }
 };
 
+/**
+ * Récupère les notifications d'un utilisateur spécifique
+ * @throws {AppError} Si l'utilisateur n'est pas authentifié
+ */
 export const getNotificationsOfUserHandler = async (req: Request, res: Response, next: NextFunction) => {
   try {
     if (!req.user) {
@@ -41,6 +54,10 @@ export const getNotificationsOfUserHandler = async (req: Request, res: Response,
   }
 };
 
+/**
+ * Crée une nouvelle notification
+ * @throws {AppError} Si l'utilisateur n'est pas authentifié
+ */
 export const createNotificationHandler = async (req: Request, res: Response, next: NextFunction) => {
   try {
     if (!req.user) {
@@ -58,6 +75,10 @@ export const createNotificationHandler = async (req: Request, res: Response, nex
   }
 };
 
+/**
+ * Supprime une notification
+ * @throws {AppError} Si l'utilisateur n'est pas authentifié
+ */
 export const deleteNotificationHandler = async (req: Request, res: Response, next: NextFunction) => {
   try {
     if (!req.user) {
@@ -73,6 +94,10 @@ export const deleteNotificationHandler = async (req: Request, res: Response, nex
   }
 };
 
+/**
+ * Met à jour une notification
+ * @throws {AppError} Si l'utilisateur n'est pas authentifié
+ */
 export const updateNotificationHandler = async (req: Request, res: Response, next: NextFunction) => {
   try {
     if (!req.user) {
@@ -89,6 +114,10 @@ export const updateNotificationHandler = async (req: Request, res: Response, nex
   }
 };
 
+/**
+ * Marque toutes les notifications comme lues
+ * @throws {AppError} Si l'utilisateur n'est pas authentifié
+ */
 export const markAllAsReadHandler = async (req: Request, res: Response, next: NextFunction) => {
   try {
     if (!req.user) {

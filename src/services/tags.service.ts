@@ -1,7 +1,16 @@
+/**
+ * @fileoverview Service de gestion des tags
+ * Fournit les fonctions CRUD pour les tags de publications
+ */
+
 import { Prisma } from '@prisma/client';
 import prisma from '../database/db';
 import { AppError, ErrorCodes } from '../errors/app.error';
 
+/**
+ * Récupère les 10 premiers tags
+ * @throws {AppError} Si aucun tag n'est trouvé
+ */
 export const getTags = async () => {
   const tags = await prisma.tags.findMany({
     take: 10
@@ -14,6 +23,10 @@ export const getTags = async () => {
   return tags;
 };
 
+/**
+ * Recherche un tag par son nom
+ * @param {string} name - Nom du tag à rechercher
+ */
 export const getTagByName = async (name: string) => {
   const tag = await prisma.tags.findFirst({
     where: { name }
@@ -21,6 +34,11 @@ export const getTagByName = async (name: string) => {
   return tag;
 };
 
+/**
+ * Recherche un tag par son identifiant
+ * @param {string} id - Identifiant du tag à rechercher
+ * @throws {AppError} Si le tag n'est pas trouvé
+ */
 export const getTagById = async (id: string) => {
   const tag = await prisma.tags.findFirst({
     where: { id }
@@ -33,6 +51,11 @@ export const getTagById = async (id: string) => {
   return tag;
 };
 
+/**
+ * Crée un nouveau tag
+ * @param {string} name - Nom du tag à créer
+ * @throws {AppError} Si le tag existe déjà
+ */
 export const createTag = async (name: string) => {
   try {
     return await prisma.tags.create({
@@ -48,6 +71,12 @@ export const createTag = async (name: string) => {
   }
 };
 
+/**
+ * Met à jour un tag existant
+ * @param {string} id - Identifiant du tag à mettre à jour
+ * @param {string} name - Nouveau nom du tag
+ * @throws {AppError} Si le tag existe déjà ou n'est pas trouvé
+ */
 export const updateTag = async (id: string, name: string) => {
   try {
     return await prisma.tags.update({
@@ -67,6 +96,11 @@ export const updateTag = async (id: string, name: string) => {
   }
 };
 
+/**
+ * Supprime un tag
+ * @param {string} id - Identifiant du tag à supprimer
+ * @throws {AppError} Si le tag n'est pas trouvé
+ */
 export const deleteTag = async (id: string) => {
   try {
     return await prisma.tags.delete({

@@ -1,14 +1,17 @@
+/**
+ * @fileoverview Service de gestion des utilisateurs
+ * Fournit les fonctions pour la gestion des utilisateurs et leurs relations
+ */
+
 import { Prisma } from '@prisma/client';
 import prisma from '../database/db';
 import { AppError, ErrorCodes } from '../errors/app.error';
-import { UpdateUserData } from '../types/user.types';
-import { findCityByName } from './city.service';
+import { UpdateUserData, UsersSortParams } from '../types/user.types';
 
-type SortParams = {
-  field: string;
-  order: 'asc' | 'desc';
-};
-
+/**
+ * Récupère tous les utilisateurs non bannis
+ * @throws {AppError} Si aucun utilisateur n'est trouvé
+ */
 export const getUsers = async () => {
   const users = await prisma.user.findMany({
     where: { isBan: false }
@@ -21,6 +24,11 @@ export const getUsers = async () => {
   return users;
 };
 
+/**
+ * Récupère le profil détaillé d'un utilisateur
+ * @param {string} userId - Identifiant de l'utilisateur
+ * @throws {AppError} Si l'utilisateur n'est pas trouvé
+ */
 export const getUserProfile = async (userId: string) => {
   const user = await prisma.user.findUnique({
     where: { id: userId },
@@ -63,31 +71,46 @@ export const getUserProfile = async (userId: string) => {
   return user;
 };
 
+/**
+ * Trouve un utilisateur par son pseudo
+ * @param {string} pseudo - Pseudo de l'utilisateur
+ * @returns {Promise<Prisma.User | null>} Utilisateur trouvé ou null
+ */
 export const findUserByPseudo = async (pseudo: string) => {
   return await prisma.user.findUnique({
     where: { pseudo }
   });
 };
 
+/**
+ * Trouve un utilisateur par son email
+ * @param {string} email - Email de l'utilisateur
+ * @returns {Promise<Prisma.User | null>} Utilisateur trouvé ou null
+ */
 export const findUserByEmail = async (email: string) => {
   return await prisma.user.findUnique({
     where: { email }
   });
 };
 
+/**
+ * Met à jour les informations d'un utilisateur
+ * @param {string} userId - Identifiant de l'utilisateur
+ * @param {UpdateUserData} data - Données de mise à jour de l'utilisateur
+ * @throws {AppError} Si l'utilisateur n'est pas trouvé ou si l'email/pseudo est déjà utilisé
+ */
 export const updateUser = async (userId: string, data: UpdateUserData) => {
   try {
     const { city, ...otherData } = data;
 
     if (city) {
-      const existingCity = await findCityByName(city);
       return await prisma.user.update({
         where: { id: userId },
         data: {
           ...otherData,
           city: {
             connectOrCreate: {
-              where: { id: existingCity?.id ?? '' },
+              where: { name: city },
               create: { name: city }
             }
           }
@@ -112,6 +135,11 @@ export const updateUser = async (userId: string, data: UpdateUserData) => {
   }
 };
 
+/**
+ * Récupère un utilisateur par son identifiant
+ * @param {string} id - Identifiant de l'utilisateur
+ * @returns {Promise<Prisma.User | null>} Utilisateur trouvé ou null
+ */
 export const getUserById = async (id: string) => {
   return await prisma.user.findUnique({
     where: {
@@ -120,6 +148,11 @@ export const getUserById = async (id: string) => {
   });
 };
 
+/**
+ * Récupère les utilisateurs suivis par un utilisateur
+ * @param {string} userId - Identifiant de l'utilisateur
+ * @returns {Promise<Prisma.User[]>} Liste des utilisateurs suivis
+ */
 export const getUsersIfollow = async (userId: string) => {
   return await prisma.user.findMany({
     where: {
@@ -139,6 +172,12 @@ export const getUsersIfollow = async (userId: string) => {
   });
 };
 
+/**
+ * Récupère les utilisateurs suivis par les utilisateurs que je suis
+ * @param {string} userId - Identifiant de l'utilisateur
+ * @param {string[]} usersIfollowIds - Liste des identifiants des utilisateurs suivis
+ * @returns {Promise<Prisma.User[]>} Liste des utilisateurs suivis par les utilisateurs que je suis
+ */
 export const getUsersFollowedByUsersIfollow = async (userId: string, usersIfollowIds: string[]) => {
   const users = await prisma.user.findMany({
     where: {
@@ -186,6 +225,12 @@ export const getUsersFollowedByUsersIfollow = async (userId: string, usersIfollo
   return users.sort((a, b) => b._count.following - a._count.following).slice(0, 5);
 };
 
+/**
+ * Récupère des utilisateurs supplémentaires
+ * @param {string} userId - Identifiant de l'utilisateur
+ * @param {string[]} existingUserIds - Liste des identifiants des utilisateurs existants
+ * @returns {Promise<Prisma.User[]>} Liste des utilisateurs supplémentaires
+ */
 export const getAdditionalUsers = async (userId: string, existingUserIds: string[]) => {
   return await prisma.user.findMany({
     where: {
@@ -202,6 +247,12 @@ export const getAdditionalUsers = async (userId: string, existingUserIds: string
   });
 };
 
+/**
+ * Récupère les abonnés d'un utilisateur
+ * @param {string} userId - Identifiant de l'utilisateur
+ * @param {string} [loggedId] - Identifiant de l'utilisateur connecté
+ * @returns {Promise<Prisma.User[]>} Liste des abonnés
+ */
 export const getFollowers = async (userId: string, loggedId?: string) => {
   const loggedInUser = loggedId;
 
@@ -230,6 +281,11 @@ export const getFollowers = async (userId: string, loggedId?: string) => {
   });
 };
 
+/**
+ * Récupère les utilisateurs suivis par un utilisateur
+ * @param {string} userId - Identifiant de l'utilisateur
+ * @returns {Promise<Prisma.User[]>} Liste des utilisateurs suivis
+ */
 export const getFollowings = async (userId: string) => {
   return await prisma.user.findMany({
     where: {
@@ -251,7 +307,14 @@ export const getFollowings = async (userId: string) => {
   });
 };
 
-export const getUsersAdmin = async (page: number, size: number, sort?: SortParams) => {
+/**
+ * Récupère les utilisateurs pour l'administration
+ * @param {number} page - Numéro de la page
+ * @param {number} size - Taille de la page
+ * @param {SortParams} [sort] - Paramètres de tri
+ * @returns {Promise<{ data: Prisma.User[], meta: { totalRowCount: number } }>} Utilisateurs et métadonnées
+ */
+export const getUsersAdmin = async (page: number, size: number, sort?: UsersSortParams) => {
   const skip = (page - 1) * size;
   const sortOrder = sort?.order === 'desc' ? Prisma.SortOrder.desc : Prisma.SortOrder.asc;
 

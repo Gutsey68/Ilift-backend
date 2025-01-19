@@ -1,7 +1,16 @@
+/**
+ * @fileoverview Contrôleurs pour la gestion des exercices
+ * Gère les requêtes liées aux exercices et leurs résultats
+ */
+
 import { NextFunction, Request, Response } from 'express';
 import { AppError, ErrorCodes } from '../errors/app.error';
 import { createExercice, deleteExercice, getAllExercices, getExerciceAndResults, updateExercice } from '../services/exercices.service';
 
+/**
+ * Récupère un exercice avec ses résultats
+ * @throws {AppError} Si l'utilisateur n'est pas authentifié ou si l'exercice n'existe pas
+ */
 export const getExerciceAndResultsHandler = async (req: Request, res: Response, next: NextFunction) => {
   try {
     if (!req.user) {
@@ -19,6 +28,10 @@ export const getExerciceAndResultsHandler = async (req: Request, res: Response, 
   }
 };
 
+/**
+ * Récupère tous les exercices
+ * @throws {AppError} En cas d'erreur lors de la récupération
+ */
 export const getExercicesHandler = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const exercices = await getAllExercices();
@@ -31,6 +44,10 @@ export const getExercicesHandler = async (req: Request, res: Response, next: Nex
   }
 };
 
+/**
+ * Crée un nouvel exercice
+ * @throws {AppError} Si les données sont invalides ou si l'exercice existe déjà
+ */
 export const createExerciceHandler = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const exercice = await createExercice(req.body);
@@ -44,6 +61,10 @@ export const createExerciceHandler = async (req: Request, res: Response, next: N
   }
 };
 
+/**
+ * Met à jour un exercice existant
+ * @throws {AppError} Si l'exercice n'existe pas ou si les données sont invalides
+ */
 export const updateExerciceHandler = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const exercice = await updateExercice(req.params.id, req.body);
@@ -57,6 +78,10 @@ export const updateExerciceHandler = async (req: Request, res: Response, next: N
   }
 };
 
+/**
+ * Supprime un exercice
+ * @throws {AppError} Si l'exercice n'existe pas
+ */
 export const deleteExerciceHandler = async (req: Request, res: Response, next: NextFunction) => {
   try {
     await deleteExercice(req.params.id);

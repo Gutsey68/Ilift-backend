@@ -1,7 +1,16 @@
+/**
+ * @fileoverview Service de gestion des notifications
+ * Fournit les fonctions CRUD pour les notifications des utilisateurs
+ */
+
 import { Prisma } from '@prisma/client';
 import prisma from '../database/db';
 import { AppError, ErrorCodes } from '../errors/app.error';
 
+/**
+ * Récupère toutes les notifications
+ * @throws {AppError} Si aucune notification n'est trouvée
+ */
 export const getNotifications = async () => {
   const notifications = await prisma.notifications.findMany({});
 
@@ -12,6 +21,10 @@ export const getNotifications = async () => {
   return notifications;
 };
 
+/**
+ * Récupère les notifications d'un utilisateur avec le compteur non lu
+ * @returns {Promise<{notifications: Notification[], unreadCount: number}>}
+ */
 export const getNotificationsOfUser = async (userId: string) => {
   const [notifications, notificationsCount] = await Promise.all([
     prisma.notifications.findMany({
@@ -35,16 +48,16 @@ export const getNotificationsOfUser = async (userId: string) => {
     })
   ]);
 
-  if (!notifications.length) {
-    throw AppError.NotFound('Aucune notification trouvée', ErrorCodes.NOT_FOUND);
-  }
-
   return {
     notifications,
     unreadCount: notificationsCount
   };
 };
 
+/**
+ * Récupère une notification par son identifiant
+ * @throws {AppError} Si la notification n'est pas trouvée
+ */
 export const getNotificationById = async (id: string) => {
   const notification = await prisma.notifications.findUnique({
     where: { id }
@@ -57,6 +70,10 @@ export const getNotificationById = async (id: string) => {
   return notification;
 };
 
+/**
+ * Crée une nouvelle notification
+ * @throws {AppError} En cas d'erreur lors de la création
+ */
 export const createNotification = async (userId: string, senderId: string, type: string, content: string) => {
   try {
     return await prisma.notifications.create({
@@ -70,6 +87,10 @@ export const createNotification = async (userId: string, senderId: string, type:
   }
 };
 
+/**
+ * Supprime une notification par son identifiant
+ * @throws {AppError} Si la notification n'est pas trouvée
+ */
 export const deleteNotification = async (id: string) => {
   try {
     return await prisma.notifications.delete({
@@ -85,6 +106,10 @@ export const deleteNotification = async (id: string) => {
   }
 };
 
+/**
+ * Met à jour le contenu d'une notification
+ * @throws {AppError} Si la notification n'est pas trouvée
+ */
 export const updateNotification = async (id: string, content: string) => {
   try {
     return await prisma.notifications.update({
@@ -101,6 +126,10 @@ export const updateNotification = async (id: string, content: string) => {
   }
 };
 
+/**
+ * Marque toutes les notifications d'un utilisateur comme lues
+ * @returns {Promise<Prisma.BatchPayload>} Nombre de notifications mises à jour
+ */
 export const markAllAsRead = async (userId: string) => {
   return await prisma.notifications.updateMany({
     where: { userId, isRead: false },

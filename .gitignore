@@ -1,33 +1,33 @@
-# Dependencies
+# Dépendances
 node_modules
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# Environment files
+# Fichiers d'environnement
 .env
 .env.local
 .env.development
 .env.production
 
-# Keep example file
+# Garder le fichier exemple
 !.env.example
 
-# Build
+# Dossiers de build
 /dist
 /build
 
-# IDE
+# Fichiers d'éditeur
 .idea
 .vscode
 *.swp
 *.swo
 
-# OS
+# Fichiers système
 .DS_Store
 Thumbs.db
 
-# Uploads
+# Dossier d'uploads
 /uploads/*
 !/uploads/.gitkeep
 
@@ -35,9 +35,9 @@ Thumbs.db
 /logs
 *.log
 
-# Coverage
+# Couverture de tests
 /coverage
 
-# Temp files
+# Fichiers temporaires
 *.tmp
 *.temp

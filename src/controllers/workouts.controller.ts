@@ -1,8 +1,17 @@
+/**
+ * @fileovview Contrôleurs pour la gestion des séances d'entraînement
+ * Gère les requêtes liées aux séances et leurs exercices
+ */
+
 import { NextFunction, Request, Response } from 'express';
 import prisma from '../database/db';
 import { AppError, ErrorCodes } from '../errors/app.error';
 import { createWorkout, deleteWorkout, getExercicesOfWorkout, updateWorkout, updateWorkoutExercices } from '../services/workouts.service';
 
+/**
+ * Récupère les exercices d'une séance
+ * @throws {AppError} Si l'utilisateur n'est pas authentifié ou si la séance n'existe pas
+ */
 export const getExercicesOfWorkoutHandler = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     if (!req.user) {
@@ -20,6 +29,10 @@ export const getExercicesOfWorkoutHandler = async (req: Request, res: Response, 
   }
 };
 
+/**
+ * Crée une nouvelle séance
+ * @throws {AppError} Si l'utilisateur n'est pas authentifié ou si les données sont invalides
+ */
 export const createWorkoutHandler = async (req: Request, res: Response, next: NextFunction) => {
   try {
     if (!req.user) {
@@ -37,6 +50,10 @@ export const createWorkoutHandler = async (req: Request, res: Response, next: Ne
   }
 };
 
+/**
+ * Met à jour une séance existante
+ * @throws {AppError} Si l'utilisateur n'est pas authentifié ou si la séance n'existe pas
+ */
 export const updateWorkoutHandler = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     if (!req.user) {
@@ -54,6 +71,10 @@ export const updateWorkoutHandler = async (req: Request, res: Response, next: Ne
   }
 };
 
+/**
+ * Supprime une séance
+ * @throws {AppError} Si l'utilisateur n'est pas authentifié ou si la séance n'existe pas
+ */
 export const deleteWorkoutHandler = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     if (!req.user) {
@@ -70,6 +91,10 @@ export const deleteWorkoutHandler = async (req: Request, res: Response, next: Ne
   }
 };
 
+/**
+ * Met à jour la liste des exercices d'une séance
+ * @throws {AppError} Si l'utilisateur n'est pas authentifié ou si la mise à jour échoue
+ */
 export const updateWorkoutExercicesHandler = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     if (!req.user) {
@@ -87,6 +112,10 @@ export const updateWorkoutExercicesHandler = async (req: Request, res: Response,
   }
 };
 
+/**
+ * Met à jour la position d'un exercice dans une séance
+ * @throws {AppError} Si l'utilisateur n'est pas authentifié ou si la mise à jour échoue
+ */
 export const updateExercicePositionHandler = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { workoutId, exerciceId } = req.params;

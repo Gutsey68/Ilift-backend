@@ -1,7 +1,16 @@
+/**
+ * @fileoverview Service de gestion des likes
+ * Fournit les fonctions pour gérer les interactions "j'aime" sur les publications
+ */
+
 import { Prisma } from '@prisma/client';
 import prisma from '../database/db';
 import { AppError, ErrorCodes } from '../errors/app.error';
 
+/**
+ * Récupère un like par son ID unique (postId + userId)
+ * @throws {AppError} Si le like n'est pas trouvé
+ */
 export const getLikeById = async (postsId: string, usersId: string) => {
   const like = await prisma.usersLikes.findUnique({
     where: {
@@ -16,6 +25,10 @@ export const getLikeById = async (postsId: string, usersId: string) => {
   return like;
 };
 
+/**
+ * Vérifie si un like existe déjà
+ * @returns {Promise<Like|null>} Le like s'il existe, null sinon
+ */
 export const checkLikeExists = async (postsId: string, usersId: string) => {
   return await prisma.usersLikes.findUnique({
     where: {
@@ -24,6 +37,10 @@ export const checkLikeExists = async (postsId: string, usersId: string) => {
   });
 };
 
+/**
+ * Ajoute un like à une publication
+ * @throws {AppError} Si la publication n'est pas trouvée ou si le like existe déjà
+ */
 export const likePost = async (postsId: string, usersId: string) => {
   try {
     const post = await prisma.posts.findUnique({
@@ -47,6 +64,10 @@ export const likePost = async (postsId: string, usersId: string) => {
   }
 };
 
+/**
+ * Supprime un like d'une publication
+ * @throws {AppError} Si le like n'est pas trouvé
+ */
 export const unlikePost = async (postsId: string, usersId: string) => {
   try {
     return await prisma.usersLikes.delete({
@@ -64,6 +85,10 @@ export const unlikePost = async (postsId: string, usersId: string) => {
   }
 };
 
+/**
+ * Récupère le nombre de likes d'une publication
+ * @returns {Promise<number>} Le nombre de likes
+ */
 export const getLikesOfPost = async (postsId: string) => {
   const count = await prisma.usersLikes.count({
     where: { postsId }
@@ -72,10 +97,19 @@ export const getLikesOfPost = async (postsId: string) => {
   return count;
 };
 
+/**
+ * Récupère tous les likes
+ * @returns {Promise<Like[]>} La liste de tous les likes
+ */
 export const getLikes = async () => {
   return await prisma.usersLikes.findMany();
 };
 
+/**
+ * Récupère les likes d'un utilisateur avec pagination
+ * @throws {AppError} Si aucun like n'est trouvé
+ * @returns {Promise<Like[]>} La liste des likes de l'utilisateur
+ */
 export const getLikesOfAUser = async (usersId: string, page: number = 1) => {
   const likes = await prisma.usersLikes.findMany({
     where: { usersId },

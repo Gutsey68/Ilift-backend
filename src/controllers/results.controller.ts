@@ -1,7 +1,16 @@
+/**
+ * @fileovview Contrôleurs pour la gestion des résultats d'exercices
+ * Gère les requêtes liées aux résultats et leurs séries
+ */
+
 import { NextFunction, Request, Response } from 'express';
 import { AppError, ErrorCodes } from '../errors/app.error';
-import { createResult, deleteResult, updateResult } from '../services/results.service';
+import { createResult, deleteResult, deleteSet, updateResult } from '../services/results.service';
 
+/**
+ * Crée un nouveau résultat d'exercice
+ * @throws {AppError} Si l'utilisateur n'est pas authentifié
+ */
 export const createResultHandler = async (req: Request, res: Response, next: NextFunction) => {
   try {
     if (!req.user) {
@@ -19,6 +28,10 @@ export const createResultHandler = async (req: Request, res: Response, next: Nex
   }
 };
 
+/**
+ * Met à jour un résultat existant
+ * @throws {AppError} Si l'utilisateur n'est pas authentifié ou si le résultat n'existe pas
+ */
 export const updateResultHandler = async (req: Request, res: Response, next: NextFunction) => {
   try {
     if (!req.user) {
@@ -36,6 +49,10 @@ export const updateResultHandler = async (req: Request, res: Response, next: Nex
   }
 };
 
+/**
+ * Supprime un résultat
+ * @throws {AppError} Si l'utilisateur n'est pas authentifié ou si le résultat n'existe pas
+ */
 export const deleteResultHandler = async (req: Request, res: Response, next: NextFunction) => {
   try {
     if (!req.user) {
@@ -46,6 +63,22 @@ export const deleteResultHandler = async (req: Request, res: Response, next: Nex
 
     res.status(200).json({
       message: 'Résultat supprimé avec succès'
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Supprime une série spécifique d'un résultat
+ * @throws {AppError} Si la série ou le résultat n'existe pas
+ */
+export const deleteSetHandler = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    await deleteSet(req.params.resultId, req.params.setId);
+
+    res.status(200).json({
+      message: 'Série supprimée avec succès'
     });
   } catch (error) {
     next(error);

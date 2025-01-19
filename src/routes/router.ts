@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Configuration du routeur principal de l'application
+ * Centralise toutes les routes de l'API
+ */
+
 import { Router } from 'express';
 import authRoutes from './auth.routes';
 import commentsRoutes from './comments.routes';
@@ -15,6 +20,10 @@ import workoutsRoute from './workouts.routes';
 import resultsRouter from './results.routes';
 import onboardingRoutes from './onboarding.routes';
 
+/**
+ * Router Express principal
+ * Regroupe tous les sous-routeurs de l'application
+ */
 const router = Router();
 
 router.use('/posts', postsRoutes);

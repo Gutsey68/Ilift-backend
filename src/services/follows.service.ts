@@ -1,7 +1,18 @@
+/**
+ * @fileoverview Service de gestion des abonnements entre utilisateurs
+ * Fournit les fonctions pour gérer les relations de suivi
+ */
+
 import { Prisma } from '@prisma/client';
 import prisma from '../database/db';
 import { AppError, ErrorCodes } from '../errors/app.error';
 
+/**
+ * Crée un nouvel abonnement entre deux utilisateurs
+ * @param {string} followedById - ID de l'utilisateur qui suit
+ * @param {string} followingId - ID de l'utilisateur suivi
+ * @throws {AppError} Si l'utilisateur n'existe pas ou si l'abonnement existe déjà
+ */
 export const followUser = async (followedById: string, followingId: string) => {
   try {
     const user = await prisma.user.findUnique({
@@ -27,6 +38,10 @@ export const followUser = async (followedById: string, followingId: string) => {
   }
 };
 
+/**
+ * Supprime un abonnement entre deux utilisateurs
+ * @throws {AppError} En cas d'erreur lors de la suppression
+ */
 export const unfollowUser = async (followingId: string, followedById: string) => {
   try {
     return await prisma.follows.deleteMany({
@@ -40,6 +55,10 @@ export const unfollowUser = async (followingId: string, followedById: string) =>
   }
 };
 
+/**
+ * Récupère une relation d'abonnement par IDs
+ * @throws {AppError} Si la relation n'existe pas
+ */
 export const getFollowById = async (followedById: string, followingId: string) => {
   const follow = await prisma.follows.findFirst({
     where: { followedById, followingId }
@@ -52,6 +71,10 @@ export const getFollowById = async (followedById: string, followingId: string) =
   return follow;
 };
 
+/**
+ * Vérifie si une relation d'abonnement existe
+ * @returns {Promise<Follow|null>} La relation si elle existe, null sinon
+ */
 export const checkFollowExists = async (followerId: string, followedId: string) => {
   return await prisma.follows.findUnique({
     where: {

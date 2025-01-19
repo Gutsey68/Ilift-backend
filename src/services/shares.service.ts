@@ -1,7 +1,16 @@
+/**
+ * @fileoverview Service de gestion des republications
+ * Fournit les fonctions CRUD pour les republications de posts
+ */
+
 import { Prisma } from '@prisma/client';
 import prisma from '../database/db';
 import { AppError, ErrorCodes } from '../errors/app.error';
 
+/**
+ * Récupère toutes les republications
+ * @throws {AppError} Si aucune republication n'est trouvée
+ */
 export const getShares = async () => {
   const shares = await prisma.usersShares.findMany();
 
@@ -12,6 +21,12 @@ export const getShares = async () => {
   return shares;
 };
 
+/**
+ * Récupère une republication spécifique
+ * @param {string} usersId - ID de l'utilisateur
+ * @param {string} postsId - ID de la publication
+ * @throws {AppError} Si la republication n'est pas trouvée
+ */
 export const getShareById = async (usersId: string, postsId: string) => {
   const share = await prisma.usersShares.findUnique({
     where: {
@@ -26,6 +41,12 @@ export const getShareById = async (usersId: string, postsId: string) => {
   return share;
 };
 
+/**
+ * Republie un post
+ * @param {string} postsId - ID de la publication
+ * @param {string} usersId - ID de l'utilisateur
+ * @throws {AppError} Si la republication existe déjà
+ */
 export const sharePost = async (postsId: string, usersId: string) => {
   try {
     return await prisma.usersShares.create({
@@ -41,6 +62,12 @@ export const sharePost = async (postsId: string, usersId: string) => {
   }
 };
 
+/**
+ * Supprime une republication
+ * @param {string} postsId - ID de la publication
+ * @param {string} usersId - ID de l'utilisateur
+ * @throws {AppError} Si la republication n'est pas trouvée
+ */
 export const unsharePost = async (postsId: string, usersId: string) => {
   try {
     return await prisma.usersShares.delete({
@@ -58,6 +85,12 @@ export const unsharePost = async (postsId: string, usersId: string) => {
   }
 };
 
+/**
+ * Récupère les republications d'un utilisateur
+ * @param {string} usersId - ID de l'utilisateur
+ * @param {number} [page=1] - Numéro de la page
+ * @throws {AppError} Si aucune republication n'est trouvée
+ */
 export const getSharesOfAUser = async (usersId: string, page: number = 1) => {
   const shares = await prisma.usersShares.findMany({
     where: { usersId },

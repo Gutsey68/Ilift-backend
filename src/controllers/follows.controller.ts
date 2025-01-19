@@ -1,8 +1,17 @@
+/**
+ * @fileoverview Contrôleurs pour la gestion des abonnements
+ * Gère les requêtes liées aux relations de suivi entre utilisateurs
+ */
+
 import { NextFunction, Request, Response } from 'express';
 import { AppError, ErrorCodes } from '../errors/app.error';
 import { followUser, getFollowById, unfollowUser } from '../services/follows.service';
 import { createNotification } from '../services/notifications.service';
 
+/**
+ * Gère l'abonnement à un utilisateur
+ * @throws {AppError} Si l'utilisateur n'est pas authentifié
+ */
 export const followHandler = async (req: Request, res: Response, next: NextFunction) => {
   try {
     if (!req.user) {
@@ -21,6 +30,10 @@ export const followHandler = async (req: Request, res: Response, next: NextFunct
   }
 };
 
+/**
+ * Gère le désabonnement d'un utilisateur
+ * @throws {AppError} Si l'utilisateur n'est pas authentifié ou si la relation n'existe pas
+ */
 export const unfollowHandler = async (req: Request, res: Response, next: NextFunction) => {
   try {
     if (!req.user) {
@@ -38,6 +51,10 @@ export const unfollowHandler = async (req: Request, res: Response, next: NextFun
   }
 };
 
+/**
+ * Gère la suppression d'un abonné
+ * @throws {AppError} Si l'utilisateur n'est pas authentifié ou si la relation n'existe pas
+ */
 export const deleteFollowerHandler = async (req: Request, res: Response, next: NextFunction) => {
   try {
     if (!req.user) {

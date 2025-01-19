@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Contrôleurs pour les opérations d'authentification
+ * Gère les requêtes d'inscription, connexion et gestion des tokens
+ */
+
 import { NextFunction, Request, Response } from 'express';
 import prisma from '../database/db';
 import { AppError, ErrorCodes } from '../errors/app.error';
@@ -15,6 +20,10 @@ import { findUserByEmail, updateUser } from '../services/users.service';
 import { hashPassword } from '../utils/hash';
 import { createJWT, createRefreshToken } from '../utils/jwt';
 
+/**
+ * Gère l'inscription d'un nouvel utilisateur
+ * @throws {AppError} Si la création échoue
+ */
 export const registerHandler = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const newUser = await createUser(req.body.pseudo, req.body.password, req.body.email);
@@ -28,6 +37,10 @@ export const registerHandler = async (req: Request, res: Response, next: NextFun
   }
 };
 
+/**
+ * Gère la connexion d'un utilisateur
+ * @throws {AppError} Si l'authentification échoue
+ */
 export const loginHandler = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const user = await findUserAndValidate(req.body.pseudo, req.body.password);
@@ -55,6 +68,10 @@ export const loginHandler = async (req: Request, res: Response, next: NextFuncti
   }
 };
 
+/**
+ * Gère le rafraîchissement du token d'accès
+ * @throws {AppError} Si le token est invalide
+ */
 export const getRefreshTokenHandler = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const user = req.refreshPayload;
@@ -78,6 +95,10 @@ export const getRefreshTokenHandler = async (req: Request, res: Response, next: 
   }
 };
 
+/**
+ * Gère l'invalidation d'un token de rafraîchissement
+ * @throws {AppError} Si le token est introuvable
+ */
 export const unvalidateRefreshTokenHandler = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const token = await FindRefreshToken(req.params.id);
@@ -96,6 +117,10 @@ export const unvalidateRefreshTokenHandler = async (req: Request, res: Response,
   }
 };
 
+/**
+ * Gère la demande de réinitialisation de mot de passe
+ * @throws {AppError} Si une erreur survient lors de l'envoi de l'email
+ */
 export const resetPasswordHandler = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const { email } = req.body;
@@ -114,6 +139,10 @@ export const resetPasswordHandler = async (req: Request, res: Response, next: Ne
   }
 };
 
+/**
+ * Gère la mise à jour du mot de passe
+ * @throws {AppError} Si le token ou le nouveau mot de passe est manquant
+ */
 export const updatePasswordHandler = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const { token, newPassword } = req.body;

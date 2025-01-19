@@ -1,9 +1,18 @@
+/**
+ * @fileoverview Service de gestion de l'authentification
+ * Fournit les fonctions pour la création et la gestion des utilisateurs et des tokens
+ */
+
 import { Prisma } from '@prisma/client';
 import crypto from 'crypto';
 import prisma from '../database/db';
 import { AppError, ErrorCodes } from '../errors/app.error';
 import { comparePasswords, hashPassword } from '../utils/hash';
 
+/**
+ * Crée un nouvel utilisateur
+ * @throws {AppError} Si le pseudo ou l'email existe déjà
+ */
 export const createUser = async (pseudo: string, password: string, email: string) => {
   const existingPseudo = await prisma.user.findUnique({ where: { pseudo } });
   if (existingPseudo) {
@@ -21,6 +30,10 @@ export const createUser = async (pseudo: string, password: string, email: string
   });
 };
 
+/**
+ * Sauvegarde un token de rafraîchissement
+ * @throws {AppError} En cas d'erreur de sauvegarde
+ */
 export const saveRefreshToken = async (token: string, userId: string) => {
   try {
     await prisma.refreshToken.updateMany({
@@ -44,6 +57,10 @@ export const saveRefreshToken = async (token: string, userId: string) => {
   }
 };
 
+/**
+ * Recherche un token de rafraîchissement par ID utilisateur
+ * @throws {AppError} Si le token n'est pas trouvé
+ */
 export const findRefreshTokenByUserId = async (userId: string) => {
   const token = await prisma.refreshToken.findFirst({
     where: { userId, isValid: true }
@@ -56,6 +73,9 @@ export const findRefreshTokenByUserId = async (userId: string) => {
   return token;
 };
 
+/**
+ * Invalide un token de rafraîchissement
+ */
 export const unvalidateRefreshToken = async (token: string) => {
   return await prisma.refreshToken.updateMany({
     data: {
@@ -67,6 +87,9 @@ export const unvalidateRefreshToken = async (token: string) => {
   });
 };
 
+/**
+ * Trouve un token de rafraîchissement valide
+ */
 export const FindRefreshToken = async (token: string) => {
   const cleanToken = token?.replace(/^Bearer\s+/i, '').trim() || '';
   return await prisma.refreshToken.findFirst({
@@ -77,6 +100,10 @@ export const FindRefreshToken = async (token: string) => {
   });
 };
 
+/**
+ * Crée un token de réinitialisation de mot de passe
+ * @throws {AppError} Si une demande est déjà en cours
+ */
 export const createResetToken = async (userId: string) => {
   try {
     const existingToken = await prisma.passwordReset.findFirst({
@@ -103,6 +130,9 @@ export const createResetToken = async (userId: string) => {
   }
 };
 
+/**
+ * Trouve un token de réinitialisation valide
+ */
 export const findResetToken = async (token: string) => {
   return await prisma.passwordReset.findFirst({
     where: {
@@ -117,6 +147,10 @@ export const findResetToken = async (token: string) => {
   });
 };
 
+/**
+ * Trouve et valide un utilisateur avec ses identifiants
+ * @throws {AppError} Si les identifiants sont invalides ou le compte banni
+ */
 export const findUserAndValidate = async (pseudo: string, password: string) => {
   const user = await prisma.user.findUnique({ where: { pseudo } });
 

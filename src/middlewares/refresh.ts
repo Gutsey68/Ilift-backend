@@ -1,9 +1,18 @@
+/**
+ * @fileoverview Middleware de gestion du rafraîchissement des tokens JWT
+ * Vérifie la validité du refresh token et prépare le payload pour un nouveau token
+ */
+
 import { NextFunction, Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import { config } from '../config/environment';
 import { AppError, ErrorCodes } from '../errors/app.error';
 import { FindRefreshToken } from '../services/auth.service';
 
+/**
+ * Interface décrivant la structure du payload JWT
+ * @interface JWTPayload
+ */
 interface JWTPayload {
   id: string;
   pseudo: string;
@@ -13,6 +22,13 @@ interface JWTPayload {
   exp?: number;
 }
 
+/**
+ * Middleware de validation et rafraîchissement des tokens
+ * @param {Request} req - Requête Express
+ * @param {Response} res - Réponse Express
+ * @param {NextFunction} next - Fonction suivante dans la chaîne de middleware
+ * @throws {AppError} Si le token est manquant, invalide ou expiré
+ */
 export const refresh = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const refreshToken = req.headers.authorization?.split(' ')[1];

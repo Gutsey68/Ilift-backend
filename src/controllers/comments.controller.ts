@@ -1,9 +1,18 @@
+/**
+ * @fileoverview Contrôleurs pour la gestion des commentaires
+ * Gère les requêtes liées aux commentaires et leurs interactions
+ */
+
 import { NextFunction, Request, Response } from 'express';
 import { AppError, ErrorCodes } from '../errors/app.error';
 import { commentPost, deleteComment, getCommentById, getComments, getCommentsOfPost, updateComment } from '../services/comments.service';
 import { createNotification } from '../services/notifications.service';
 import { getPostById } from '../services/posts.service';
 
+/**
+ * Crée un nouveau commentaire
+ * @throws {AppError} Si l'utilisateur n'est pas authentifié ou si la publication n'existe pas
+ */
 export const createCommentHandler = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const postId = req.params.id;
@@ -35,6 +44,10 @@ export const createCommentHandler = async (req: Request, res: Response, next: Ne
   }
 };
 
+/**
+ * Récupère les commentaires d'une publication
+ * @throws {AppError} Si la publication n'existe pas
+ */
 export const getCommentsOfAPostHandler = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const postId = req.params.id;
@@ -69,6 +82,10 @@ export const getCommentsOfAPostHandler = async (req: Request, res: Response, nex
   }
 };
 
+/**
+ * Supprime un commentaire
+ * @throws {AppError} Si l'utilisateur n'est pas authentifié ou si le commentaire n'existe pas
+ */
 export const deleteCommentHandler = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const id = req.params.id;
@@ -95,6 +112,10 @@ export const deleteCommentHandler = async (req: Request, res: Response, next: Ne
   }
 };
 
+/**
+ * Met à jour un commentaire
+ * @throws {AppError} Si l'utilisateur n'est pas authentifié ou si le commentaire n'existe pas
+ */
 export const updateCommentHandler = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const id = req.params.id;
@@ -125,6 +146,10 @@ export const updateCommentHandler = async (req: Request, res: Response, next: Ne
   }
 };
 
+/**
+ * Récupère tous les commentaires
+ * @throws {AppError} Si aucun commentaire n'est trouvé
+ */
 export const getCommentsHandler = async (req: Request, res: Response, next: NextFunction) => {
   try {
     if (!req.user) {

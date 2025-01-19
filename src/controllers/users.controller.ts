@@ -1,3 +1,8 @@
+/**
+ * @fileovview Contrôleurs pour la gestion des utilisateurs
+ * Gère les requêtes liées aux profils et relations utilisateurs
+ */
+
 import { NextFunction, Request, Response } from 'express';
 import { AppError, ErrorCodes } from '../errors/app.error';
 import { checkFollowExists } from '../services/follows.service';
@@ -14,6 +19,10 @@ import {
   updateUser
 } from '../services/users.service';
 
+/**
+ * Récupère la liste des utilisateurs
+ * @throws {AppError} Si l'utilisateur n'est pas authentifié
+ */
 export const getUsersHandler = async (req: Request, res: Response, next: NextFunction) => {
   try {
     if (!req.user) {
@@ -30,6 +39,10 @@ export const getUsersHandler = async (req: Request, res: Response, next: NextFun
   }
 };
 
+/**
+ * Récupère le profil d'un utilisateur spécifique avec son statut de suivi
+ * @throws {AppError} Si l'utilisateur n'est pas authentifié ou n'existe pas
+ */
 export const getUserProfileHandler = async (req: Request, res: Response, next: NextFunction) => {
   try {
     if (!req.user) {
@@ -48,6 +61,11 @@ export const getUserProfileHandler = async (req: Request, res: Response, next: N
   }
 };
 
+/**
+ * Récupère le profil de l'utilisateur connecté
+ * @throws {404} Si l'utilisateur n'existe pas
+ * @throws {500} En cas d'erreur serveur
+ */
 export const getCurrentUserHandler = async (req, res) => {
   try {
     const userId = req.user.id;
@@ -64,6 +82,12 @@ export const getCurrentUserHandler = async (req, res) => {
   }
 };
 
+/**
+ * Récupère les suggestions d'utilisateurs à suivre
+ * Inclut les utilisateurs suivis par les personnes que l'utilisateur suit
+ * @throws {404} Si aucune suggestion n'est trouvée
+ * @throws {500} En cas d'erreur serveur
+ */
 export const getSuggestedUsersHandler = async (req, res) => {
   try {
     const userId = req.user.id;
@@ -125,6 +149,11 @@ export const getSuggestedUsersHandler = async (req, res) => {
   }
 };
 
+/**
+ * Met à jour le profil d'un utilisateur
+ * Gère également l'upload de photo de profil
+ * @throws {AppError} Si l'utilisateur n'est pas authentifié
+ */
 export const updateUserHandler = async (req: Request, res: Response, next: NextFunction) => {
   try {
     if (!req.user) {
@@ -146,6 +175,12 @@ export const updateUserHandler = async (req: Request, res: Response, next: NextF
   }
 };
 
+/**
+ * Récupère la liste des abonnés d'un utilisateur
+ * Inclut l'information si l'utilisateur connecté les suit
+ * @throws {404} Si l'utilisateur ou ses abonnés n'existent pas
+ * @throws {500} En cas d'erreur serveur
+ */
 export const getFollowersHandler = async (req, res) => {
   try {
     const userId = req.params.id;
@@ -176,6 +211,11 @@ export const getFollowersHandler = async (req, res) => {
   }
 };
 
+/**
+ * Récupère la liste des abonnements d'un utilisateur
+ * @throws {404} Si l'utilisateur ou ses abonnements n'existent pas
+ * @throws {500} En cas d'erreur serveur
+ */
 export const getFollowingsHandler = async (req, res) => {
   try {
     const userId = req.params.id;
@@ -198,6 +238,13 @@ export const getFollowingsHandler = async (req, res) => {
   }
 };
 
+/**
+ * Récupère la liste des utilisateurs pour l'interface admin
+ * Inclut la pagination et le tri
+ * @throws {400} Si les paramètres de tri sont invalides
+ * @throws {404} Si aucun utilisateur n'est trouvé
+ * @throws {500} En cas d'erreur serveur
+ */
 export const getUsersAdminHandler = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
