@@ -16,21 +16,6 @@ import { config } from './environment';
  */
 export const configureSecurityMiddleware = (app: Express): void => {
   /**
-   * Limiteur de débit global pour toutes les routes
-   */
-  const limiter = rateLimit({
-    windowMs: 15 * 60 * 1000,
-    max: 100,
-    message: {
-      status: 'error',
-      message: 'Trop de requêtes, veuillez réessayer plus tard'
-    }
-  });
-
-  app.use(limiter);
-  app.disable('x-powered-by');
-
-  /**
    * Configuration de Helmet avec les politiques de sécurité personnalisées
    */
   app.use(
@@ -119,7 +104,6 @@ export const configureSecurityMiddleware = (app: Express): void => {
    */
   const authLimiter = rateLimit({
     windowMs: 60 * 60 * 1000,
-    max: 5,
     message: {
       status: 'error',
       message: 'Trop de tentatives de connexion, veuillez réessayer dans une heure'
