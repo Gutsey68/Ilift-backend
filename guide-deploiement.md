@@ -1,349 +1,308 @@
+# Guide de déploiement d'une application React avec PostgreSQL sous Linux (Docker, Docker Compose, Traefik)
+
 ## Table des matières
 
 - [Introduction](#introduction)
+- [Contexte](#contexte)
+- [Objectifs pédagogiques](#objectifs-p%C3%A9dagogiques)
 - [Prérequis](#pr%C3%A9requis)
 - [Préparation du serveur](#pr%C3%A9paration-du-serveur)
-- [Configuration de PostgreSQL](#configuration-de-postgresql)
-- [Déploiement Frontend](#d%C3%A9ploiement-frontend)
-- [Déploiement Backend](#d%C3%A9ploiement-backend)
+- [Configuration de Docker et Docker Compose](#configuration-de-docker-et-docker-compose)
+- [Déploiement avec Docker Compose](#d%C3%A9ploiement-avec-docker-compose)
+- [Configuration de Traefik](#configuration-de-traefik)
 - [Mise en production](#mise-en-production)
 - [Sécurisation](#s%C3%A9curisation)
-- [Dépannage](#d%C3%A9pannage)
+- [Résolution des problèmes](#r%C3%A9solution-des-probl%C3%A8mes)
 - [Maintenance](#maintenance)
+- [Conclusion](#conclusion)
 - [Références](#r%C3%A9f%C3%A9rences)
+
+---
 
 ## Introduction
 
-Cette application est un réseau social dédié aux passionnés de musculation permettant de :
+L'objectif de ce guide est de déployer une application web composée de :
 
-- Partager des posts avec photos
-- Enregistrer et suivre ses séances d'entraînement
-- Suivre d'autres utilisateurs
-- Créer et suivre des programmes d'entraînement
+- Un frontend React
+- Un backend Node.js (Express + Prisma)
+- Une base de données PostgreSQL
 
-### Stack technique
+Le tout orchestré avec **Docker Compose** et sécurisé avec **Traefik** comme reverse proxy.
 
-- Frontend: React 18, Typescript, TailwindCSS, Tanstack Query
-- Backend: Node.js, Express, Prisma
-- Base de données: PostgreSQL
+---
+
+## Contexte
+
+Dans le cadre de votre formation, vous êtes chargé de rédiger un guide détaillé pour la mise en production d’une application web React avec PostgreSQL, déployée sur un serveur Linux. Ce guide est destiné aux administrateurs système et aux développeurs.
+
+---
+
+## Objectifs pédagogiques
+
+- Comprendre et appliquer les étapes nécessaires à la mise en production d’une application React avec PostgreSQL.
+- Maîtriser les bonnes pratiques de sécurité et d’optimisation pour un environnement de production.
+
+---
 
 ## Prérequis
 
-### Matériel serveur recommandé
+### Matériel recommandé
 
-- CPU: 4 cœurs
-- RAM: 8 Go
-- Stockage: 100 Go SSD
-- OS: Ubuntu 20.04 LTS
+- **CPU** : 4 cœurs
+- **RAM** : 8 Go
+- **Stockage** : 100 Go SSD
+- **OS** : Ubuntu 20.04 LTS ou supérieur
 
-### Logiciels requis
+### Logiciels nécessaires
 
-- Node.js 18+
-- PostgreSQL 14+
-- Nginx
-- Pare-feu
-- Git
+- Docker 24+
+- Docker Compose 2.20+
+- Certbot (si vous ne configurez pas automatiquement le SSL via Traefik)
+
+---
 
 ## Préparation du serveur
 
-### Mise à jour du système
+1. **Mettre à jour le système** :
+
+   ```bash
+   sudo apt update
+   sudo apt upgrade -y
+   ```
+
+2. **Installer Docker** :
+
+   ```bash
+   curl -fsSL https://get.docker.com -o get-docker.sh
+   sudo sh get-docker.sh
+   ```
+
+3. **Installer Docker Compose** :
+
+   ```bash
+   sudo apt install docker-compose-plugin
+   ```
+
+4. **Vérifier les versions** :
+
+   ```bash
+   docker --version
+   docker compose version
+   ```
+
+5. **Créer un utilisateur Docker** (facultatif) :
+   ```bash
+   sudo usermod -aG docker $USER
+   ```
+
+---
+
+## Configuration de Docker et Docker Compose
+
+### Structure des fichiers
+
+Créez une arborescence comme suit :
+
+```
+/var/www/ilift
+├── docker-compose.yml
+├── traefik
+│   ├── traefik.yml
+│   ├── acme.json
+├── frontend
+│   └── Dockerfile
+├── backend
+│   └── Dockerfile
+└── postgres
+    └── init.sql
+```
+
+### Exemple de `docker-compose.yml`
+
+```yaml
+version: '3.9'
+
+services:
+  traefik:
+    image: traefik:v2.10
+    command:
+      - '--api.insecure=false'
+      - '--providers.docker=true'
+      - '--entrypoints.web.address=:80'
+      - '--entrypoints.websecure.address=:443'
+      - '--certificatesresolvers.myresolver.acme.httpchallenge=true'
+      - '--certificatesresolvers.myresolver.acme.httpchallenge.entrypoint=web'
+      - '--certificatesresolvers.myresolver.acme.email=admin@votredomaine.com'
+      - '--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json'
+    ports:
+      - '80:80'
+      - '443:443'
+    volumes:
+      - '/var/run/docker.sock:/var/run/docker.sock:ro'
+      - './traefik/acme.json:/letsencrypt/acme.json'
+      - './traefik/traefik.yml:/traefik.yml'
+
+  postgres:
+    image: postgres:14
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+    environment:
+      POSTGRES_USER: ilift
+      POSTGRES_PASSWORD: votre_mot_de_passe
+      POSTGRES_DB: ilift
+    networks:
+      - iliftnet
+
+  backend:
+    build:
+      context: ./backend
+    environment:
+      DATABASE_URL: 'postgresql://ilift:votre_mot_de_passe@postgres:5432/ilift'
+    depends_on:
+      - postgres
+    networks:
+      - iliftnet
+    labels:
+      - 'traefik.http.routers.backend.rule=Host(`api.votredomaine.com`)'
+      - 'traefik.http.services.backend.loadbalancer.server.port=3000'
+
+  frontend:
+    build:
+      context: ./frontend
+    networks:
+      - iliftnet
+    labels:
+      - 'traefik.http.routers.frontend.rule=Host(`votredomaine.com`)'
+      - 'traefik.http.services.frontend.loadbalancer.server.port=80'
+
+volumes:
+  postgres_data:
+networks:
+  iliftnet:
+```
+
+### Dockerfile pour le Frontend
+
+```dockerfile
+FROM node:18 AS builder
+WORKDIR /app
+COPY package.json ./
+RUN npm install
+COPY . .
+RUN npm run build
+
+FROM nginx:alpine
+COPY --from=builder /app/build /usr/share/nginx/html
+```
+
+### Dockerfile pour le Backend
+
+```dockerfile
+FROM node:18
+WORKDIR /app
+COPY package.json ./
+RUN npm install
+COPY . .
+CMD ["npm", "start"]
+```
+
+---
+
+## Configuration de Traefik
+
+### Fichier `traefik.yml`
+
+```yaml
+api:
+  dashboard: true
+entryPoints:
+  web:
+    address: ':80'
+  websecure:
+    address: ':443'
+certificatesResolvers:
+  myresolver:
+    acme:
+      email: 'admin@votredomaine.com'
+      storage: '/letsencrypt/acme.json'
+      httpChallenge:
+        entryPoint: web
+```
+
+### Fichier `acme.json`
 
 ```bash
-sudo apt update
-sudo apt upgrade -y
+touch traefik/acme.json
+chmod 600 traefik/acme.json
 ```
 
-### Installation de Node.js
-
-```bash
-# installs fnm (Fast Node Manager)
-curl -fsSL https://fnm.vercel.app/install | bash
-
-# activate fnm
-source ~/.bashrc
-
-# download and install Node.js
-fnm use --install-if-missing 22
-
-# verifies the right Node.js version is in the environment
-node -v # should print `v22.12.0`
-
-# verifies the right npm version is in the environment
-npm -v # should print `10.9.0
-```
-
-### Installation de PNPM
-
-```bash
-curl -fsSL https://get.pnpm.io/install.sh | sh -
-```
-
-### Installation de PostgreSQL
-
-```bash
-sudo apt install -y postgresql-common
-sudo /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh
-```
-
-### Installation de Nginx
-
-```bash
-sudo apt install nginx
-```
-
-### Installation de Git
-
-```bash
-apt-get install git
-```
-
-### Configuration du pare-feu
-
-```bash
-sudo ufw allow OpenSSH
-sudo ufw allow 'Nginx Full'
-sudo ufw enable
-```
-
-### Configuration des ports
-
-```bash
-# Vérifier les ports utilisés
-sudo ss -tulpn
-
-# Ouvrir les ports nécessaires dans le pare-feu
-sudo ufw allow 80/tcp
-sudo ufw allow 443/tcp
-sudo ufw allow 3000/tcp  # Pour l'API
-sudo ufw allow 5432/tcp  # Pour PostgreSQL (uniquement si accès externe nécessaire)
-```
-
-### Clonage des dépôts
-
-```bash
-# Créer le répertoire de l'application
-sudo mkdir -p /var/www/ilift
-sudo chown -R $USER:$USER /var/www/ilift
-cd /var/www/ilift
-
-# Cloner les dépôts
-git clone https://github.com/votre-org/ilift-frontend.git frontend
-git clone https://github.com/votre-org/ilift-backend.git backend
-
-# Configuration des branches
-cd frontend
-git checkout main  # ou votre branche de production
-cd ../backend
-git checkout main  # ou votre branche de production
-```
-
-## Configuration de PostgreSQL
-
-### Création de l'utilisateur et de la base
-
-```bash
-sudo -u postgres psql
-
-CREATE USER ilift WITH PASSWORD 'yourpwd';
-CREATE DATABASE ilift OWNER ilift;
-\q
-```
-
-### Configuration PostgreSQL
-
-```bash
-sudo nano /etc/postgresql/14/main/postgresql.conf
-```
-
-Modifications recommandées:
-
-```conf
-max_connections = 100
-shared_buffers = 512MB
-work_mem = 6MB
-```
-
-### Configuration du port PostgreSQL
-
-```bash
-sudo nano /etc/postgresql/14/main/postgresql.conf
-```
-
-Modifications recommandées:
-
-```conf
-# Ajouter ou modifier ces lignes
-listen_addresses = 'localhost'  # par défaut pour la sécurité
-port = 5432                    # port par défaut
-```
-
-## Déploiement Frontend
-
-### Build de l'application
-
-```bash
-cd frontend
-pnpm install
-pnpm build
-```
-
-### Configuration Nginx
-
-```bash
-sudo nano /etc/nginx/sites-available/ilift
-```
-
-```nginx
-server {
-    listen 80;
-    server_name votre-domaine.com;
-    root /var/www/ilift/frontend/dist;
-
-    location / {
-        try_files $uri $uri/ /index.html;
-    }
-
-    location /api {
-        proxy_pass http://localhost:3000;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection 'upgrade';
-        proxy_set_header Host $host;
-        proxy_cache_bypass $http_upgrade;
-    }
-}
-```
-
-## Déploiement Backend
-
-### Configuration des variables d'environnement
-
-```bash
-cd backend
-cp .env.example .env
-```
-
-Editez `.env`:
-
-```javascript
-DATABASE_URL = 'postgresql://gymapp:votre_mot_de_passe@localhost:5432/gymapp_db';
-JWT_SECRET = 'votre_secret_jwt';
-REFRESH_TOKEN_SECRET = 'votre_secret_refresh_jwt';
-```
-
-### Configuration du port de l'API
-
-Dans le fichier `.env` du backend, ajoutez:
-
-```javascript
-PORT=3000  # Port pour l'API
-```
-
-### Installation et démarrage
-
-```bash
-pnpm install
-pnpm prisma migrate deploy
-pnpm build
-```
+---
 
 ## Mise en production
 
-### Configuration du reverse proxy Nginx
+1. Lancer l'application :
 
-```bash
-sudo ln -s /etc/nginx/sites-available/ilift /etc/nginx/sites-enabled/
-sudo nginx -t
-sudo systemctl restart nginx
-```
+   ```bash
+   docker compose up -d
+   ```
 
-### SSL avec Certbot
+2. Vérifier les conteneurs :
 
-```bash
-sudo snap install certbot --classic
-sudo certbot --nginx
-```
+   ```bash
+   docker ps
+   ```
+
+3. Accéder au tableau de bord Traefik :
+   - URL : `http://votredomaine.com:8080/dashboard`
+
+---
 
 ## Sécurisation
 
-### Sécurisation PostgreSQL
+- **SSL** : Automatisé avec Traefik.
+- **Fichiers sensibles** :
+  ```bash
+  chmod 600 backend/.env
+  chmod 600 postgres/init.sql
+  ```
 
-Editez `pg_hba.conf`:
+---
 
-```bash
-sudo nano /etc/postgresql/14/main/pg_hba.conf
-```
+## Résolution des problèmes
 
-```conf
-# IPv4 local connections:
-host    all             all             127.0.0.1/32            scram-sha-256
-```
-
-### Protection des fichiers sensibles
-
-```bash
-chmod 600 backend/.env
-```
-
-## Dépannage
-
-### Problèmes courants
-
-#### Le frontend ne se charge pas
-
-- Vérifier les logs Nginx: `sudo nginx -t`
-- Vérifier les permissions des fichiers: `ls -la /var/www/ilift`
-
-#### L'API ne répond pas
-
-- Vérifier les logs PM2: `pm2 logs`
-- Vérifier la connexion DB: `nc -zv localhost 5432`
-
-#### Erreurs de base de données
-
-- Vérifier les logs PostgreSQL: `sudo tail -f /var/log/postgresql/postgresql-14-main.log`
+---
 
 ## Maintenance
 
-### Backups quotidiens
+1. **Mettre à jour les images** :
 
-```bash
-sudo -u postgres pg_dump gymapp_db > backup_$(date +%Y%m%d).sql
-```
+   ```bash
+   docker compose pull
+   docker compose up -d
+   ```
 
-### Mises à jour
+2. **Sauvegarder la base de données** :
+   ```bash
+   docker exec -t postgres pg_dump ilift > backup.sql
+   ```
 
-```bash
-# Système
-sudo apt update && sudo apt upgrade -y
+---
 
-# Application
-cd /var/www/ilift
-git pull
-pnpm install
-pnpm build
-pm2 reload all
-```
+## Conclusion
 
-### Monitoring
+Ce guide récapitule toutes les étapes de déploiement : de la préparation du serveur à la configuration de Docker, Traefik et PostgreSQL, en passant par la sécurisation et la maintenance. Assurez-vous de tenir votre système à jour et de respecter les bonnes pratiques pour garantir la pérennité de votre application.
 
-```bash
-# Surveiller les logs
-pm2 logs
-
-# Statut des services
-systemctl status nginx
-systemctl status postgresql
-```
+---
 
 ## Références
 
-- [Documentation officielle de PostgreSQL](https://www.postgresql.org/docs/)
-- [Documentation officielle de React](https://react.dev/)
-- [Documentation officielle de Nginx](https://nginx.org/en/docs/)
-- [Documentation de PM2](https://pm2.keymetrics.io/docs/usage/pm2-doc-single-page/)
-- [Certbot - Guide de l'utilisateur](https://certbot.eff.org/docs/)
+- [Documentation Docker](https://docs.docker.com/)
+- [Documentation Traefik](https://doc.traefik.io/traefik/)
+- [Certbot](https://certbot.eff.org/)
 
-### A rajouter
+---
 
-firewall, failtoban, docker, treiffic
+```
+
+```
