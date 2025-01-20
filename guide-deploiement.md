@@ -131,8 +131,6 @@ L'objectif de ce guide est de déployer une application web composée de :
    Voici la configuration mise à jour de `docker-compose.yml` pour Traefik, le backend, le frontend, et PostgreSQL :
 
    ```yaml
-   version: '3.9'
-
    services:
      traefik:
        image: traefik:v2.10

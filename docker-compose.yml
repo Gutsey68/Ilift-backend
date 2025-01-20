@@ -2,8 +2,6 @@
 # Utilise Traefik comme reverse proxy avec support SSL automatique
 # Architecture : Traefik -> Frontend/Backend -> PostgreSQL
 
-version: '3.9'
-
 services:
   # Reverse proxy et SSL manager
   traefik:
