@@ -1,9 +1,4 @@
-# Configuration du déploiement de l'application iLift
-# Utilise Traefik comme reverse proxy avec support SSL automatique
-# Architecture : Traefik -> Frontend/Backend -> PostgreSQL
-
 services:
-  # Reverse proxy et SSL manager
   traefik:
     image: traefik:v2.10
     container_name: traefik
@@ -12,55 +7,57 @@ services:
       - '--providers.docker=true'
       - '--entrypoints.web.address=:80'
       - '--entrypoints.websecure.address=:443'
+      - '--entrypoints.web.http.redirections.entryPoint.to=websecure'
+      - '--entrypoints.web.http.redirections.entryPoint.scheme=https'
+      - '--certificatesresolvers.letsencrypt.acme.httpchallenge=true'
+      - '--certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web'
       - '--certificatesresolvers.letsencrypt.acme.email=${ACME_EMAIL}'
       - '--certificatesresolvers.letsencrypt.acme.storage=/acme.json'
     ports:
       - '80:80'
       - '443:443'
     volumes:
-      - '/var/run/docker.sock:/var/run/docker.sock:ro'
-      - './acme.json:/acme.json'
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./acme.json:/acme.json
     networks:
       - proxy
 
-  # Application React (Single Page Application)
-  # Servie sur le domaine principal avec SSL
   frontend:
     build:
       context: ./frontend
     labels:
       - 'traefik.enable=true'
-      - 'traefik.http.routers.frontend.rule=Host(`${DOMAIN}`)'
-      - 'traefik.http.routers.frontend.entrypoints=websecure'
+      - 'traefik.http.routers.frontend.rule=Host(`segau.dipsw-ccicampus.dev`)'
+      - 'traefik.http.routers.frontend.tls=true'
       - 'traefik.http.routers.frontend.tls.certresolver=letsencrypt'
+      - 'traefik.http.services.frontend.loadbalancer.server.port=80'
     networks:
       - proxy
 
-  # API Node.js/Express
-  # Accessible sur /api avec strip prefix automatique
-  # Example: /api/users -> /users dans l'API
   backend:
     build:
       context: ./backend
     environment:
       - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      - PORT=${PORT}
+      - NODE_ENV=${NODE_ENV}
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_EXPIRES_IN=${JWT_EXPIRES_IN}
+      - REFRESH_TOKEN_SECRET=${REFRESH_TOKEN_SECRET}
+      - REFRESH_TOKEN_EXPIRES_IN=${REFRESH_TOKEN_EXPIRES_IN}
+      - CLIENT_URL=${CLIENT_URL}
+      - UPLOAD_DIR=${UPLOAD_DIR}
+      - MAX_FILE_SIZE=${MAX_FILE_SIZE}
     labels:
       - 'traefik.enable=true'
-      - 'traefik.http.routers.backend.rule=PathPrefix(`/api`)'
-      - 'traefik.http.routers.backend.entrypoints=websecure'
-      - 'traefik.http.routers.backend.tls.certresolver=letsencrypt'
-      - 'traefik.http.middlewares.backend-strip-prefix.stripprefix.prefixes=/api'
-      - 'traefik.http.routers.backend.middlewares=backend-strip-prefix'
+      - 'traefik.http.routers.backend.rule=Host(`${DOMAIN}`) && PathPrefix(`/api`)'
+      - 'traefik.http.services.backend.loadbalancer.server.port=4000'
     networks:
       - proxy
       - internal
     depends_on:
       - db
 
-  # Base de données PostgreSQL
-  # Isolée dans le réseau internal pour la sécurité
-  # Les données sont persistantes via docker volume
-  # Initialisation automatique avec data.sql
   db:
     image: postgres:15-alpine
     environment:
@@ -73,16 +70,11 @@ services:
     networks:
       - internal
 
-# Réseaux Docker :
-# - proxy : exposition publique (Traefik, frontend, backend)
-# - internal : réseau isolé pour la DB
 networks:
   proxy:
     driver: bridge
   internal:
     driver: bridge
 
-# Volumes persistants pour les données
 volumes:
   postgres_data:
-    external: false
