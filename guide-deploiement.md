@@ -107,11 +107,17 @@ L'objectif de ce guide est de déployer une application web composée de :
 
 1. **Préparer la structure des fichiers** :
 
+   Déplacez le fichier docker-compose.yml du dossier backend vers le dossier parent :
+
+   ```bash
+   mv /var/www/ilift/backend/docker-compose.yml /var/www/ilift/
+   ```
+
    L'arborescence doit ressembler à ceci :
 
    ```
    /var/www/ilift
-   ├── docker-compose.yml
+   ├── docker-compose.yml  # Déplacé depuis le dossier backend
    ├── acme.json
    ├── frontend
    │   └── Dockerfile
