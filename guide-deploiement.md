@@ -343,3 +343,7 @@ systemctl status postgresql
 - [Documentation officielle de Nginx](https://nginx.org/en/docs/)
 - [Documentation de PM2](https://pm2.keymetrics.io/docs/usage/pm2-doc-single-page/)
 - [Certbot - Guide de l'utilisateur](https://certbot.eff.org/docs/)
+
+### A rajouter
+
+firewall, failtoban, docker, treiffic
