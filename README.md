@@ -20,19 +20,20 @@ backend/
 │   ├── config/          # Configuration (env, sécurité)
 │   ├── controllers/     # Contrôleurs de routes
 │   ├── database/        # Configuration Prisma
-│   ├── errors/         # Gestion des erreurs
-│   ├── middlewares/    # Middlewares (auth, upload)
-│   ├── routes/         # Définition des routes
-│   ├── services/       # Logique métier
-│   ├── types/          # Types TypeScript
-│   ├── utils/          # Utilitaires
-│   ├── validators/     # Schémas de validation
-│   ├── server.ts       # Configuration du serveur
-│   └── index.ts        # Point d'entrée
+│   ├── errors/          # Gestion des erreurs
+│   ├── middlewares/     # Middlewares (auth, upload)
+│   ├── routes/          # Définition des routes
+│   ├── services/        # Logique métier
+│   ├── types/           # Types TypeScript
+│   ├── utils/           # Utilitaires
+│   ├── validators/      # Schémas de validation
+│   ├── server.ts        # Configuration du serveur
+│   └── index.ts         # Point d'entrée
 ├── prisma/
-│   ├── schema.prisma   # Schéma de base de données
-│   └── seed.ts         # Données de test
-└── uploads/            # Dossier des fichiers uploadés
+│   ├── schema.prisma    # Schéma de base de données
+│   └── seed.ts          # Données de test
+└── uploads/             # Dossier des fichiers uploadés
+└── bruno/               # Collection de tests API et documentation des endpoints
 ```
 
 ## Prérequis
@@ -60,7 +61,7 @@ backend/
 1. Cloner le projet
 
 ```bash
-git clone [url-du-repo]
+git clone https://github.com/Gutsey68/CDA-Ilift-backend.git
 cd backend
 ```
 
@@ -131,7 +132,7 @@ MAX_FILE_SIZE=5242880
 
 ## Tests des Routes API
 
-Le projet inclut une collection Bruno pour tester les routes API. Bruno est un client API open-source alternatif à Postman.
+Le projet inclut une collection Bruno pour tester les routes API.
 
 Les fichiers de test se trouvent dans le dossier `/bruno` et sont organisés par fonctionnalité :
 
