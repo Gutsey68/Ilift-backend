@@ -1,0 +1,44 @@
+# Dépendances
+node_modules
+.pnpm-store
+
+# Fichiers de build
+dist
+build
+*.tsbuildinfo
+
+# Fichiers de développement
+.git
+.gitignore
+.env
+.env.*
+!.env.example
+*.log
+.DS_Store
+.vscode
+.idea
+README.md
+*.md
+
+# Tests
+coverage
+__tests__
+*.test.*
+*.spec.*
+
+# Base de données
+prisma/migrations
+*.db
+*.sqlite
+
+# Uploads
+uploads/*
+!uploads/.gitkeep
+
+# Autres
+.docker
+.husky
+.eslintcache
+*.pdf
+*.drawio
+

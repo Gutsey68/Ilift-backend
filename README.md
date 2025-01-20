@@ -149,6 +149,16 @@ Pour utiliser Bruno :
 3. Configurer les variables d'environnement dans Bruno
 4. Exécuter les requêtes
 
+## Déploiement
+
+Un guide détaillé de déploiement est disponible dans le fichier [guide-deploiement.md](./guide-deploiement.md). Il couvre :
+
+- La préparation du serveur
+- L'installation des dépendances nécessaires
+- La configuration Docker et Docker Compose
+- Le déploiement avec Traefik et SSL automatique
+- La maintenance et les sauvegardes
+
 ## Contribution
 
 1. Créer une branche pour votre fonctionnalité

@@ -1,23 +1,18 @@
-# Guide de déploiement d'une application React avec PostgreSQL sous Linux (Docker, Docker Compose, Traefik)
+Voici ton guide réécrit avec le bon fichier `docker-compose.yml` et l'ajout de l'installation de Git ainsi que les fichiers `Dockerfile` pour le frontend et le backend :
+
+---
+
+# Guide de déploiement - Application iLift
 
 ## Table des matières
 
 - [Introduction](#introduction)
-- [Contexte](#contexte)
-- [Objectifs pédagogiques](#objectifs-p%C3%A9dagogiques)
-- [Prérequis](#pr%C3%A9requis)
-- [Préparation du serveur](#pr%C3%A9paration-du-serveur)
-- [Configuration de Docker et Docker Compose](#configuration-de-docker-et-docker-compose)
-- [Déploiement avec Docker Compose](#d%C3%A9ploiement-avec-docker-compose)
-- [Configuration de Traefik](#configuration-de-traefik)
-- [Mise en production](#mise-en-production)
-- [Sécurisation](#s%C3%A9curisation)
-- [Résolution des problèmes](#r%C3%A9solution-des-probl%C3%A8mes)
+- [Prérequis](#prérequis)
+- [Préparation du serveur](#préparation-du-serveur)
+- [Préparation de l'environnement](#préparation-de-lenvironnement)
+- [Configuration et Déploiement](#configuration-et-déploiement)
 - [Maintenance](#maintenance)
-- [Conclusion](#conclusion)
-- [Références](#r%C3%A9f%C3%A9rences)
-
----
+- [Références](#références)
 
 ## Introduction
 
@@ -26,40 +21,24 @@ L'objectif de ce guide est de déployer une application web composée de :
 - Un frontend React
 - Un backend Node.js (Express + Prisma)
 - Une base de données PostgreSQL
-
-Le tout orchestré avec **Docker Compose** et sécurisé avec **Traefik** comme reverse proxy.
-
----
-
-## Contexte
-
-Dans le cadre de votre formation, vous êtes chargé de rédiger un guide détaillé pour la mise en production d’une application web React avec PostgreSQL, déployée sur un serveur Linux. Ce guide est destiné aux administrateurs système et aux développeurs.
-
----
-
-## Objectifs pédagogiques
-
-- Comprendre et appliquer les étapes nécessaires à la mise en production d’une application React avec PostgreSQL.
-- Maîtriser les bonnes pratiques de sécurité et d’optimisation pour un environnement de production.
-
----
+- Un reverse proxy Traefik avec SSL automatique
 
 ## Prérequis
 
-### Matériel recommandé
+### Serveur
 
-- **CPU** : 4 cœurs
-- **RAM** : 8 Go
-- **Stockage** : 100 Go SSD
-- **OS** : Ubuntu 20.04 LTS ou supérieur
+- Ubuntu 20.04 LTS ou supérieur
+- 4 cœurs CPU
+- 8 Go RAM
+- 100 Go SSD
 
 ### Logiciels nécessaires
 
 - Docker 24+
 - Docker Compose 2.20+
-- Certbot (si vous ne configurez pas automatiquement le SSL via Traefik)
-
----
+- Git
+- Node.js 18+
+- pnpm (gestionnaire de paquets)
 
 ## Préparation du serveur
 
@@ -90,192 +69,157 @@ Dans le cadre de votre formation, vous êtes chargé de rédiger un guide détai
    docker compose version
    ```
 
-5. **Créer un utilisateur Docker** (facultatif) :
+5. **Installer Git** :
+
+   ```bash
+   sudo apt install git
+   ```
+
+6. **Ajouter l'utilisateur actuel au groupe Docker** (facultatif) :
+
    ```bash
    sudo usermod -aG docker $USER
    ```
 
----
+   Déconnectez-vous et reconnectez-vous pour appliquer les modifications.
 
-## Configuration de Docker et Docker Compose
+## Préparation de l'environnement
 
-### Structure des fichiers
+1. **Configurer les variables d'environnement** :
 
-Créez une arborescence comme suit :
+   - Créez un fichier `.env` à partir de `.env.example` dans chaque service (backend, Traefik) et personnalisez les valeurs.
 
-```
-/var/www/ilift
-├── docker-compose.yml
-├── traefik
-│   ├── traefik.yml
-│   ├── acme.json
-├── frontend
-│   └── Dockerfile
-├── backend
-│   └── Dockerfile
-└── postgres
-    └── init.sql
-```
+2. **Cloner les dépôts** :
 
-### Exemple de `docker-compose.yml`
+   ```bash
+   # Cloner le frontend
+   git clone https://github.com/Gutsey68/CDA-Ilift-frontend.git /var/www/ilift/frontend
 
-```yaml
-version: '3.9'
+   # Cloner le backend
+   git clone https://github.com/Gutsey68/CDA-Ilift-backend.git /var/www/ilift/backend
+   ```
 
-services:
-  traefik:
-    image: traefik:v2.10
-    command:
-      - '--api.insecure=false'
-      - '--providers.docker=true'
-      - '--entrypoints.web.address=:80'
-      - '--entrypoints.websecure.address=:443'
-      - '--certificatesresolvers.myresolver.acme.httpchallenge=true'
-      - '--certificatesresolvers.myresolver.acme.httpchallenge.entrypoint=web'
-      - '--certificatesresolvers.myresolver.acme.email=admin@votredomaine.com'
-      - '--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json'
-    ports:
-      - '80:80'
-      - '443:443'
-    volumes:
-      - '/var/run/docker.sock:/var/run/docker.sock:ro'
-      - './traefik/acme.json:/letsencrypt/acme.json'
-      - './traefik/traefik.yml:/traefik.yml'
+3. **Vérifier le fichier de données SQL** :
 
-  postgres:
-    image: postgres:14
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
-    environment:
-      POSTGRES_USER: ilift
-      POSTGRES_PASSWORD: votre_mot_de_passe
-      POSTGRES_DB: ilift
-    networks:
-      - iliftnet
+   Assurez-vous que le fichier `data.sql` est présent dans le dossier `/var/www/ilift/backend`.
 
-  backend:
-    build:
-      context: ./backend
-    environment:
-      DATABASE_URL: 'postgresql://ilift:votre_mot_de_passe@postgres:5432/ilift'
-    depends_on:
-      - postgres
-    networks:
-      - iliftnet
-    labels:
-      - 'traefik.http.routers.backend.rule=Host(`api.votredomaine.com`)'
-      - 'traefik.http.services.backend.loadbalancer.server.port=3000'
+## Configuration et Déploiement
 
-  frontend:
-    build:
-      context: ./frontend
-    networks:
-      - iliftnet
-    labels:
-      - 'traefik.http.routers.frontend.rule=Host(`votredomaine.com`)'
-      - 'traefik.http.services.frontend.loadbalancer.server.port=80'
+1. **Préparer la structure des fichiers** :
 
-volumes:
-  postgres_data:
-networks:
-  iliftnet:
-```
+   L'arborescence doit ressembler à ceci :
 
-### Dockerfile pour le Frontend
+   ```
+   /var/www/ilift
+   ├── docker-compose.yml
+   ├── acme.json
+   ├── frontend
+   │   └── Dockerfile
+   ├── backend
+   │   ├── Dockerfile
+   │   └── data.sql
+   ```
 
-```dockerfile
-FROM node:18 AS builder
-WORKDIR /app
-COPY package.json ./
-RUN npm install
-COPY . .
-RUN npm run build
+2. **Configurer le fichier `docker-compose.yml`** :
 
-FROM nginx:alpine
-COPY --from=builder /app/build /usr/share/nginx/html
-```
+   Voici la configuration mise à jour de `docker-compose.yml` pour Traefik, le backend, le frontend, et PostgreSQL :
 
-### Dockerfile pour le Backend
+   ```yaml
+   version: '3.9'
 
-```dockerfile
-FROM node:18
-WORKDIR /app
-COPY package.json ./
-RUN npm install
-COPY . .
-CMD ["npm", "start"]
-```
+   services:
+     traefik:
+       image: traefik:v2.10
+       container_name: traefik
+       command:
+         - '--api.dashboard=true'
+         - '--providers.docker=true'
+         - '--entrypoints.web.address=:80'
+         - '--entrypoints.websecure.address=:443'
+         - '--certificatesresolvers.letsencrypt.acme.email=${ACME_EMAIL}'
+         - '--certificatesresolvers.letsencrypt.acme.storage=/acme.json'
+       ports:
+         - '80:80'
+         - '443:443'
+       volumes:
+         - '/var/run/docker.sock:/var/run/docker.sock:ro'
+         - './acme.json:/acme.json'
+       networks:
+         - proxy
 
----
+     frontend:
+       build:
+         context: ./frontend
+       labels:
+         - 'traefik.enable=true'
+         - 'traefik.http.routers.frontend.rule=Host(`${DOMAIN}`)'
+         - 'traefik.http.routers.frontend.entrypoints=websecure'
+         - 'traefik.http.routers.frontend.tls.certresolver=letsencrypt'
+       networks:
+         - proxy
+       depends_on:
+         - backend
 
-## Configuration de Traefik
+     backend:
+       build:
+         context: ./backend
+       environment:
+         - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+       labels:
+         - 'traefik.enable=true'
+         - 'traefik.http.routers.backend.rule=PathPrefix(`/api`)'
+         - 'traefik.http.routers.backend.entrypoints=websecure'
+         - 'traefik.http.routers.backend.tls.certresolver=letsencrypt'
+         - 'traefik.http.middlewares.backend-strip-prefix.stripprefix.prefixes=/api'
+         - 'traefik.http.routers.backend.middlewares=backend-strip-prefix'
+       networks:
+         - proxy
+         - internal
+       depends_on:
+         - db
 
-### Fichier `traefik.yml`
+     db:
+       image: postgres:15-alpine
+       environment:
+         - POSTGRES_USER=${POSTGRES_USER}
+         - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+         - POSTGRES_DB=${POSTGRES_DB}
+       volumes:
+         - postgres_data:/var/lib/postgresql/data
+         - ./backend/data.sql:/docker-entrypoint-initdb.d/init.sql
+       networks:
+         - internal
 
-```yaml
-api:
-  dashboard: true
-entryPoints:
-  web:
-    address: ':80'
-  websecure:
-    address: ':443'
-certificatesResolvers:
-  myresolver:
-    acme:
-      email: 'admin@votredomaine.com'
-      storage: '/letsencrypt/acme.json'
-      httpChallenge:
-        entryPoint: web
-```
+   networks:
+     proxy:
+       driver: bridge
+     internal:
+       driver: bridge
 
-### Fichier `acme.json`
+   volumes:
+     postgres_data:
+       external: false
+   ```
 
-```bash
-touch traefik/acme.json
-chmod 600 traefik/acme.json
-```
-
----
-
-## Mise en production
-
-1. Lancer l'application :
+3. **Lancer l'application** :
 
    ```bash
    docker compose up -d
    ```
 
-2. Vérifier les conteneurs :
+4. **Vérifier les conteneurs** :
 
    ```bash
    docker ps
    ```
 
-3. Accéder au tableau de bord Traefik :
-   - URL : `http://votredomaine.com:8080/dashboard`
-
----
-
-## Sécurisation
-
-- **SSL** : Automatisé avec Traefik.
-- **Fichiers sensibles** :
-  ```bash
-  chmod 600 backend/.env
-  chmod 600 postgres/init.sql
-  ```
-
----
-
-## Résolution des problèmes
-
----
+5. **Accéder à l'application** :
+   - Frontend : `https://votredomaine.com`
+   - Backend : `https://votredomaine.com/api`
 
 ## Maintenance
 
-1. **Mettre à jour les images** :
+1. **Mettre à jour les services** :
 
    ```bash
    docker compose pull
@@ -283,26 +227,80 @@ chmod 600 traefik/acme.json
    ```
 
 2. **Sauvegarder la base de données** :
+
    ```bash
-   docker exec -t postgres pg_dump ilift > backup.sql
+   docker exec -t db pg_dumpall -c -U postgres > backup.sql
    ```
 
----
+3. **Restaurer la base de données** :
 
-## Conclusion
-
-Ce guide récapitule toutes les étapes de déploiement : de la préparation du serveur à la configuration de Docker, Traefik et PostgreSQL, en passant par la sécurisation et la maintenance. Assurez-vous de tenir votre système à jour et de respecter les bonnes pratiques pour garantir la pérennité de votre application.
-
----
+   ```bash
+   cat backup.sql | docker exec -i db psql -U postgres
+   ```
 
 ## Références
 
 - [Documentation Docker](https://docs.docker.com/)
 - [Documentation Traefik](https://doc.traefik.io/traefik/)
-- [Certbot](https://certbot.eff.org/)
+- [Node.js](https://nodejs.org/)
+- [PostgreSQL](https://www.postgresql.org/)
 
 ---
 
+## Dockerfiles
+
+### Dockerfile pour le **frontend** (React)
+
+```dockerfile
+# Dockerfile pour le frontend React
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Copier les fichiers de l'application
+COPY package.json pnpm-lock.yaml ./
+
+# Installer les dépendances
+RUN npm install -g pnpm && pnpm install
+
+# Copier le reste des fichiers
+COPY . .
+
+# Construire l'application
+RUN pnpm build
+
+# Exposer le port de l'application
+EXPOSE 3000
+
+# Démarrer l'application
+CMD ["pnpm", "start"]
 ```
 
+### Dockerfile pour le **backend** (Node.js avec Express et Prisma)
+
+```dockerfile
+# Dockerfile pour le backend Node.js
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Copier les fichiers de l'application
+COPY package.json pnpm-lock.yaml ./
+
+# Installer les dépendances
+RUN npm install -g pnpm && pnpm install
+
+# Copier le reste des fichiers
+COPY . .
+
+# Construire Prisma
+RUN pnpm prisma generate
+
+# Exposer le port de l'API
+EXPOSE 5000
+
+# Démarrer l'application
+CMD ["pnpm", "start"]
 ```
+
+---
