@@ -48,7 +48,7 @@ export const getProgramsOfUserHandler = async (req: Request, res: Response, next
     const programs = await getProgramsOfUser(req.user.id);
     res.status(200).json({
       message: 'Programmes récupérés avec succès',
-      data: programs
+      data: programs || []
     });
   } catch (error) {
     next(error);

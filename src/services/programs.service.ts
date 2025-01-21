@@ -31,10 +31,7 @@ export const getProgramsOfUser = async (authorId: string) => {
     orderBy: { position: 'asc' }
   });
 
-  if (!programs.length) {
-    throw AppError.NotFound('Aucun programme trouvé pour cet utilisateur', ErrorCodes.PROGRAM_NOT_FOUND);
-  }
-  return programs;
+  return programs.length ? programs : [];
 };
 
 /**

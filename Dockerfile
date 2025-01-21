@@ -23,8 +23,8 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-# Installer pnpm et openssl dans l'étape finale
-RUN apk add --no-cache openssl
+# Installer les dépendances nécessaires
+RUN apk add --no-cache openssl postgresql-client
 RUN npm install -g pnpm
 
 # Copier uniquement les fichiers nécessaires depuis le builder
@@ -33,5 +33,5 @@ COPY --from=builder /app /app
 # Exposer le port
 EXPOSE 4000
 
-# Commande de démarrage
+# Nouvelle commande de démarrage
 CMD ["pnpm", "start"]
