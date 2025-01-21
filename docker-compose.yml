@@ -1,3 +1,5 @@
+version: '3.8'
+
 services:
   traefik:
     image: traefik:v2.10
@@ -7,32 +9,27 @@ services:
       - '--providers.docker=true'
       - '--entrypoints.web.address=:80'
       - '--entrypoints.websecure.address=:443'
-      - '--entrypoints.web.http.redirections.entryPoint.to=websecure'
-      - '--entrypoints.web.http.redirections.entryPoint.scheme=https'
-      - '--certificatesresolvers.letsencrypt.acme.httpchallenge=true'
-      - '--certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web'
-      - '--certificatesresolvers.letsencrypt.acme.email=${ACME_EMAIL}'
-      - '--certificatesresolvers.letsencrypt.acme.storage=/acme.json'
     ports:
       - '80:80'
       - '443:443'
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - ./acme.json:/acme.json
     networks:
       - proxy
 
   frontend:
     build:
       context: ./frontend
+    volumes:
+      - /etc/letsencrypt:/etc/letsencrypt:ro
     labels:
       - 'traefik.enable=true'
       - 'traefik.http.routers.frontend.rule=Host(`segau.dipsw-ccicampus.dev`)'
       - 'traefik.http.routers.frontend.tls=true'
-      - 'traefik.http.routers.frontend.tls.certresolver=letsencrypt'
       - 'traefik.http.services.frontend.loadbalancer.server.port=80'
     networks:
       - proxy
+      - internal
 
   backend:
     build:
@@ -48,15 +45,18 @@ services:
       - CLIENT_URL=${CLIENT_URL}
       - UPLOAD_DIR=${UPLOAD_DIR}
       - MAX_FILE_SIZE=${MAX_FILE_SIZE}
+      - RESEND_API_KEY=${RESEND_API_KEY}
     labels:
       - 'traefik.enable=true'
-      - 'traefik.http.routers.backend.rule=Host(`${DOMAIN}`) && PathPrefix(`/api`)'
+      - 'traefik.http.routers.backend.rule=Host(`segau.dipsw-ccicampus.dev`) && (PathPrefix(`/api`) || PathPrefix(`/uploads`))'
       - 'traefik.http.services.backend.loadbalancer.server.port=4000'
     networks:
       - proxy
       - internal
     depends_on:
       - db
+    volumes:
+      - ./backend/uploads:/app/uploads
 
   db:
     image: postgres:15-alpine

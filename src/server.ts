@@ -18,19 +18,19 @@ import router from './routes/router';
  */
 const app = express();
 
-configureSecurityMiddleware(app);
+//configureSecurityMiddleware(app);
 
 /**
  * Configuration CORS
  */
 app.use(
-  cors({
-    origin: '*',
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin', 'X-Requested-With'],
-    exposedHeaders: ['Authorization']
-  })
+    cors({
+        origin: config.client.url,
+        credentials: true,
+        methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+        allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin', 'X-Requested-With'],
+        exposedHeaders: ['Authorization']
+    })
 );
 
 /**
