@@ -21,7 +21,7 @@ L'objectif de ce guide est de déployer une application web composée de :
 - Un frontend React
 - Un backend Node.js (Express + Prisma)
 - Une base de données PostgreSQL
-- Un reverse proxy Traefik avec SSL automatique
+- Un reverse proxy Nginx
 
 ## Prérequis
 
@@ -83,11 +83,34 @@ L'objectif de ce guide est de déployer une application web composée de :
 
    Déconnectez-vous et reconnectez-vous pour appliquer les modifications.
 
+7. **Installer Certbot** :
+
+   ```bash
+   sudo apt install certbot python3-certbot-nginx
+   ```
+
 ## Préparation de l'environnement
 
 1. **Configurer les variables d'environnement** :
 
-   - Créez un fichier `.env` à partir de `.env.example` dans chaque service (backend, Traefik) et personnalisez les valeurs.
+   - Créez un fichier `.env` à la racine. Il doit ressembler à ceci :
+
+   ```properties
+   POSTGRES_USER=
+   DATABASE_URL=
+   DOMAIN=
+   ACME_EMAIL=
+   JWT_SECRET=
+   REFRESH_TOKEN_SECRET=
+   JWT_EXPIRES_IN=
+   REFRESH_TOKEN_EXPIRES_IN=
+   CLIENT_URL=
+   RESEND_API_KEY=
+   PORT=
+   NODE_ENV=
+   UPLOAD_DIR=
+   MAX_FILE_SIZE=
+   ```
 
 2. **Cloner les dépôts** :
 
@@ -98,10 +121,6 @@ L'objectif de ce guide est de déployer une application web composée de :
    # Cloner le backend
    git clone https://github.com/Gutsey68/CDA-Ilift-backend.git /var/www/ilift/backend
    ```
-
-3. **Vérifier le fichier de données SQL** :
-
-   Assurez-vous que le fichier `data.sql` est présent dans le dossier `/var/www/ilift/backend`.
 
 ## Configuration et Déploiement
 
@@ -122,45 +141,26 @@ L'objectif de ce guide est de déployer une application web composée de :
    ├── frontend
    │   └── Dockerfile
    ├── backend
-   │   ├── Dockerfile
-   │   └── data.sql
+   │   └── Dockerfile
    ```
 
 2. **Configurer le fichier `docker-compose.yml`** :
 
-   Voici la configuration mise à jour de `docker-compose.yml` pour Traefik, le backend, le frontend, et PostgreSQL :
+   Voici la configuration mise à jour de `docker-compose.yml` pour Nginx, le backend, le frontend, et PostgreSQL :
 
    ```yaml
    services:
-     traefik:
-       image: traefik:v2.10
-       container_name: traefik
-       command:
-         - '--api.dashboard=true'
-         - '--providers.docker=true'
-         - '--entrypoints.web.address=:80'
-         - '--entrypoints.websecure.address=:443'
-         - '--certificatesresolvers.letsencrypt.acme.email=${ACME_EMAIL}'
-         - '--certificatesresolvers.letsencrypt.acme.storage=/acme.json'
-       ports:
-         - '80:80'
-         - '443:443'
-       volumes:
-         - '/var/run/docker.sock:/var/run/docker.sock:ro'
-         - './acme.json:/acme.json'
-       networks:
-         - proxy
-
      frontend:
        build:
          context: ./frontend
-       labels:
-         - 'traefik.enable=true'
-         - 'traefik.http.routers.frontend.rule=Host(`${DOMAIN}`)'
-         - 'traefik.http.routers.frontend.entrypoints=websecure'
-         - 'traefik.http.routers.frontend.tls.certresolver=letsencrypt'
+       ports:
+         - "80:80"
+         - "443:443"
+       volumes:
+         - /etc/letsencrypt:/etc/letsencrypt:ro
+         - uploads_data:/usr/share/nginx/uploads
        networks:
-         - proxy
+         - internal
        depends_on:
          - backend
 
@@ -169,55 +169,73 @@ L'objectif de ce guide est de déployer une application web composée de :
          context: ./backend
        environment:
          - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
-       labels:
-         - 'traefik.enable=true'
-         - 'traefik.http.routers.backend.rule=PathPrefix(`/api`)'
-         - 'traefik.http.routers.backend.entrypoints=websecure'
-         - 'traefik.http.routers.backend.tls.certresolver=letsencrypt'
-         - 'traefik.http.middlewares.backend-strip-prefix.stripprefix.prefixes=/api'
-         - 'traefik.http.routers.backend.middlewares=backend-strip-prefix'
+         - PORT=${PORT}
+         - NODE_ENV=${NODE_ENV}
+         - JWT_SECRET=${JWT_SECRET}
+         - JWT_EXPIRES_IN=${JWT_EXPIRES_IN}
+         - REFRESH_TOKEN_SECRET=${REFRESH_TOKEN_SECRET}
+         - REFRESH_TOKEN_EXPIRES_IN=${REFRESH_TOKEN_EXPIRES_IN}
+         - CLIENT_URL=${CLIENT_URL}
+         - UPLOAD_DIR=${UPLOAD_DIR}
+         - MAX_FILE_SIZE=${MAX_FILE_SIZE}
+         - RESEND_API_KEY=${RESEND_API_KEY}
+         - POSTGRES_USER=${POSTGRES_USER}
+         - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+         - POSTGRES_DB=${POSTGRES_DB}
        networks:
-         - proxy
          - internal
        depends_on:
-         - db
+         db:
+           condition: service_healthy
+       volumes:
+         - uploads_data:/app/uploads
 
      db:
-       image: postgres:15-alpine
+       image: postgres:17-alpine
        environment:
          - POSTGRES_USER=${POSTGRES_USER}
          - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
          - POSTGRES_DB=${POSTGRES_DB}
+         - PGDATA=/var/lib/postgresql/data/pgdata
        volumes:
-         - postgres_data:/var/lib/postgresql/data
-         - ./backend/data.sql:/docker-entrypoint-initdb.d/init.sql
+         - postgres_data:/var/lib/postgresql/data/pgdata
        networks:
          - internal
+       healthcheck:
+         test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+         interval: 5s
+         timeout: 5s
+         retries: 5
+       restart: unless-stopped
 
    networks:
-     proxy:
-       driver: bridge
      internal:
        driver: bridge
 
    volumes:
      postgres_data:
-       external: false
+     uploads_data:
    ```
 
-3. **Lancer l'application** :
+3. **Obtenir un certificat SSL avec Certbot** :
+
+   ```bash
+   sudo certbot --nginx -d votredomaine.com
+   ```
+
+4. **Lancer l'application** :
 
    ```bash
    docker compose up -d
    ```
 
-4. **Vérifier les conteneurs** :
+5. **Vérifier les conteneurs** :
 
    ```bash
    docker ps
    ```
 
-5. **Accéder à l'application** :
+6. **Accéder à l'application** :
    - Frontend : `https://votredomaine.com`
    - Backend : `https://votredomaine.com/api`
 
@@ -245,9 +263,10 @@ L'objectif de ce guide est de déployer une application web composée de :
 ## Références
 
 - [Documentation Docker](https://docs.docker.com/)
-- [Documentation Traefik](https://doc.traefik.io/traefik/)
+- [Documentation Nginx](https://nginx.org/)
 - [Node.js](https://nodejs.org/)
 - [PostgreSQL](https://www.postgresql.org/)
+- [Certbot](https://certbot.eff.org/)
 
 ---
 

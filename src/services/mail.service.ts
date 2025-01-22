@@ -20,7 +20,7 @@ const resend = new Resend(process.env.RESEND_API_KEY);
  */
 export const sendResetPasswordEmail = async (to: string, token: string) => {
   try {
-    const resetLink = `http://localhost:5173/reset-password?token=${token}`;
+    const resetLink = `https://segau.dipsw-ccicampus.dev/reset-password?token=${token}`;
     const { data, error } = await resend.emails.send({
       from: 'onboarding@resend.dev',
       to: [to],

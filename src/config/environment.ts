@@ -23,7 +23,7 @@ const envSchema = z.object({
   RESEND_API_KEY: z.string(),
   CLIENT_URL: z.string().default('http://localhost:5173'),
   UPLOAD_DIR: z.string().default('uploads'),
-  MAX_FILE_SIZE: z.string().transform(Number).default('25242880')
+  MAX_FILE_SIZE: z.string().transform(Number).default('5242880')
 });
 
 /**
