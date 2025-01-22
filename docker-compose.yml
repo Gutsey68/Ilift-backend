@@ -40,7 +40,7 @@ services:
       - uploads_data:/app/uploads
 
   db:
-    image: postgres:16-alpine
+    image: postgres:17-alpine
     environment:
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
@@ -48,6 +48,7 @@ services:
       - PGDATA=/var/lib/postgresql/data/pgdata
     volumes:
       - postgres_data:/var/lib/postgresql/data/pgdata
+      - ./backend/sql.backup:/tmp/sql.backup 
     networks:
       - internal
     healthcheck:

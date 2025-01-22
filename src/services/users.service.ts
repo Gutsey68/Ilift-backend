@@ -234,6 +234,7 @@ export const getUsersFollowedByUsersIfollow = async (userId: string, usersIfollo
 export const getAdditionalUsers = async (userId: string, existingUserIds: string[]) => {
   return await prisma.user.findMany({
     where: {
+      isBan: false,
       NOT: {
         id: { in: [userId, ...existingUserIds] }
       }
