@@ -22,7 +22,7 @@ export const sendResetPasswordEmail = async (to: string, token: string) => {
   try {
     const resetLink = `https://segau.dipsw-ccicampus.dev/reset-password?token=${token}`;
     const { data, error } = await resend.emails.send({
-      from: "Ilift@mail.gym",
+      from: "Ilift@seyzeriat.com",
       to: [to],
       subject: "Réinitialisation de votre mot de passe",
       html: `
