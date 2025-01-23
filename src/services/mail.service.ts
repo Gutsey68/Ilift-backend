@@ -3,8 +3,8 @@
  * Utilise Resend pour l'envoi des emails transactionnels
  */
 
-import { Resend } from 'resend';
-import { AppError, ErrorCodes } from '../errors/app.error';
+import {Resend} from "resend";
+import {AppError, ErrorCodes} from "../errors/app.error";
 
 /**
  * Instance de Resend initialisée avec la clé API
@@ -22,9 +22,9 @@ export const sendResetPasswordEmail = async (to: string, token: string) => {
   try {
     const resetLink = `https://segau.dipsw-ccicampus.dev/reset-password?token=${token}`;
     const { data, error } = await resend.emails.send({
-      from: 'onboarding@resend.dev',
+      from: "Ilift@mail.gym",
       to: [to],
-      subject: 'Réinitialisation de votre mot de passe',
+      subject: "Réinitialisation de votre mot de passe",
       html: `
         <h1>Réinitialisation de votre mot de passe</h1>
         <p>Vous avez demandé la réinitialisation de votre mot de passe.</p>
@@ -32,16 +32,23 @@ export const sendResetPasswordEmail = async (to: string, token: string) => {
         <a href="${resetLink}">Réinitialiser mon mot de passe</a>
         <p>Ce lien expirera dans 1 heure.</p>
         <p>Si vous n'avez pas demandé cette réinitialisation, ignorez cet email.</p>
-      `
+      `,
     });
 
     if (error) {
-      throw AppError.BadRequest("Erreur lors de l'envoi de l'email", ErrorCodes.BAD_REQUEST, error);
+      throw AppError.BadRequest(
+        "Erreur lors de l'envoi de l'email",
+        ErrorCodes.BAD_REQUEST,
+        error,
+      );
     }
 
     return data;
   } catch (error) {
     if (error instanceof AppError) throw error;
-    throw AppError.BadRequest("Erreur lors de l'envoi de l'email", ErrorCodes.BAD_REQUEST);
+    throw AppError.BadRequest(
+      "Erreur lors de l'envoi de l'email",
+      ErrorCodes.BAD_REQUEST,
+    );
   }
 };
