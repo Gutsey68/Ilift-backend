@@ -1,6 +1,7 @@
 # ILift - Backend API
 
-Application backend pour la plateforme sociale de fitness ILift, permettant aux utilisateurs de suivre leurs entraînements et partager leurs progrès.
+Application backend pour la plateforme sociale de fitness ILift, permettant aux utilisateurs de suivre leurs
+entraînements et partager leurs progrès.
 
 ## Technologies Utilisées
 
@@ -151,12 +152,13 @@ Pour utiliser Bruno :
 
 ## Déploiement
 
-Un guide détaillé de déploiement est disponible dans le fichier [guide-deploiement.md](./guide-deploiement.md). Il couvre :
+Un guide détaillé de déploiement est disponible dans le fichier [guide-deploiement.md](./guide-deploiement.md). Il
+couvre :
 
 - La préparation du serveur
 - L'installation des dépendances nécessaires
 - La configuration Docker et Docker Compose
-- Le déploiement avec Traefik et SSL automatique
+- Le déploiement avec Nginx
 - La maintenance et les sauvegardes
 
 ## Contribution
