@@ -20,9 +20,9 @@ const resend = new Resend(process.env.RESEND_API_KEY);
  */
 export const sendResetPasswordEmail = async (to: string, token: string) => {
   try {
-    const resetLink = `https://segau.dipsw-ccicampus.dev/reset-password?token=${token}`;
+    const resetLink = `https://ilift.social/reset-password?token=${token}`;
     const { data, error } = await resend.emails.send({
-      from: "Ilift@seyzeriat.com",
+      from: "Ilift@ilift.social",
       to: [to],
       subject: "Réinitialisation de votre mot de passe",
       html: `
