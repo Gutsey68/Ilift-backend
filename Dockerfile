@@ -1,12 +1,11 @@
-# Étape 1 : Construction de l'application
-FROM node:20-alpine AS builder
-
+# Étape 1 : Build
+FROM node:20-buster AS builder
 WORKDIR /app
-RUN apk add --no-cache openssl
-RUN npm install -g pnpm
 
 # Installation des dépendances
 COPY package.json pnpm-lock.yaml ./
+RUN npm install -g pnpm
+RUN apt-get update && apt-get install -y python3 make g++
 RUN pnpm install
 
 # Copie du code source
@@ -19,16 +18,18 @@ RUN pnpm prisma generate
 RUN pnpm run build
 
 # Étape 2 : Exécution en production
-FROM node:20-alpine
-
+FROM node:20-buster
 WORKDIR /app
 
 # Installer les dépendances nécessaires
-RUN apk add --no-cache openssl postgresql-client
+RUN apt-get update && apt-get install -y openssl postgresql-client
 RUN npm install -g pnpm
 
 # Copier uniquement les fichiers nécessaires depuis le builder
 COPY --from=builder /app /app
+
+# 🔹 Supprimer bcrypt et le réinstaller proprement
+RUN pnpm uninstall bcrypt && pnpm add bcrypt
 
 # Exposer le port
 EXPOSE 4000

@@ -2,16 +2,19 @@ services:
   frontend:
     build:
       context: ./frontend
-    ports:
-      - "80:80"
-      - "443:443"
     volumes:
-      - /etc/letsencrypt:/etc/letsencrypt:ro
       - uploads_data:/usr/share/nginx/uploads
     networks:
       - internal
+      - traefik-proxy
     depends_on:
       - backend
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.ilift.rule=Host(`ilift.social`)"
+      - "traefik.http.routers.ilift.entrypoints=websecure"
+      - "traefik.http.routers.ilift.tls.certresolver=letsencrypt"
+      - "traefik.http.services.ilift.loadbalancer.server.port=80"
 
   backend:
     build:
@@ -48,7 +51,7 @@ services:
       - PGDATA=/var/lib/postgresql/data/pgdata
     volumes:
       - postgres_data:/var/lib/postgresql/data/pgdata
-      - ./backend/sql.backup:/tmp/sql.backup 
+      - ./backend/sql.backup:/tmp/sql.backup
     networks:
       - internal
     healthcheck:
@@ -61,6 +64,8 @@ services:
 networks:
   internal:
     driver: bridge
+  traefik-proxy:
+    external: true
 
 volumes:
   postgres_data:

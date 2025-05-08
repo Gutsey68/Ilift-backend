@@ -18,7 +18,7 @@ import router from './routes/router';
  */
 const app = express();
 
-configureSecurityMiddleware(app);
+//configureSecurityMiddleware(app);
 
 /**
  * Configuration CORS
