@@ -1,0 +1,72 @@
+services:
+  frontend:
+    build:
+      context: ./frontend
+    volumes:
+      - uploads_data:/usr/share/nginx/uploads
+    networks:
+      - internal
+      - traefik-proxy
+    depends_on:
+      - backend
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.ilift.rule=Host(`ilift.social`)"
+      - "traefik.http.routers.ilift.entrypoints=websecure"
+      - "traefik.http.routers.ilift.tls.certresolver=letsencrypt"
+      - "traefik.http.services.ilift.loadbalancer.server.port=80"
+
+  backend:
+    build:
+      context: ./backend
+    environment:
+      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      - PORT=${PORT}
+      - NODE_ENV=${NODE_ENV}
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_EXPIRES_IN=${JWT_EXPIRES_IN}
+      - REFRESH_TOKEN_SECRET=${REFRESH_TOKEN_SECRET}
+      - REFRESH_TOKEN_EXPIRES_IN=${REFRESH_TOKEN_EXPIRES_IN}
+      - CLIENT_URL=${CLIENT_URL}
+      - UPLOAD_DIR=${UPLOAD_DIR}
+      - MAX_FILE_SIZE=${MAX_FILE_SIZE}
+      - RESEND_API_KEY=${RESEND_API_KEY}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+    networks:
+      - internal
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - uploads_data:/app/uploads
+
+  db:
+    image: postgres:17-alpine
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/pgdata
+      - ./backend/sql.backup:/tmp/sql.backup
+    networks:
+      - internal
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+networks:
+  internal:
+    driver: bridge
+  traefik-proxy:
+    external: true
+
+volumes:
+  postgres_data:
+  uploads_data:
