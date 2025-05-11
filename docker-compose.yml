@@ -2,6 +2,7 @@ services:
   frontend:
     build:
       context: ./frontend
+    restart: unless-stopped
     volumes:
       - uploads_data:/usr/share/nginx/uploads
     networks:
@@ -10,15 +11,17 @@ services:
     depends_on:
       - backend
     labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.ilift.rule=Host(`ilift.social`)"
-      - "traefik.http.routers.ilift.entrypoints=websecure"
-      - "traefik.http.routers.ilift.tls.certresolver=letsencrypt"
-      - "traefik.http.services.ilift.loadbalancer.server.port=80"
+       - "traefik.enable=true"
+       - "traefik.http.routers.ilift.rule=Host(`ilift.social`)"
+       - "traefik.http.routers.ilift.entrypoints=websecure"
+       - "traefik.http.routers.ilift.tls.certresolver=ilift"
+       - "traefik.http.services.ilift.loadbalancer.server.port=80"
+       - "traefik.docker.network=traefik-proxy"
 
   backend:
     build:
       context: ./backend
+    restart: unless-stopped
     environment:
       - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
       - PORT=${PORT}
@@ -31,9 +34,6 @@ services:
       - UPLOAD_DIR=${UPLOAD_DIR}
       - MAX_FILE_SIZE=${MAX_FILE_SIZE}
       - RESEND_API_KEY=${RESEND_API_KEY}
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - POSTGRES_DB=${POSTGRES_DB}
     networks:
       - internal
     depends_on:
@@ -51,7 +51,6 @@ services:
       - PGDATA=/var/lib/postgresql/data/pgdata
     volumes:
       - postgres_data:/var/lib/postgresql/data/pgdata
-      - ./backend/sql.backup:/tmp/sql.backup
     networks:
       - internal
     healthcheck:
@@ -61,12 +60,12 @@ services:
       retries: 5
     restart: unless-stopped
 
+volumes:
+  postgres_data:
+  uploads_data:
+
 networks:
   internal:
     driver: bridge
   traefik-proxy:
     external: true
-
-volumes:
-  postgres_data:
-  uploads_data:
